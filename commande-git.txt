@@ -1,0 +1,6 @@
+#Pour commiter 
+git add .
+git commit -m "Looping"
+
+#pour envoyer sur le main 
+git push -u origin main

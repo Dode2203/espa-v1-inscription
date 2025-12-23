@@ -1,6 +1,35 @@
-login
-    table
-        Utilisateur(id,email,mdp,nom,prenom,role)
-    fonction
-        login(email,mdp)
-        creer_utilisateur(email,mdp,nom,prenom)
+inscription
+
+        table 
+            Bacc(id_bacc,annee,serie)
+            Cin(id_cin,date_cin,lieu,ancien,nouveau)
+            Etudiant(id_etudiant,nom,prenom,dateNassance,lieuNaissance,id_cin,id_bacc)
+            Propos(id_propos,id_etudiant,email,sexe)
+            TypeFormation(id_type_formation,nom)
+            Formation(id,id_formation,nom)
+            FormationEtudiant(id_formation_etudiant,id_etudiant,id_formation,dateFormation)
+            Ecolage(id_ecolage,id_formation,montant)
+            PaymentEcolage(id_payment,ref,datePayment,montant,tranche,id_etudiant)
+            TypeDroit(id_type_droit,nom)
+            Droit(id_droit,id_type_droit,ref,dateVersement,montant,id_etudiant)
+            niveau(id_niveau,nom)
+            mention(id_mention,nom)
+            niveauEtudiant(id_niveau_etudiant,id_niveau,id_mention,annee)  
+
+        fonction
+            insertion_etudiant()
+            getAProposEtudiant()
+                -FormationEtudiant
+                -niveauEtudiant
+                -propos
+            getAllEcolage(Etudiant)
+            insertionDroit(Etudiant,montant,dateVersement,TypeDroit)
+            isValideEcolage(Etudiant) si etudiant academique toujours valide --- precedent
+            getDroit(Etudiant,date) return droit pedagogique et / ou administratif
+            isValidDroit(Etudiant,date) superieur ou = a deux  getDroit(Etudiant,date) ->valide
+            montantEcolage(Etudiant) toujours 0 pour les academique
+            validationPaymentEcolage(Etudiant,montant,tranche,date) return la derniere tranche payer , 0 si ce n'il n'y a pas encore
+            paymentEcolage(Etudiant,montant,tranche,date) 
+            insererEcolage()
+
+        
