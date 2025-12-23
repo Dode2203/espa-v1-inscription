@@ -40,4 +40,16 @@ class EtudiantsRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+    public function getEtudiantsByNomAndPrenom(string $nom, string $prenom): Etudiants 
+    {
+        return $this->createQueryBuilder('e')
+                ->andWhere('e.nom = :nom')
+                ->andWhere('e.prenom = :prenom')
+                ->setParameter('nom', $nom)
+                ->setParameter('prenom', $prenom)
+                ->getQuery()
+                ->getOneOrNullResult()
+            ;
+        
+    }
 }
