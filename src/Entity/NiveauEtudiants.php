@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\NiveauEtudiantsRepository;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: NiveauEtudiantsRepository::class)]
+class NiveauEtudiants
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\ManyToOne(inversedBy: 'niveaux')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?niveaux $niveau = null;
+
+    #[ORM\ManyToOne(inversedBy: 'mentions')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?mentions $mention = null;
+
+    #[ORM\Column]
+    private ?int $annee = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $dateinsertion = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getNiveau(): ?niveaux
+    {
+        return $this->niveau;
+    }
+
+    public function setNiveau(?niveaux $niveau): static
+    {
+        $this->niveau = $niveau;
+
+        return $this;
+    }
+
+    public function getMention(): ?mentions
+    {
+        return $this->mention;
+    }
+
+    public function setMention(?mentions $mention): static
+    {
+        $this->mention = $mention;
+
+        return $this;
+    }
+
+    public function getAnnee(): ?int
+    {
+        return $this->annee;
+    }
+
+    public function setAnnee(int $annee): static
+    {
+        $this->annee = $annee;
+
+        return $this;
+    }
+
+    public function getDateinsertion(): ?\DateTimeInterface
+    {
+        return $this->dateinsertion;
+    }
+
+    public function setDateinsertion(\DateTimeInterface $dateinsertion): static
+    {
+        $this->dateinsertion = $dateinsertion;
+
+        return $this;
+    }
+}
