@@ -25,7 +25,7 @@ class Droits
 
     #[ORM\ManyToOne(inversedBy: 'typedroits')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?typedroits $typeDroit = null;
+    private ?TypeDroits $typeDroit = null;
 
     public function getId(): ?int
     {
@@ -68,12 +68,12 @@ class Droits
         return $this;
     }
 
-    public function getTypeDroit(): ?typedroits
+    public function getTypeDroit(): ?Typedroits
     {
         return $this->typeDroit;
     }
 
-    public function setTypeDroit(?typedroits $typeDroit): static
+    public function setTypeDroit(?Typedroits $typeDroit): static
     {
         $this->typeDroit = $typeDroit;
 

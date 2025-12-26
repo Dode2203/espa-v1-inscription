@@ -16,11 +16,11 @@ class FormationEtudiants
 
     #[ORM\ManyToOne(inversedBy: 'etudiant')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?etudiants $etudiants = null;
+    private ?Etudiants $etudiants = null;
 
     #[ORM\ManyToOne(inversedBy: 'formation')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?formations $formation = null;
+    private ?Formations $formation = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateformation = null;
@@ -30,24 +30,24 @@ class FormationEtudiants
         return $this->id;
     }
 
-    public function getEtudiants(): ?etudiants
+    public function getEtudiants(): ?Etudiants
     {
         return $this->etudiants;
     }
 
-    public function setEtudiants(?etudiants $etudiants): static
+    public function setEtudiants(?Etudiants $etudiants): static
     {
         $this->etudiants = $etudiants;
 
         return $this;
     }
 
-    public function getFormation(): ?formations
+    public function getFormation(): ?Formations
     {
         return $this->formation;
     }
 
-    public function setFormation(?formations $formation): static
+    public function setFormation(?Formations $formation): static
     {
         $this->formation = $formation;
 

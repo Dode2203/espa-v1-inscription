@@ -29,15 +29,15 @@ class Etudiants
     private ?string $lieuNaissance = null;
 
     #[ORM\ManyToOne(inversedBy: 'cin')]
-    private ?cin $cin = null;
+    private ?Cin $cin = null;
 
     #[ORM\ManyToOne(inversedBy: 'bacc')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?bacc $bacc = null;
+    private ?Bacc $bacc = null;
 
     #[ORM\ManyToOne(inversedBy: 'propos')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?propos $propos = null;
+    private ?Propos $propos = null;
 
     /**
      * @var Collection<int, FormationEtudiants>
@@ -110,36 +110,36 @@ class Etudiants
         return $this;
     }
 
-    public function getCin(): ?cin
+    public function getCin(): ?Cin
     {
         return $this->cin;
     }
 
-    public function setCin(?cin $cin): static
+    public function setCin(?Cin $cin): static
     {
         $this->cin = $cin;
 
         return $this;
     }
 
-    public function getBacc(): ?bacc
+    public function getBacc(): ?Bacc
     {
         return $this->bacc;
     }
 
-    public function setBacc(?bacc $bacc): static
+    public function setBacc(?Bacc $bacc): static
     {
         $this->bacc = $bacc;
 
         return $this;
     }
 
-    public function getPropos(): ?propos
+    public function getPropos(): ?Propos
     {
         return $this->propos;
     }
 
-    public function setPropos(?propos $propos): static
+    public function setPropos(?Propos $propos): static
     {
         $this->propos = $propos;
 

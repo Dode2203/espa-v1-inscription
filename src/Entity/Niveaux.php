@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\NiveauxRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NiveauxRepository::class)]
@@ -23,6 +24,12 @@ class Niveaux
      */
     #[ORM\OneToMany(targetEntity: NiveauEtudiants::class, mappedBy: 'niveau')]
     private Collection $niveaux;
+
+    #[ORM\Column(type: Types::SMALLINT)]
+    private ?int $type = null;
+
+    #[ORM\Column(type: Types::SMALLINT)]
+    private ?int $grade = null;
 
     public function __construct()
     {
@@ -72,6 +79,30 @@ class Niveaux
                 $niveau->setNiveau(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getType(): ?int
+    {
+        return $this->type;
+    }
+
+    public function setType(int $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getGrade(): ?int
+    {
+        return $this->grade;
+    }
+
+    public function setGrade(int $grade): static
+    {
+        $this->grade = $grade;
 
         return $this;
     }

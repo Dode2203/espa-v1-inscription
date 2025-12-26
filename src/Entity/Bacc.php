@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\BaccRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BaccRepository::class)]
@@ -24,16 +22,6 @@ class Bacc
     #[ORM\Column(length: 50)]
     private ?string $serie = null;
 
-    /**
-     * @var Collection<int, Etudiants>
-     */
-    #[ORM\OneToMany(targetEntity: Etudiants::class, mappedBy: 'bacc')]
-    private Collection $bacc;
-
-    public function __construct()
-    {
-        $this->bacc = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -76,33 +64,4 @@ class Bacc
         return $this;
     }
 
-    /**
-     * @return Collection<int, Etudiants>
-     */
-    public function getBacc(): Collection
-    {
-        return $this->bacc;
-    }
-
-    public function addBacc(Etudiants $bacc): static
-    {
-        if (!$this->bacc->contains($bacc)) {
-            $this->bacc->add($bacc);
-            $bacc->setBacc($this);
-        }
-
-        return $this;
-    }
-
-    public function removeBacc(Etudiants $bacc): static
-    {
-        if ($this->bacc->removeElement($bacc)) {
-            // set the owning side to null (unless already changed)
-            if ($bacc->getBacc() === $this) {
-                $bacc->setBacc(null);
-            }
-        }
-
-        return $this;
-    }
 }

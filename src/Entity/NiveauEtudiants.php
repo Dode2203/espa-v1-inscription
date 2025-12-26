@@ -16,11 +16,11 @@ class NiveauEtudiants
 
     #[ORM\ManyToOne(inversedBy: 'niveaux')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?niveaux $niveau = null;
+    private ?Niveaux $niveau = null;
 
     #[ORM\ManyToOne(inversedBy: 'mentions')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?mentions $mention = null;
+    private ?Mentions $mention = null;
 
     #[ORM\Column]
     private ?int $annee = null;
@@ -33,24 +33,24 @@ class NiveauEtudiants
         return $this->id;
     }
 
-    public function getNiveau(): ?niveaux
+    public function getNiveau(): ?Niveaux
     {
         return $this->niveau;
     }
 
-    public function setNiveau(?niveaux $niveau): static
+    public function setNiveau(?Niveaux $niveau): static
     {
         $this->niveau = $niveau;
 
         return $this;
     }
 
-    public function getMention(): ?mentions
+    public function getMention(): ?Mentions
     {
         return $this->mention;
     }
 
-    public function setMention(?mentions $mention): static
+    public function setMention(?Mentions $mention): static
     {
         $this->mention = $mention;
 

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\EcolagesRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EcolagesRepository::class)]
@@ -15,22 +16,25 @@ class Ecolages
 
     #[ORM\ManyToOne(inversedBy: 'formations')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?formations $formations = null;
+    private ?Formations $formations = null;
 
     #[ORM\Column]
     private ?float $montant = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $dateEcolage = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getFormations(): ?formations
+    public function getFormations(): ?Formations
     {
         return $this->formations;
     }
 
-    public function setFormations(?formations $formations): static
+    public function setFormations(?Formations $formations): static
     {
         $this->formations = $formations;
 
@@ -45,6 +49,18 @@ class Ecolages
     public function setMontant(float $montant): static
     {
         $this->montant = $montant;
+
+        return $this;
+    }
+
+    public function getDateEcolage(): ?\DateTimeInterface
+    {
+        return $this->dateEcolage;
+    }
+
+    public function setDateEcolage(?\DateTimeInterface $dateEcolage): static
+    {
+        $this->dateEcolage = $dateEcolage;
 
         return $this;
     }

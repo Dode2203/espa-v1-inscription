@@ -13,9 +13,10 @@ class EtudiantsService
         $this->etudiantsRepository = $etudiantsRepository;
 
     }
-    public function rechercheEtudiant ($nom,$prenom): Etudiants 
+    public function rechercheEtudiant ($nom,$prenom): ?Etudiants 
     {
-        return $this->etudiantsRepository->rechercheEtudiant($nom,$prenom);
+        return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nom,$prenom);
       
     }
+    
 }

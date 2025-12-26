@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\CinRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -20,7 +18,7 @@ class Cin
     private ?int $numero = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $dateCIN = null;
+    private ?\DateTimeInterface $dateCin = null;
 
     #[ORM\Column(length: 255)]
     private ?string $lieu = null;
@@ -30,17 +28,6 @@ class Cin
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $nouveauDate = null;
-
-    /**
-     * @var Collection<int, Etudiants>
-     */
-    #[ORM\OneToMany(targetEntity: Etudiants::class, mappedBy: 'cin')]
-    private Collection $bacc;
-
-    public function __construct()
-    {
-        $this->bacc = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -59,14 +46,14 @@ class Cin
         return $this;
     }
 
-    public function getDateCIN(): ?\DateTimeInterface
+    public function getDateCin(): ?\DateTimeInterface
     {
-        return $this->dateCIN;
+        return $this->dateCin;
     }
 
-    public function setDateCIN(\DateTimeInterface $dateCIN): static
+    public function setDateCin(\DateTimeInterface $dateCin): static
     {
-        $this->dateCIN = $dateCIN;
+        $this->dateCin = $dateCin;
 
         return $this;
     }
@@ -107,33 +94,5 @@ class Cin
         return $this;
     }
 
-    /**
-     * @return Collection<int, Etudiants>
-     */
-    public function getBacc(): Collection
-    {
-        return $this->bacc;
-    }
-
-    public function addBacc(Etudiants $bacc): static
-    {
-        if (!$this->bacc->contains($bacc)) {
-            $this->bacc->add($bacc);
-            $bacc->setCin($this);
-        }
-
-        return $this;
-    }
-
-    public function removeBacc(Etudiants $bacc): static
-    {
-        if ($this->bacc->removeElement($bacc)) {
-            // set the owning side to null (unless already changed)
-            if ($bacc->getCin() === $this) {
-                $bacc->setCin(null);
-            }
-        }
-
-        return $this;
-    }
+    
 }

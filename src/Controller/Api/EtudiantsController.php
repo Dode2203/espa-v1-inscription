@@ -11,27 +11,27 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-// use App\Annotation\TokenRequired;
+use App\Annotation\TokenRequired;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 
-#[Route('/Etudiants')]
+#[Route('/etudiants')]
 class EtudiantsController extends AbstractController
 {
     private ParameterBagInterface $params;
     private EntityManagerInterface $em;
-    private EtudiantsService $EtudiantsService;
+    private EtudiantsService $etudiantsService;
 
     private JwtTokenManager $jwtTokenManager;
 
-    public function __construct(EntityManagerInterface $em, EtudiantsService $EtudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params)
+    public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params)
     {
         $this->em = $em;
-        $this->EtudiantsService = $EtudiantsService;
+        $this->etudiantsService = $etudiantsService;
         $this->jwtTokenManager = $jwtTokenManager;
         $this->params = $params;
     }
-    #[Route('', name: 'user', methods: ['POST'])]
+    #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
     // #[TokenRequired(['Admin'])]
     public function getEtudiants(Request $request): JsonResponse
     {
@@ -50,7 +50,7 @@ class EtudiantsController extends AbstractController
             if (!empty($missingFields)) {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => 'Champs requis manquants',
+                    'message' => 'Champs requis manquants '. implode(', ', $missingFields),
                     'missingFields' => $missingFields
                 ], 400);
             }
@@ -58,8 +58,13 @@ class EtudiantsController extends AbstractController
             $nom = $data['nom'];
             $prenom = $data['prenom'];
 
-            $user = $this->EtudiantsService->rechercheEtudiant($nom, $prenom);
-            
+            $user = $this->etudiantsService->rechercheEtudiant($nom, $prenom);
+            if (!$user) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant non trouvé'
+                ], 404);
+            }
             $claims = [
                     'id' => $user->getId(),
                     'nom' => $user->getNom(),

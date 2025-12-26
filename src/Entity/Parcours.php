@@ -18,7 +18,7 @@ class Parcours
 
     #[ORM\ManyToOne(inversedBy: 'mention')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?mentions $mention = null;
+    private ?Mentions $mention = null;
 
     public function getId(): ?int
     {
@@ -37,12 +37,12 @@ class Parcours
         return $this;
     }
 
-    public function getMention(): ?mentions
+    public function getMention(): ?Mentions
     {
         return $this->mention;
     }
 
-    public function setMention(?mentions $mention): static
+    public function setMention(?Mentions $mention): static
     {
         $this->mention = $mention;
 
