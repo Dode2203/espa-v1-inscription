@@ -13,21 +13,22 @@ inscription
             PaymentEcolage(id_payment,ref,datePayment,montant,tranche,id_etudiant)
             TypeDroit(id_type_droit,nom)
             Droit(id_droit,id_type_droit,ref,dateVersement,montant,id_etudiant)
-            Niveau(id_niveau,nom,type,grade)
+            
+            Niveau(id_niveau,nom,type,grade) --type 1 accademique // 2 professionnel
             Mention(id_mention,nom)
             NiveauEtudiant(id_niveau_etudiant,id_niveau,id_mention,annee,dateInsertion)  
 
         fonction
-            rechercheEtudiant(nom,prenom)
-            insertionEtudiant()
-            getAProposEtudiant(id_etudiant)
+            rechercheEtudiant(nom,prenom) -- dode --ok
+            insertionEtudiant() -- dode --ok
+            getAProposEtudiant(id_etudiant) -- dode --ok
                 -FormationEtudiant 
                 -niveauEtudiant
-                -propos
-            getAllEcolage(Etudiant)
-            getNiveauSuivant(actuelNiveau)
-            insertionDroit(Etudiant,montant,dateVersement,TypeDroit)
-            isValideEcolage(Etudiant) si etudiant academique toujours valide --- precedent
+                -propos 
+            getAllEcolage(Etudiant) --zo
+            getNiveauSuivant(Etudiant) -- dode --ok
+            insertionDroit(Etudiant,montant,dateVersement,TypeDroit) -- dode
+            isValideEcolage(Etudiant) si etudiant academique toujours valide --- precedent --zo
             getDroit(Etudiant,date) return droit pedagogique et / ou administratif
             isValidDroit(Etudiant,date) superieur ou = a deux  getDroit(Etudiant,date) ->valide
             montantEcolage(Etudiant) toujours 0 pour les academique
@@ -35,4 +36,3 @@ inscription
             paymentEcolage(Etudiant,montant,tranche,date) 
             insererEcolage()
 
-        

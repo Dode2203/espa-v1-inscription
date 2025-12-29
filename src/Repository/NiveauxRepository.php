@@ -40,4 +40,12 @@ class NiveauxRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+    public function getNiveauSuivant(Niveaux $niveauActuel): ?Niveaux
+    {
+        $gradeSuivant = $niveauActuel->getGrade() + 1;
+        return $this->findOneBy([
+            'type' => $niveauActuel->getType(),
+            'grade' => $gradeSuivant
+        ]);
+    }
 }

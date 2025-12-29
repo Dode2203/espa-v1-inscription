@@ -4,16 +4,19 @@ namespace App\Service\proposEtudiant;
 use App\Repository\NiveauEtudiantsRepository;
 use App\Entity\NiveauEtudiants;
 use App\Entity\Etudiants;
+use App\Entity\Niveaux;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
 class NiveauEtudiantsService
 {   private $niveauEtudiantsRepository;
+    private $niveauService;
     private EntityManagerInterface $em;
 
-    public function __construct(NiveauEtudiantsRepository $niveauEtudiantsRepository)
+    public function __construct(NiveauEtudiantsRepository $niveauEtudiantsRepository,NiveauService $niveauService)
     {
         $this->niveauEtudiantsRepository = $niveauEtudiantsRepository;
+        $this->niveauService = $niveauService;
 
     }
     
@@ -27,6 +30,17 @@ class NiveauEtudiantsService
     {
         $niveauEtudiant = $this->niveauEtudiantsRepository->getDernierNiveauParEtudiant($etudiant);
         return $niveauEtudiant;
+    }
+    public function getNiveauEtudiantSuivant(Etudiants $etudiant): ?Niveaux
+    {
+       $niveauEtudiantActuel = $this->getDernierNiveauParEtudiant($etudiant);
+         if (!$niveauEtudiantActuel) {
+              return null;
+         }
+        $niveauEtudiant= $niveauEtudiantActuel->getNiveau();
+        $gradeSuivant = $this->niveauService->getNiveauSuivant($niveauEtudiant);
+        return $gradeSuivant;
+        
     }
     
 }

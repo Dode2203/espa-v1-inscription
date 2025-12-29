@@ -2,6 +2,8 @@
 git add .
 git commit -m "variable et donnee"
 
+
+
 #pour envoyer sur le main 
 
 git push -u origin main
