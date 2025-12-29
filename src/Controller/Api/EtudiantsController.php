@@ -93,13 +93,7 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/{id}/ecolages', name: 'etudiant_ecolages', methods: ['GET'])]
-    /**
-     * Récupère tous les écolages d'un étudiant
-     * 
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function getEcolages(int $id): JsonResponse
+    public function getEcolages(int $id, Request $request): JsonResponse
     {
         try {
             // Récupérer l'étudiant par son ID
@@ -112,8 +106,13 @@ class EtudiantsController extends AbstractController
                 ], 404);
             }
             
-            // Récupérer les écolages de l'étudiant
-            $ecolages = $this->etudiantsService->getAllEcolage($etudiant);
+            $formationId = $request->query->get('formationId');
+            $annee = $request->query->get('annee');
+
+            $formationId = $formationId !== null && $formationId !== '' ? (int)$formationId : null;
+            $annee = $annee !== null && $annee !== '' ? (int)$annee : null;
+
+            $ecolages = $this->etudiantsService->getEcolageSynthese($etudiant, $formationId, $annee);
             
             return new JsonResponse([
                 'status' => 'success',
