@@ -92,4 +92,47 @@ class EtudiantsController extends AbstractController
 
     }
 
+    #[Route('/{id}/ecolages', name: 'etudiant_ecolages', methods: ['GET'])]
+    /**
+     * Récupère tous les écolages d'un étudiant
+     * 
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function getEcolages(int $id): JsonResponse
+    {
+        try {
+            // Récupérer l'étudiant par son ID
+            $etudiant = $this->etudiantsService->getEtudiantById($id);
+            
+            if (!$etudiant) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant non trouvé'
+                ], 404);
+            }
+            
+            // Récupérer les écolages de l'étudiant
+            $ecolages = $this->etudiantsService->getAllEcolage($etudiant);
+            
+            return new JsonResponse([
+                'status' => 'success',
+                'data' => [
+                    'etudiant' => [
+                        'id' => $etudiant->getId(),
+                        'nom' => $etudiant->getNom(),
+                        'prenom' => $etudiant->getPrenom()
+                    ],
+                    'ecolages' => $ecolages
+                ]
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue lors de la récupération des écolages',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
