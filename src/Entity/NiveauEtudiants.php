@@ -26,7 +26,7 @@ class NiveauEtudiants
     private ?int $annee = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $dateinsertion = null;
+    private ?\DateTimeInterface $dateInsertion = null;
 
     public function getId(): ?int
     {
@@ -69,14 +69,14 @@ class NiveauEtudiants
         return $this;
     }
 
-    public function getDateinsertion(): ?\DateTimeInterface
+    public function getDateInsertion(): ?\DateTimeInterface
     {
-        return $this->dateinsertion;
+        return $this->dateInsertion;
     }
 
-    public function setDateinsertion(\DateTimeInterface $dateinsertion): static
+    public function setDateInsertion(\DateTimeInterface $dateInsertion): static
     {
-        $this->dateinsertion = $dateinsertion;
+        $this->dateInsertion = $dateInsertion;
 
         return $this;
     }

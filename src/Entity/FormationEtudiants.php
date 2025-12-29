@@ -23,7 +23,7 @@ class FormationEtudiants
     private ?Formations $formation = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $dateformation = null;
+    private ?\DateTimeInterface $dateFormation = null;
 
     public function getId(): ?int
     {
@@ -56,12 +56,12 @@ class FormationEtudiants
 
     public function getDateformation(): ?\DateTimeInterface
     {
-        return $this->dateformation;
+        return $this->dateFormation;
     }
 
-    public function setDateformation(\DateTimeInterface $dateformation): static
+    public function setDateFormation(\DateTimeInterface $dateFormation): static
     {
-        $this->dateformation = $dateformation;
+        $this->dateFormation = $dateFormation;
 
         return $this;
     }

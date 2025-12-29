@@ -40,4 +40,15 @@ class FormationEtudiantsRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+    public function getDernierFormationEtudiant($etudiant): ?FormationEtudiants
+    {
+        return $this->createQueryBuilder('fe')
+            ->andWhere('fe.etudiant = :etudiant')
+            ->setParameter('etudiant', $etudiant)
+            ->orderBy('fe.dateFormation', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 }

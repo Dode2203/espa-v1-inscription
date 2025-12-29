@@ -19,9 +19,9 @@ inscription
 
         fonction
             rechercheEtudiant(nom,prenom)
-            insertion_etudiant()
+            insertionEtudiant()
             getAProposEtudiant(id_etudiant)
-                -FormationEtudiant
+                -FormationEtudiant 
                 -niveauEtudiant
                 -propos
             getAllEcolage(Etudiant)
