@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\proposEtudiant;
 use App\Repository\FormationEtudiantsRepository;
 use App\Entity\FormationEtudiants;
 use App\Entity\Etudiants;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
-class FormationEtudiantService
+class FormationEtudiantsService
 {   private $formationEtudiantsRepository;
     private EntityManagerInterface $em;
 

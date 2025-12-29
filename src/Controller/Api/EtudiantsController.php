@@ -5,7 +5,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Etudiants;
 use App\Service\JwtTokenManager;
-use App\Service\EtudiantsService;
+use App\Service\proposEtudiant\EtudiantsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\proposEtudiant;
 use App\Repository\EtudiantsRepository;
 use App\Entity\Etudiants;
 use Doctrine\ORM\EntityManagerInterface;
