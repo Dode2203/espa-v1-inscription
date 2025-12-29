@@ -3,6 +3,7 @@
 namespace App\Service\proposEtudiant;
 use App\Repository\EtudiantsRepository;
 use App\Repository\EcolagesRepository;
+use App\Repository\PayementsEcolagesRepository;
 use App\Entity\Etudiants;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -12,14 +13,17 @@ class EtudiantsService
     private $etudiantsRepository;
     private EcolagesRepository $ecolagesRepository;
     private EntityManagerInterface $em;
+    private PayementsEcolagesRepository $payementsEcolagesRepository;
 
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
         EcolagesRepository $ecolagesRepository,
+        PayementsEcolagesRepository $payementsEcolagesRepository,
         EntityManagerInterface $em
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->ecolagesRepository = $ecolagesRepository;
+        $this->payementsEcolagesRepository = $payementsEcolagesRepository;
         $this->em = $em;
     }
     public function rechercheEtudiant ($nom,$prenom): ?Etudiants 
@@ -54,5 +58,59 @@ class EtudiantsService
         }
         
         return $result;
+    }
+
+    public function getEcolageSynthese(Etudiants $etudiant, ?int $formationId = null, ?int $annee = null): array
+    {
+        $rows = $this->payementsEcolagesRepository->getSyntheseEcolageParEtudiant($etudiant->getId(), $formationId, $annee);
+
+        $grouped = [];
+        foreach ($rows as $r) {
+            $key = $r['formation_id'] . '-' . $r['annee_paiement'];
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'formationId' => (int)$r['formation_id'],
+                    'formation' => $r['formation_nom'],
+                    'typeFormation' => $r['type_formation'],
+                    'annee' => (int)$r['annee_paiement'],
+                    'niveau' => null, // à compléter quand la relation existera
+                    'montantTheorique' => $r['montant_ecolage'] !== null ? (float)$r['montant_ecolage'] : null,
+                    'totalPaye' => 0.0,
+                    'difference' => null,
+                    'statut' => 'EN_RETARD',
+                    'detailsPaiements' => [],
+                ];
+            }
+            $grouped[$key]['totalPaye'] += (float)$r['montant_paye'];
+            $grouped[$key]['detailsPaiements'][] = [
+                'paiementId' => (int)$r['paiement_id'],
+                'reference' => $r['reference_paiement'],
+                'date' => $r['date_paiement'],
+                'montant' => (float)$r['montant_paye'],
+                'tranche' => (int)$r['tranche'],
+            ];
+        }
+
+        // Finaliser difference et statut
+        foreach ($grouped as &$g) {
+            if ($g['montantTheorique'] !== null) {
+                $g['difference'] = $g['totalPaye'] - $g['montantTheorique'];
+                $g['statut'] = $g['totalPaye'] >= $g['montantTheorique'] ? 'PAYE' : 'EN_RETARD';
+            } else {
+                $g['difference'] = null;
+                $g['statut'] = 'INCONNU';
+            }
+        }
+        unset($g);
+
+        // Retour trié par annee desc puis formation
+        usort($grouped, function ($a, $b) {
+            if ($a['annee'] === $b['annee']) {
+                return strcmp($a['formation'], $b['formation']);
+            }
+            return $b['annee'] <=> $a['annee'];
+        });
+
+        return array_values($grouped);
     }
 }
