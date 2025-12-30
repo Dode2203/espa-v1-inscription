@@ -103,3 +103,7 @@ INSERT INTO niveau_etudiants (
     2024,
     NOW()
 );
+
+INSERT INTO type_droits (id, nom) VALUES
+(1, 'Pédagogique'),
+(2, 'Administratif');
