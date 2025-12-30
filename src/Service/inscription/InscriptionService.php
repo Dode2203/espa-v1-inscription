@@ -2,7 +2,6 @@
 
 namespace App\Service\droit;
 use App\Entity\Droits;
-use App\Entity\Ecolages;
 use App\Entity\Inscrits;
 use App\Entity\PayementsEcolages;
 use App\Entity\Utilisateur;

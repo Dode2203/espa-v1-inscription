@@ -21,14 +21,16 @@ class Propos
     #[ORM\Column(length: 255)]
     private ?string $email = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $sexe = null;
 
     /**
      * @var Collection<int, Etudiants>
      */
     #[ORM\OneToMany(targetEntity: Etudiants::class, mappedBy: 'propos')]
     private Collection $propos;
+
+    #[ORM\ManyToOne(inversedBy: 'propos')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Sexes $sexe = null;
 
     public function __construct()
     {
@@ -64,17 +66,6 @@ class Propos
         return $this;
     }
 
-    public function getSexe(): ?string
-    {
-        return $this->sexe;
-    }
-
-    public function setSexe(string $sexe): static
-    {
-        $this->sexe = $sexe;
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, Etudiants>
@@ -102,6 +93,18 @@ class Propos
                 $propo->setPropos(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSexe(): ?Sexes
+    {
+        return $this->sexe;
+    }
+
+    public function setSexe(?Sexes $sexe): static
+    {
+        $this->sexe = $sexe;
 
         return $this;
     }

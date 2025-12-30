@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20251230152347 extends AbstractMigration
+final class Version20251230155550 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -51,8 +51,10 @@ final class Version20251230152347 extends AbstractMigration
         $this->addSql('CREATE TABLE payements_ecolages (id SERIAL NOT NULL, etudiant_id INT NOT NULL, utilisateur_id INT NOT NULL, reference VARCHAR(255) NOT NULL, datepayements TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, montant DOUBLE PRECISION NOT NULL, tranche INT NOT NULL, annee INT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_A6D31440DDEAB1A3 ON payements_ecolages (etudiant_id)');
         $this->addSql('CREATE INDEX IDX_A6D31440FB88E14F ON payements_ecolages (utilisateur_id)');
-        $this->addSql('CREATE TABLE propos (id SERIAL NOT NULL, adresse VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, sexe VARCHAR(50) NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE propos (id SERIAL NOT NULL, sexe_id INT NOT NULL, adresse VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE INDEX IDX_252FC726448F3B3C ON propos (sexe_id)');
         $this->addSql('CREATE TABLE role (id SERIAL NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE sexes (id SERIAL NOT NULL, nom VARCHAR(50) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE status (id SERIAL NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE type_droits (id SERIAL NOT NULL, nom VARCHAR(100) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE type_formations (id SERIAL NOT NULL, nom VARCHAR(100) NOT NULL, PRIMARY KEY(id))');
@@ -77,6 +79,7 @@ final class Version20251230152347 extends AbstractMigration
         $this->addSql('ALTER TABLE parcours ADD CONSTRAINT FK_99B1DEE37A4147F0 FOREIGN KEY (mention_id) REFERENCES mentions (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE payements_ecolages ADD CONSTRAINT FK_A6D31440DDEAB1A3 FOREIGN KEY (etudiant_id) REFERENCES etudiants (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE payements_ecolages ADD CONSTRAINT FK_A6D31440FB88E14F FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE propos ADD CONSTRAINT FK_252FC726448F3B3C FOREIGN KEY (sexe_id) REFERENCES sexes (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE utilisateur ADD CONSTRAINT FK_1D1C63B3D60322AC FOREIGN KEY (role_id) REFERENCES role (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE utilisateur ADD CONSTRAINT FK_1D1C63B36BF700BD FOREIGN KEY (status_id) REFERENCES status (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
     }
@@ -103,6 +106,7 @@ final class Version20251230152347 extends AbstractMigration
         $this->addSql('ALTER TABLE parcours DROP CONSTRAINT FK_99B1DEE37A4147F0');
         $this->addSql('ALTER TABLE payements_ecolages DROP CONSTRAINT FK_A6D31440DDEAB1A3');
         $this->addSql('ALTER TABLE payements_ecolages DROP CONSTRAINT FK_A6D31440FB88E14F');
+        $this->addSql('ALTER TABLE propos DROP CONSTRAINT FK_252FC726448F3B3C');
         $this->addSql('ALTER TABLE utilisateur DROP CONSTRAINT FK_1D1C63B3D60322AC');
         $this->addSql('ALTER TABLE utilisateur DROP CONSTRAINT FK_1D1C63B36BF700BD');
         $this->addSql('DROP TABLE bacc');
@@ -120,6 +124,7 @@ final class Version20251230152347 extends AbstractMigration
         $this->addSql('DROP TABLE payements_ecolages');
         $this->addSql('DROP TABLE propos');
         $this->addSql('DROP TABLE role');
+        $this->addSql('DROP TABLE sexes');
         $this->addSql('DROP TABLE status');
         $this->addSql('DROP TABLE type_droits');
         $this->addSql('DROP TABLE type_formations');
