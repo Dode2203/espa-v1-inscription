@@ -67,6 +67,7 @@ class EtudiantsService
         $grouped = [];
         foreach ($rows as $r) {
             $key = $r['formation_id'] . '-' . $r['annee_paiement'];
+            
             if (!isset($grouped[$key])) {
                 $grouped[$key] = [
                     'formationId' => (int)$r['formation_id'],
@@ -81,6 +82,7 @@ class EtudiantsService
                     'detailsPaiements' => [],
                 ];
             }
+            
             $grouped[$key]['totalPaye'] += (float)$r['montant_paye'];
             $grouped[$key]['detailsPaiements'][] = [
                 'paiementId' => (int)$r['paiement_id'],
