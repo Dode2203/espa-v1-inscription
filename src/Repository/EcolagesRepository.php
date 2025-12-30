@@ -28,6 +28,15 @@ class EcolagesRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    //   public function findEcolagesByEtudiant($etudiant): array
+    // {
+    //     return $this->createQueryBuilder('e')
+    //         ->where('e.etudiant = :etudiant')
+    //         ->setParameter('etudiant', $etudiant)
+    //         ->orderBy('e.dateEcolage', 'DESC')
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 
     //    /**
     //     * @return Ecolages[] Returns an array of Ecolages objects

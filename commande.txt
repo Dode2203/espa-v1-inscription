@@ -1,4 +1,5 @@
 # pour creer une nouvelle base de donne
+composer install
 php bin/console doctrine:database:create
 \c espa;
 

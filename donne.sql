@@ -77,3 +77,33 @@ VALUES
 (4, 4, 900.0, '2025-03-01'),  -- Tecnologie Information
 (5, 5, 1000.0, '2025-03-10'); -- Maintenance automobile
 
+INSERT INTO niveaux (nom, type, grade) VALUES
+('Licence 1', 1, 1),
+('Licence 2', 1, 2),
+('Licence 3', 1, 3),
+('Master 1', 1, 4),
+('Master 2', 1, 5);
+
+INSERT INTO mentions (id, nom) VALUES
+(1, 'Telecommunications'),
+(2, 'Genie Logiciel'),
+(3, 'Electronique');
+
+
+INSERT INTO niveau_etudiants (
+    niveau_id,
+    mention_id,
+    etudiant_id,
+    annee,
+    date_insertion
+) VALUES (
+    1,
+    1,
+    1,
+    2024,
+    NOW()
+);
+
+INSERT INTO type_droits (id, nom) VALUES
+(1, 'Pédagogique'),
+(2, 'Administratif');

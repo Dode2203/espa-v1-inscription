@@ -28,6 +28,10 @@ class NiveauEtudiants
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateInsertion = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Etudiants $etudiant = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -77,6 +81,18 @@ class NiveauEtudiants
     public function setDateInsertion(\DateTimeInterface $dateInsertion): static
     {
         $this->dateInsertion = $dateInsertion;
+
+        return $this;
+    }
+
+    public function getEtudiant(): ?Etudiants
+    {
+        return $this->etudiant;
+    }
+
+    public function setEtudiant(?Etudiants $etudiant): static
+    {
+        $this->etudiant = $etudiant;
 
         return $this;
     }

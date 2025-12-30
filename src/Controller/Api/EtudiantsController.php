@@ -6,6 +6,7 @@ namespace App\Controller\Api;
 use App\Entity\Etudiants;
 use App\Service\JwtTokenManager;
 use App\Service\proposEtudiant\EtudiantsService;
+use App\Service\proposEtudiant\NiveauEtudiantsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,16 +21,20 @@ class EtudiantsController extends AbstractController
 {
     private ParameterBagInterface $params;
     private EntityManagerInterface $em;
+
     private EtudiantsService $etudiantsService;
 
     private JwtTokenManager $jwtTokenManager;
+    
+    private NiveauEtudiantsService $niveauEtudiantsService;
 
-    public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params)
+    public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService)
     {
         $this->em = $em;
         $this->etudiantsService = $etudiantsService;
         $this->jwtTokenManager = $jwtTokenManager;
         $this->params = $params;
+        $this->niveauEtudiantsService = $niveauEtudiantsService;
     }
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
     // #[TokenRequired(['Admin'])]
@@ -58,17 +63,21 @@ class EtudiantsController extends AbstractController
             $nom = $data['nom'];
             $prenom = $data['prenom'];
 
-            $user = $this->etudiantsService->rechercheEtudiant($nom, $prenom);
-            if (!$user) {
+            $etudiant = $this->etudiantsService->rechercheEtudiant($nom, $prenom);
+            $niveauActuel = $this->niveauEtudiantsService->getDernierNiveauParEtudiant($etudiant);
+            $niveauEtudiantSuivant = $this->niveauEtudiantsService->getNiveauEtudiantSuivant($etudiant);
+            if (!$etudiant) {
                 return new JsonResponse([
                     'status' => 'error',
                     'message' => 'Étudiant non trouvé'
                 ], 404);
             }
             $claims = [
-                    'id' => $user->getId(),
-                    'nom' => $user->getNom(),
-                    'prenom' => $user->getPrenom(),
+                    'id' => $etudiant->getId(),
+                    'nom' => $etudiant->getNom(),
+                    'prenom' => $etudiant->getPrenom(),
+                    'niveau_actuel' => $niveauActuel ? $niveauActuel->getNiveau()->getNom() : null, 
+                    'niveau_suivant' => $niveauEtudiantSuivant ? $niveauEtudiantSuivant->getNom() : null
             ];
 
             return new JsonResponse([
