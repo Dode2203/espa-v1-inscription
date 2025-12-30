@@ -25,6 +25,9 @@ class Inscriptions
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $utilisateur = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $descriptions = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -62,6 +65,18 @@ class Inscriptions
     public function setUtilisateur(?Utilisateur $utilisateur): static
     {
         $this->utilisateur = $utilisateur;
+
+        return $this;
+    }
+
+    public function getDescriptions(): ?string
+    {
+        return $this->descriptions;
+    }
+
+    public function setDescriptions(string $descriptions): static
+    {
+        $this->descriptions = $descriptions;
 
         return $this;
     }

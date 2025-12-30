@@ -8,7 +8,7 @@ INSERT INTO Status (id, name) VALUES (2, 'Inactif');
 
 
 
-INSERT INTO Utilisateur (id, email, password, prenom, nom, is_active, is_admin)
+INSERT INTO Utilisateur (id, email, mdp, prenom, nom, status_id, role_id)
 VALUES (
     4,
     'admin@gmail.com',
