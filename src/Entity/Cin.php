@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\CinRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: CinRepository::class)]
 class Cin
@@ -28,6 +30,13 @@ class Cin
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $nouveauDate = null;
+    #[ORM\OneToMany(mappedBy: 'cin', targetEntity: Etudiants::class)]
+    private Collection $etudiants;
+
+    public function __construct() {
+        $this->etudiants = new ArrayCollection();
+    }
+
 
     public function getId(): ?int
     {
