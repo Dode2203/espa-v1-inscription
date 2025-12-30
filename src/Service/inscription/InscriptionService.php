@@ -2,12 +2,11 @@
 
 namespace App\Service\droit;
 use App\Entity\Droits;
-use App\Entity\Ecolages;
-use App\Entity\Inscriptions;
+use App\Entity\Inscrits;
 use App\Entity\PayementsEcolages;
 use App\Entity\Utilisateur;
 use App\Entity\Etudiants;
-use App\Repository\InscriptionsRepository;
+use App\Repository\InscritsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\droit\DroitService;
 use App\Service\ecolage\PaymentEcolageService;
@@ -22,7 +21,7 @@ class InscriptionService
    
     private EntityManagerInterface $em;
 
-    public function __construct(InscriptionsRepository $inscriptionsRepository,DroitService $droitService,PaymentEcolageService $paymentEcolageService,NiveauEtudiantsService $niveauEtudiantsService)
+    public function __construct(InscritsRepository $inscriptionsRepository,DroitService $droitService,PaymentEcolageService $paymentEcolageService,NiveauEtudiantsService $niveauEtudiantsService)
     {
         $this->inscriptionRepository = $inscriptionsRepository;
         $this->droitService = $droitService;
@@ -31,7 +30,7 @@ class InscriptionService
 
 
     }
-    public function insertInscription(Inscriptions $inscription): Inscriptions
+    public function insertInscription(Inscrits $inscription): Inscrits
     {
         $this->em->persist($inscription);
         $this->em->flush();
@@ -45,7 +44,7 @@ class InscriptionService
         Droits $administratif,
         PayementsEcolages $payementsEcolages,
         bool $passant
-    ): Inscriptions
+    ): Inscrits
     {
         $this->em->beginTransaction();
 
@@ -56,7 +55,7 @@ class InscriptionService
             }
             
             // Création inscription
-            $inscription = new Inscriptions();
+            $inscription = new Inscrits();
             $inscription->setEtudiant($etudiant);
             $inscription->setUtilisateur($utilisateur);
 

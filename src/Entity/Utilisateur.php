@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UtilisateurRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Role;
 use Doctrine\DBAL\Types\Types;   //
@@ -38,6 +40,19 @@ class Utilisateur
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
+
+    /**
+     * @var Collection<int, Inscrits>
+     */
+    #[ORM\OneToMany(targetEntity: Inscrits::class, mappedBy: 'utilisateur')]
+    private Collection $inscrits;
+
+    public function __construct()
+    {
+        $this->inscrits = new ArrayCollection();
+    }
+
+
 
 
     public function getId(): ?int
@@ -123,4 +138,36 @@ class Utilisateur
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, Inscrits>
+     */
+    public function getInscrits(): Collection
+    {
+        return $this->inscrits;
+    }
+
+    public function addInscrit(Inscrits $inscrit): static
+    {
+        if (!$this->inscrits->contains($inscrit)) {
+            $this->inscrits->add($inscrit);
+            $inscrit->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInscrit(Inscrits $inscrit): static
+    {
+        if ($this->inscrits->removeElement($inscrit)) {
+            // set the owning side to null (unless already changed)
+            if ($inscrit->getUtilisateur() === $this) {
+                $inscrit->setUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    
 }

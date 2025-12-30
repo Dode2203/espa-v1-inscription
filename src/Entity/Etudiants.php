@@ -28,10 +28,11 @@ class Etudiants
     #[ORM\Column(length: 255)]
     private ?string $lieuNaissance = null;
 
-    #[ORM\ManyToOne(inversedBy: 'cin')]
+    #[ORM\ManyToOne(inversedBy: 'etudiants')]
     private ?Cin $cin = null;
 
-    #[ORM\ManyToOne(inversedBy: 'bacc')]
+
+    #[ORM\ManyToOne(inversedBy: 'etudiants')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Bacc $bacc = null;
 
@@ -39,23 +40,28 @@ class Etudiants
     #[ORM\JoinColumn(nullable: false)]
     private ?Propos $propos = null;
 
-    /**
-     * @var Collection<int, FormationEtudiants>
-     */
-    #[ORM\OneToMany(targetEntity: FormationEtudiants::class, mappedBy: 'etudiants')]
-    private Collection $etudiant;
+    #[ORM\OneToMany(mappedBy: 'etudiant', targetEntity: FormationEtudiants::class)]
+    private Collection $formationEtudiants;
+
+    #[ORM\OneToMany(mappedBy: 'etudiant', targetEntity: PayementsEcolages::class)]
+    private Collection $payementsEcolages;
 
     /**
-     * @var Collection<int, PayementsEcolages>
+     * @var Collection<int, Inscrits>
      */
-    #[ORM\OneToMany(targetEntity: PayementsEcolages::class, mappedBy: 'etudiant')]
-    private Collection $etudiants;
+    #[ORM\OneToMany(targetEntity: Inscrits::class, mappedBy: 'etudiant')]
+    private Collection $inscrits;
+
+    
 
     public function __construct()
     {
-        $this->etudiant = new ArrayCollection();
-        $this->etudiants = new ArrayCollection();
+        $this->formationEtudiants = new ArrayCollection();
+        $this->payementsEcolages = new ArrayCollection();
+        $this->inscrits = new ArrayCollection();
+        
     }
+
 
     public function getId(): ?int
     {
@@ -147,40 +153,35 @@ class Etudiants
     }
 
     /**
-     * @return Collection<int, FormationEtudiants>
+     * @return Collection<int, Inscrits>
      */
-    public function getEtudiant(): Collection
+    public function getInscrits(): Collection
     {
-        return $this->etudiant;
+        return $this->inscrits;
     }
 
-    public function addEtudiant(FormationEtudiants $etudiant): static
+    public function addInscrit(Inscrits $inscrit): static
     {
-        if (!$this->etudiant->contains($etudiant)) {
-            $this->etudiant->add($etudiant);
-            $etudiant->setEtudiants($this);
+        if (!$this->inscrits->contains($inscrit)) {
+            $this->inscrits->add($inscrit);
+            $inscrit->setEtudiant($this);
         }
 
         return $this;
     }
 
-    public function removeEtudiant(FormationEtudiants $etudiant): static
+    public function removeInscrit(Inscrits $inscrit): static
     {
-        if ($this->etudiant->removeElement($etudiant)) {
+        if ($this->inscrits->removeElement($inscrit)) {
             // set the owning side to null (unless already changed)
-            if ($etudiant->getEtudiants() === $this) {
-                $etudiant->setEtudiants(null);
+            if ($inscrit->getEtudiant() === $this) {
+                $inscrit->setEtudiant(null);
             }
         }
 
         return $this;
     }
 
-    /**
-     * @return Collection<int, PayementsEcolages>
-     */
-    public function getEtudiants(): Collection
-    {
-        return $this->etudiants;
-    }
+    
+    
 }

@@ -26,9 +26,10 @@ class PayementsEcolages
     #[ORM\Column]
     private ?int $tranche = null;
 
-    #[ORM\ManyToOne(inversedBy: 'etudiants')]
+    #[ORM\ManyToOne(inversedBy: 'payementsEcolages')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Etudiants $etudiant = null;
+
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]

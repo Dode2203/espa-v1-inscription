@@ -1,4 +1,6 @@
 
+\c digitalisation
+
 INSERT INTO role (id, name) VALUES (1, 'Admin');
 INSERT INTO role (id, name) VALUES (2, 'Utilisateur');
 
@@ -8,7 +10,7 @@ INSERT INTO Status (id, name) VALUES (2, 'Inactif');
 
 
 
-INSERT INTO Utilisateur (id, email, password, prenom, nom, is_active, is_admin)
+INSERT INTO Utilisateur (id, email, mdp, prenom, nom, status_id, role_id)
 VALUES (
     4,
     'admin@gmail.com',
@@ -63,7 +65,7 @@ VALUES
 (5, 'Maintenance automobile', 2);-- Professionnel
 
 -- Insertion des données avec id manuel
-INSERT INTO formation_etudiants (id, etudiants_id, formation_id, date_formation)
+INSERT INTO formation_etudiants (id, etudiant_id, formation_id, date_formation)
 VALUES
 (1, 1, 1, '2025-01-10'), 
 (2, 2, 2, '2025-02-15'); 
