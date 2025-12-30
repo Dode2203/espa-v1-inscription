@@ -116,12 +116,14 @@ class EtudiantsController extends AbstractController
             }
             
             $formationId = $request->query->get('formationId');
-            $annee = $request->query->get('annee');
+            $anneeScolaire = $request->query->get('anneeScolaire');
+            $niveauId = $request->query->get('niveauId');
 
             $formationId = $formationId !== null && $formationId !== '' ? (int)$formationId : null;
-            $annee = $annee !== null && $annee !== '' ? (int)$annee : null;
+            $anneeScolaire = $anneeScolaire !== null && $anneeScolaire !== '' ? $anneeScolaire : null;
+            $niveauId = $niveauId !== null && $niveauId !== '' ? (int)$niveauId : null;
 
-            $ecolages = $this->etudiantsService->getEcolageSynthese($etudiant, $formationId, $annee);
+            $ecolages = $this->etudiantsService->getEcolageSynthese($etudiant, $formationId, $anneeScolaire, $niveauId);
             
             return new JsonResponse([
                 'status' => 'success',
