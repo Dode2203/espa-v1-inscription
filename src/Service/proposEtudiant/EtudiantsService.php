@@ -60,9 +60,9 @@ class EtudiantsService
         return $result;
     }
 
-    public function getEcolageSynthese(Etudiants $etudiant, ?int $formationId = null, ?int $annee = null): array
+    public function getEcolageSynthese(Etudiants $etudiant, ?int $formationId = null, ?string $anneeScolaire = null, ?int $niveauId = null): array
     {
-        $rows = $this->payementsEcolagesRepository->getSyntheseEcolageParEtudiant($etudiant->getId(), $formationId, $annee);
+        $rows = $this->payementsEcolagesRepository->getSyntheseEcolageParEtudiant($etudiant->getId(), $formationId, $anneeScolaire, $niveauId);
 
         $grouped = [];
         foreach ($rows as $r) {
@@ -73,8 +73,8 @@ class EtudiantsService
                     'formationId' => (int)$r['formation_id'],
                     'formation' => $r['formation_nom'],
                     'typeFormation' => $r['type_formation'],
-                    'annee' => (int)$r['annee_paiement'],
-                    'niveau' => null, // à compléter quand la relation existera
+                    'annee' => $r['annee_paiement'],
+                    'niveau' => $r['niveau_nom'],
                     'montantTheorique' => $r['montant_ecolage'] !== null ? (float)$r['montant_ecolage'] : null,
                     'totalPaye' => 0.0,
                     'difference' => null,

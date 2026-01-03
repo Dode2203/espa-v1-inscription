@@ -16,7 +16,7 @@ class PayementsEcolagesRepository extends ServiceEntityRepository
         parent::__construct($registry, PayementsEcolages::class);
     }
 
-    public function getSyntheseEcolageParEtudiant(int $etudiantId, ?int $formationId = null, ?int $annee = null): array
+    public function getSyntheseEcolageParEtudiant(int $etudiantId, ?int $formationId = null, ?string $anneeScolaire = null, ?int $niveauId = null): array
     {
         $conn = $this->getEntityManager()->getConnection();
         $sql = "
@@ -27,18 +27,21 @@ class PayementsEcolagesRepository extends ServiceEntityRepository
                 f.id AS formation_id,
                 f.nom AS formation_nom,
                 tf.nom AS type_formation,
+                n.nom AS niveau_nom,
                 ec.montant AS montant_ecolage,
                 pe.id AS paiement_id,
                 pe.reference AS reference_paiement,
                 pe.datepayements AS date_paiement,
                 pe.montant AS montant_paye,
                 pe.tranche AS tranche,
-                EXTRACT(YEAR FROM pe.datepayements) AS annee_paiement
+                pe.annee AS annee_paiement
             FROM etudiants e
             INNER JOIN payements_ecolages pe ON pe.etudiant_id = e.id
             INNER JOIN formation_etudiants fe ON fe.etudiants_id = e.id
             INNER JOIN formations f ON f.id = fe.formation_id
             INNER JOIN type_formations tf ON tf.id = f.type_formation_id
+            INNER JOIN niveau_etudiants ne ON ne.etudiant_id = e.id
+            INNER JOIN niveaux n ON n.id = ne.niveau_id
             LEFT JOIN ecolages ec ON ec.formations_id = f.id
             WHERE e.id = :etudiantId
         ";
@@ -47,9 +50,13 @@ class PayementsEcolagesRepository extends ServiceEntityRepository
             $sql .= " AND f.id = :formationId";
             $params['formationId'] = $formationId;
         }
-        if ($annee !== null) {
-            $sql .= " AND EXTRACT(YEAR FROM pe.datepayements) = :annee";
-            $params['annee'] = $annee;
+        if ($anneeScolaire !== null) {
+            $sql .= " AND pe.annee = :anneeScolaire";
+            $params['anneeScolaire'] = $anneeScolaire;
+        }
+        if ($niveauId !== null) {
+            $sql .= " AND n.id = :niveauId";
+            $params['niveauId'] = $niveauId;
         }
         $sql .= " ORDER BY formation_nom, annee_paiement DESC, pe.datepayements DESC";
 

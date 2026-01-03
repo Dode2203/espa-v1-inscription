@@ -50,6 +50,10 @@ class InscriptionService
 
         try {
             // Avant ca on doit verifier l'ecolage 
+            if (!$this->ecolageService->isValideEcolagePourReinscription($etudiant)) {
+                throw new Exception('Ecolage incomplet pour reinscription');
+            }
+            
             // Création inscription
             $inscription = new Inscrits();
             $inscription->setEtudiant($etudiant);
