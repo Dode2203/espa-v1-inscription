@@ -18,15 +18,18 @@ class Sexes
     #[ORM\Column(length: 50)]
     private ?string $nom = null;
 
+    
+
     /**
-     * @var Collection<int, Propos>
+     * @var Collection<int, Etudiants>
      */
-    #[ORM\OneToMany(targetEntity: Propos::class, mappedBy: 'sexe')]
-    private Collection $propos;
+    #[ORM\OneToMany(targetEntity: Etudiants::class, mappedBy: 'sexe')]
+    private Collection $etudiants;
 
     public function __construct()
     {
         $this->propos = new ArrayCollection();
+        $this->etudiants = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -49,27 +52,32 @@ class Sexes
     /**
      * @return Collection<int, Propos>
      */
-    public function getPropos(): Collection
+    
+
+    /**
+     * @return Collection<int, Etudiants>
+     */
+    public function getEtudiants(): Collection
     {
-        return $this->propos;
+        return $this->etudiants;
     }
 
-    public function addPropo(Propos $propo): static
+    public function addEtudiant(Etudiants $etudiant): static
     {
-        if (!$this->propos->contains($propo)) {
-            $this->propos->add($propo);
-            $propo->setSexe($this);
+        if (!$this->etudiants->contains($etudiant)) {
+            $this->etudiants->add($etudiant);
+            $etudiant->setSexe($this);
         }
 
         return $this;
     }
 
-    public function removePropo(Propos $propo): static
+    public function removeEtudiant(Etudiants $etudiant): static
     {
-        if ($this->propos->removeElement($propo)) {
+        if ($this->etudiants->removeElement($etudiant)) {
             // set the owning side to null (unless already changed)
-            if ($propo->getSexe() === $this) {
-                $propo->setSexe(null);
+            if ($etudiant->getSexe() === $this) {
+                $etudiant->setSexe(null);
             }
         }
 

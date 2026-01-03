@@ -13,3 +13,4 @@ git branch Dode_back
 #Pour changer de branche
 git checkout Dode_back
 
+git checkout main

@@ -43,7 +43,7 @@ class FormationEtudiantsRepository extends ServiceEntityRepository
     public function getDernierFormationEtudiant($etudiant): ?FormationEtudiants
     {
         return $this->createQueryBuilder('fe')
-            ->andWhere('fe.etudiants = :etudiant')
+            ->andWhere('fe.etudiant = :etudiant')
             ->setParameter('etudiant', $etudiant)
             ->orderBy('fe.dateFormation', 'DESC')
             ->setMaxResults(1)

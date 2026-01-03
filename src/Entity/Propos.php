@@ -28,9 +28,6 @@ class Propos
     #[ORM\OneToMany(targetEntity: Etudiants::class, mappedBy: 'propos')]
     private Collection $propos;
 
-    #[ORM\ManyToOne(inversedBy: 'propos')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Sexes $sexe = null;
 
     public function __construct()
     {
@@ -97,15 +94,4 @@ class Propos
         return $this;
     }
 
-    public function getSexe(): ?Sexes
-    {
-        return $this->sexe;
-    }
-
-    public function setSexe(?Sexes $sexe): static
-    {
-        $this->sexe = $sexe;
-
-        return $this;
-    }
 }

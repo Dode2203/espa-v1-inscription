@@ -52,6 +52,10 @@ class Etudiants
     #[ORM\OneToMany(targetEntity: Inscrits::class, mappedBy: 'etudiant')]
     private Collection $inscrits;
 
+    #[ORM\ManyToOne(inversedBy: 'etudiants')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Sexes $sexe = null;
+
     
 
     public function __construct()
@@ -178,6 +182,18 @@ class Etudiants
                 $inscrit->setEtudiant(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSexe(): ?Sexes
+    {
+        return $this->sexe;
+    }
+
+    public function setSexe(?Sexes $sexe): static
+    {
+        $this->sexe = $sexe;
 
         return $this;
     }

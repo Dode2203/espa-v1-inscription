@@ -4,10 +4,8 @@ namespace App\Service\droit;
 use App\Entity\Droits;
 use App\Entity\Utilisateur;
 use App\Repository\DroitsRepository;
-use App\Repository\EtudiantsRepository;
 use App\Entity\Etudiants;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\TypeDroitsRepository;
 use Exception;
 
 class DroitService
