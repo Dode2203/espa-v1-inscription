@@ -33,8 +33,11 @@ class PaymentEcolageService
         $this->niveauEtudiantsService = $niveauEtudiantsService;
     }
 
-    public function insertPaymentEcolage(Utilisateur $utilisateur,Etudiants $etudiant,PayementsEcolages $payementsEcolages): PayementsEcolages
+    public function insertPaymentEcolage(Utilisateur $utilisateur,Etudiants $etudiant,PayementsEcolages $payementsEcolages): ?PayementsEcolages
     {
+        if ($payementsEcolages->getMontant()<=0) {
+            return null;
+        }
         $payementsEcolages->setUtilisateur($utilisateur);
         $payementsEcolages->setEtudiant($etudiant);
         $this->em->persist($payementsEcolages);

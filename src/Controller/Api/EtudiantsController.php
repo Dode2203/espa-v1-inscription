@@ -3,7 +3,11 @@
 namespace App\Controller\Api;
 
 
+use App\Entity\Droits;
 use App\Entity\Etudiants;
+use App\Entity\Inscrits;
+use App\Entity\PayementsEcolages;
+use App\Service\inscription\InscriptionService;
 use App\Service\JwtTokenManager;
 use App\Service\proposEtudiant\EtudiantsService;
 use App\Service\proposEtudiant\FormationEtudiantsService;
@@ -32,7 +36,9 @@ class EtudiantsController extends AbstractController
     
     private FormationEtudiantsService $formationEtudiantsService;
 
-    public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService)
+    private InscriptionService $inscriptionService;
+
+    public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService,InscriptionService $inscriptionService)
     {
         $this->em = $em;
         $this->etudiantsService = $etudiantsService;
@@ -40,6 +46,7 @@ class EtudiantsController extends AbstractController
         $this->params = $params;
         $this->niveauEtudiantsService = $niveauEtudiantsService;
         $this->formationEtudiantsService = $formationEtudiantsService;
+        $this->inscriptionService = $inscriptionService;
     }
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
     // #[TokenRequired(['Admin'])]
@@ -174,5 +181,96 @@ class EtudiantsController extends AbstractController
                 'details' => $e->getMessage()
             ], 500);
         }
+    }
+    #[Route('/inscrire', name: 'etudiant_inscrire', methods: ['POST'])]
+    #[TokenRequired(['Utilisateur'])]
+    public function inscrire(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            $requiredFields = ['idEtudiant','typeFormation','refAdmin', 'dateAdmin','montantAdmin','refPedag','datePedag','montantPedag','passant'];
+            
+            if(isset($data['typeFormation']) && $data['typeFormation']=="Professionnel"){
+                $requiredFields[]='montantEcolage';
+                $requiredFields[]='refEcolage';
+                $requiredFields[]='dateEcolage';
+
+            }
+            $missingFields = [];
+
+            foreach ($requiredFields as $field) {
+                if (!isset($data[$field])) {
+                    $missingFields[] = $field;
+                }
+            }
+
+            if (!empty($missingFields)) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Champs requis manquants '. implode(', ', $missingFields),
+                    'missingFields' => $missingFields
+                ], 400);
+            }
+            $passant = $data['passant'];
+            $token = $this->jwtTokenManager->extractTokenFromRequest($request);
+            $arrayToken = $this->jwtTokenManager->extractClaimsFromToken($token);
+            $idUser = $arrayToken['id']; // Récupérer l'id de l'utilisateur à partir du token
+            $idEtudiant= $data['idEtudiant'];
+            
+            $annee = date('Y');
+            
+            $pedagogique = new Droits();
+            $montantPedag = $data['montantPedag'];
+            $refPedag = $data['refPedag'];
+            $datePedagString = $data['datePedag'];
+            $datePedag = new \DateTime($datePedagString);
+            $pedagogique->setAnatiny($annee,$montantPedag,$refPedag, $datePedag);
+
+            $administratif = new Droits();
+            $montantAdmin = $data['montantAdmin'];
+            $refAdmin = $data['refAdmin'];
+            $dateAdminString = $data['dateAdmin'];
+            $dateAdmin= new \DateTime($dateAdminString);
+            $administratif->setAnatiny($annee,$montantAdmin,$refAdmin, $dateAdmin);
+
+            $payementEcolage= new PayementsEcolages();
+            $montantEcolage = (float) ($data['montantEcolage'] ?? 0);
+            $refEcolage = $data['refEcolage'];
+            $dateEcolageString = $data['dateEcolage'];
+            $dateEcolage= new \DateTime($dateEcolageString);
+            $payementEcolage->setAnatiny($annee,1,$montantEcolage,$refEcolage, $dateEcolage);
+            
+
+            $inscription = $this->inscriptionService->inscrireEtudiantId($idEtudiant,$idUser,$pedagogique,$administratif,$payementEcolage,$passant);
+
+            return new JsonResponse([
+                'status' => 'success',
+                'data' => [
+                    'inscription' => [
+                        'id' => $inscription->getId(),
+                        // 'nom' => $etudiant->getNom(),
+                        // 'prenom' => $etudiant->getPrenom()
+                    ],
+                    // 'ecolages' => $ecolages
+                ]
+            ], 200);
+
+    
+
+        } catch (\Exception $e) {
+                if ($e->getMessage() === 'Inactif') {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'message' => 'Etudiants inactif'
+                    ], 401); 
+                }
+
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }
+
     }
 }

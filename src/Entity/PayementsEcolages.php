@@ -126,4 +126,15 @@ class PayementsEcolages
 
         return $this;
     }
+    public function setAnatiny(int $annee,int $tranche,float $montant,string $reference,\DateTimeInterface $datepayements): static
+    {
+        $this->annee = $annee;
+        $this->tranche = $tranche;
+        $this->montant = $montant;
+        $this->reference = $reference;
+        $this->datepayements = $datepayements;
+
+        return $this;
+    }
+    
 }
