@@ -37,7 +37,7 @@ class PayementsEcolagesRepository extends ServiceEntityRepository
                 pe.annee AS annee_paiement
             FROM etudiants e
             INNER JOIN payements_ecolages pe ON pe.etudiant_id = e.id
-            INNER JOIN formation_etudiants fe ON fe.etudiants_id = e.id
+            INNER JOIN formation_etudiants fe ON fe.etudiant_id = e.id
             INNER JOIN formations f ON f.id = fe.formation_id
             INNER JOIN type_formations tf ON tf.id = f.type_formation_id
             INNER JOIN niveau_etudiants ne ON ne.etudiant_id = e.id
