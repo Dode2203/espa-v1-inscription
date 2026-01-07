@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Ecolages;
+use App\Entity\Formations;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -28,6 +29,15 @@ class EcolagesRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findEcolagesByFormation(Formations $formation): array
+{
+    return $this->createQueryBuilder('e')
+        ->where('e.formations = :formation')
+        ->setParameter('formation', $formation)
+        ->getQuery()
+        ->getResult();
+}
     //   public function findEcolagesByEtudiant($etudiant): array
     // {
     //     return $this->createQueryBuilder('e')

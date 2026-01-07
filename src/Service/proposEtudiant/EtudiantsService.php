@@ -5,6 +5,8 @@ use App\Repository\EtudiantsRepository;
 use App\Repository\EcolagesRepository;
 use App\Repository\PayementsEcolagesRepository;
 use App\Entity\Etudiants;
+use App\Entity\FormationEtudiants;
+use App\Entity\Formations;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
@@ -42,77 +44,100 @@ class EtudiantsService
         return $this->etudiantsRepository->find($id);
     }
     
-    public function getAllEcolage(Etudiants $etudiant): array
-    {
-        $ecolages = $this->ecolagesRepository->findEcolagesByEtudiant($etudiant->getId());
+    public function getAllEcolage(Etudiants $etudiant, ?int $anneeScolaire = null): array
+{
+    // 1. Récupérer les formations de l'étudiant
+    $formations = $this->getFormationsAvecEcolages($etudiant);
+    
+    // 2. Récupérer les paiements de l'étudiant
+    $paiements = $this->getPaiementsParFormation($etudiant, $anneeScolaire);
+    
+    // 3. Calculer les totaux et statuts
+    return $this->calculerSynthese($formations, $paiements);
+}
+
+private function getFormationsAvecEcolages(Etudiants $etudiant): array
+{
+    $formations = $this->em->getRepository(FormationEtudiants::class)
+        ->findFormationsByEtudiant($etudiant);
+    
+    // Ajouter les écolages à chaque formation
+    foreach ($formations as &$formation) {
+        $formationEntity = $this->em->getReference(Formations::class, $formation['id']);
+        $ecolages = $this->ecolagesRepository->findEcolagesByFormation($formationEntity);
+        $formation['ecolages'] = array_map(fn($e) => [
+            'id' => $e->getId(),
+            'montant' => $e->getMontant(),
+            'date' => $e->getDateEcolage()?->format('Y-m-d H:i:s')
+        ], $ecolages);
+    }
+    
+    return $formations;
+}
+
+private function getPaiementsParFormation(Etudiants $etudiant, ?int $anneeScolaire = null): array
+{
+    $paiements = $this->payementsEcolagesRepository->findPaiementsByEtudiant($etudiant, $anneeScolaire);
+    
+    // Récupérer les formations de l'étudiant
+    $formations = $this->em->getRepository(FormationEtudiants::class)
+        ->findBy(['etudiant' => $etudiant]);
+    
+    // Créer un tableau associatif formation_id => paiements
+    $result = [];
+    
+    foreach ($formations as $formation) {
+        $formationId = $formation->getFormation()->getId();
+        $result[$formationId] = [];
         
-        $result = [];
-        
-        // Formater les données des écolages
-        foreach ($ecolages as $ecolage) {
-            $result[] = [
-                'id' => $ecolage->getId(),
-                'montant' => $ecolage->getMontant(),
-                'datePaiement' => $ecolage->getDateEcolage() ? $ecolage->getDateEcolage()->format('Y-m-d H:i:s') : null,
+        // Filtrer les paiements pour cette formation
+        foreach ($paiements as $paiement) {
+            // Vérifier si le paiement appartient à cette formation
+            // En l'absence d'une relation directe, on suppose que le paiement est lié à la formation actuelle
+            $result[$formationId][] = [
+                'id' => $paiement->getId(),
+                'reference' => $paiement->getReference(),
+                'date' => $paiement->getDatepayements()->format('Y-m-d H:i:s'),
+                'montant' => $paiement->getMontant(),
+                'tranche' => $paiement->getTranche(),
+                'annee' => $paiement->getAnnee()
             ];
         }
+    }
+    
+    return $result;
+}
+
+private function calculerSynthese(array $formations, array $paiements): array
+{
+    $result = [];
+    
+    foreach ($formations as $formation) {
+        $formationId = $formation['id'];
+        $totalPaiements = 0;
+        $totalEcolages = array_sum(array_column($formation['ecolages'] ?? [], 'montant'));
         
-        return $result;
-    }
-
-    public function getEcolageSynthese(Etudiants $etudiant, ?int $formationId = null, ?string $anneeScolaire = null, ?int $niveauId = null): array
-    {
-        $rows = $this->payementsEcolagesRepository->getSyntheseEcolageParEtudiant($etudiant->getId(), $formationId, $anneeScolaire, $niveauId);
-
-        $grouped = [];
-        foreach ($rows as $r) {
-            $key = $r['formation_id'] . '-' . $r['annee_paiement'];
-            
-            if (!isset($grouped[$key])) {
-                $grouped[$key] = [
-                    'formationId' => (int)$r['formation_id'],
-                    'formation' => $r['formation_nom'],
-                    'typeFormation' => $r['type_formation'],
-                    'annee' => $r['annee_paiement'],
-                    'niveau' => $r['niveau_nom'],
-                    'montantTheorique' => $r['montant_ecolage'] !== null ? (float)$r['montant_ecolage'] : null,
-                    'totalPaye' => 0.0,
-                    'difference' => null,
-                    'statut' => 'EN_RETARD',
-                    'detailsPaiements' => [],
-                ];
-            }
-            
-            $grouped[$key]['totalPaye'] += (float)$r['montant_paye'];
-            $grouped[$key]['detailsPaiements'][] = [
-                'paiementId' => (int)$r['paiement_id'],
-                'reference' => $r['reference_paiement'],
-                'date' => $r['date_paiement'],
-                'montant' => (float)$r['montant_paye'],
-                'tranche' => (int)$r['tranche'],
-            ];
+        // Calculer le total des paiements pour cette formation
+        foreach (($paiements[$formationId] ?? []) as $paiement) {
+            $totalPaiements += $paiement['montant'];
         }
-
-        // Finaliser difference et statut
-        foreach ($grouped as &$g) {
-            if ($g['montantTheorique'] !== null) {
-                $g['difference'] = $g['totalPaye'] - $g['montantTheorique'];
-                $g['statut'] = $g['totalPaye'] >= $g['montantTheorique'] ? 'PAYE' : 'EN_RETARD';
-            } else {
-                $g['difference'] = null;
-                $g['statut'] = 'INCONNU';
-            }
-        }
-        unset($g);
-
-        // Retour trié par annee desc puis formation
-        usort($grouped, function ($a, $b) {
-            if ($a['annee'] === $b['annee']) {
-                return strcmp($a['formation'], $b['formation']);
-            }
-            return $b['annee'] <=> $a['annee'];
-        });
-
-        return array_values($grouped);
+        
+        $result[] = [
+            'formation' => [
+                'id' => $formation['id'],
+                'nom' => $formation['formation_nom'],
+                'type' => $formation['type_formation']
+            ],
+            'ecolages' => $formation['ecolages'] ?? [],
+            'paiements' => $paiements[$formationId] ?? [],
+            'total_ecolages' => $totalEcolages,
+            'total_paiements' => $totalPaiements,
+            'solde' => $totalPaiements - $totalEcolages,
+            'statut' => $totalPaiements >= $totalEcolages ? 'PAYE' : 'EN_RETARD'
+        ];
     }
+    
+    return $result;
+}
+
 }

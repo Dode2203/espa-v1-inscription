@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Annotation\TokenRequired;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -102,47 +103,26 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/{id}/ecolages', name: 'etudiant_ecolages', methods: ['GET'])]
-    public function getEcolages(int $id, Request $request): JsonResponse
+    public function getEcolages(Etudiants $etudiant, Request $request): JsonResponse
     {
         try {
-            // Récupérer l'étudiant par son ID
-            $etudiant = $this->etudiantsService->getEtudiantById($id);
+            $anneeScolaire = $request->query->get('annee');
             
-            if (!$etudiant) {
-                return new JsonResponse([
-                    'status' => 'error',
-                    'message' => 'Étudiant non trouvé'
-                ], 404);
-            }
+            $ecolages = $this->etudiantsService->getAllEcolage(
+                $etudiant,
+                $anneeScolaire ? (int)$anneeScolaire : null
+            );
             
-            $formationId = $request->query->get('formationId');
-            $anneeScolaire = $request->query->get('anneeScolaire');
-            $niveauId = $request->query->get('niveauId');
-
-            $formationId = $formationId !== null && $formationId !== '' ? (int)$formationId : null;
-            $anneeScolaire = $anneeScolaire !== null && $anneeScolaire !== '' ? $anneeScolaire : null;
-            $niveauId = $niveauId !== null && $niveauId !== '' ? (int)$niveauId : null;
-
-            $ecolages = $this->etudiantsService->getEcolageSynthese($etudiant, $formationId, $anneeScolaire, $niveauId);
-            
-            return new JsonResponse([
+            return $this->json([
                 'status' => 'success',
-                'data' => [
-                    'etudiant' => [
-                        'id' => $etudiant->getId(),
-                        'nom' => $etudiant->getNom(),
-                        'prenom' => $etudiant->getPrenom()
-                    ],
-                    'ecolages' => $ecolages
-                ]
-            ], 200);
-            
+                'data' => $ecolages
+            ]);
         } catch (\Exception $e) {
-            return new JsonResponse([
+            return $this->json([
                 'status' => 'error',
                 'message' => 'Une erreur est survenue lors de la récupération des écolages',
                 'details' => $e->getMessage()
-            ], 500);
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
