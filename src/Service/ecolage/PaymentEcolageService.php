@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Service\ecolage;
+
 use App\Entity\PayementsEcolages;
 use App\Entity\Utilisateur;
 use App\Entity\Etudiants;
+use App\Entity\FormationEtudiants;
 use App\Repository\EcolagesRepository;
 use App\Repository\PayementsEcolagesRepository;
 use App\Repository\FormationEtudiantsRepository;
@@ -13,7 +15,7 @@ use Exception;
 
 class PaymentEcolageService
 {   
-    private $ecolageRepository;
+    private EcolagesRepository $ecolageRepository;
     private PayementsEcolagesRepository $payementsEcolagesRepository;
     private FormationEtudiantsRepository $formationEtudiantsRepository;
     private NiveauEtudiantsService $niveauEtudiantsService;
@@ -33,73 +35,69 @@ class PaymentEcolageService
         $this->niveauEtudiantsService = $niveauEtudiantsService;
     }
 
-    public function insertPaymentEcolage(Utilisateur $utilisateur,Etudiants $etudiant,PayementsEcolages $payementsEcolages): PayementsEcolages
+    /**
+     * Enregistre un nouveau paiement d'écolage
+     */
+    public function insertPaymentEcolage(Utilisateur $utilisateur, Etudiants $etudiant, PayementsEcolages $payementsEcolages): PayementsEcolages
     {
         $payementsEcolages->setUtilisateur($utilisateur);
         $payementsEcolages->setEtudiant($etudiant);
+        
         $this->em->persist($payementsEcolages);
         $this->em->flush();
+        
         return $payementsEcolages; 
-
     }
 
-    public function isValideEcolagePourReinscription(Etudiants $etudiant): bool
+    /**
+     * Vérifie si un étudiant a payé toutes ses échéances pour une année donnée
+     */
+    public function isEcolageCompletPourAnnee(Etudiants $etudiant, int $annee): bool
     {
-        // Dernier niveau pour obtenir le grade (L1=1, L2=2, ...)
-        $niveauActuel = $this->niveauEtudiantsService->getDernierNiveauParEtudiant($etudiant);
-        if (!$niveauActuel || !$niveauActuel->getNiveau()) {
-            return false;
-        }
-        $grade = (int)$niveauActuel->getNiveau()->getGrade();
-        if ($grade <= 0) {
-            return false;
-        }
+        $paiements = $this->payementsEcolagesRepository->findBy([
+            'etudiant' => $etudiant,
+            'annee' => $annee
+        ]);
+        
+        // Vérifier qu'il y a au moins 2 paiements (2 tranches)
+        return count($paiements) >= 2;
+    }
 
-        // Dernière formation de l'étudiant
+    /**
+     * Calcule le reste à payer pour une année donnée
+     */
+    public function calculerResteAPayer(Etudiants $etudiant, int $annee): float
+    {
         $formationEtudiant = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
         if (!$formationEtudiant || !$formationEtudiant->getFormation()) {
-            return false;
+            throw new \Exception("Aucune formation trouvée pour l'étudiant");
         }
-        $formationId = (int)$formationEtudiant->getFormation()->getId();
-
-        // Synthèse des paiements (une ligne par paiement)
-        $rows = $this->payementsEcolagesRepository->getSyntheseEcolageParEtudiant(
-            $etudiant->getId(),
-            $formationId,
-            null
-        );
-
-        // Compter les paiements par année
-        $countsByYear = [];
-        foreach ($rows as $r) {
-            $y = (int)$r['annee_paiement'];
-            if (!isset($countsByYear[$y])) {
-                $countsByYear[$y] = 0;
-            }
-            $countsByYear[$y]++;
-        }
-        if (empty($countsByYear)) {
-            return false;
-        }
-
-        // Prendre les 'grade' années les plus récentes
-        krsort($countsByYear);
-        $years = array_keys($countsByYear);
-        $yearsToCheck = array_slice($years, 0, $grade);
-        if (count($yearsToCheck) < $grade) {
-            return false;
-        }
-
-        // Chaque année doit avoir au moins 2 paiements (2 tranches)
-        foreach ($yearsToCheck as $y) {
-            if ($countsByYear[$y] < 2) {
-                return false;
-            }
-        }
-
-        return true;
+        
+        // Récupérer le montant total des écolages pour la formation
+        $ecolages = $this->ecolageRepository->findBy([
+            'formation' => $formationEtudiant->getFormation()
+        ]);
+        
+        $totalAPayer = array_sum(array_map(fn($e) => $e->getMontant(), $ecolages));
+        
+        // Récupérer le total des paiements
+        $paiements = $this->payementsEcolagesRepository->findBy([
+            'etudiant' => $etudiant,
+            'annee' => $annee
+        ]);
+        
+        $totalPaye = array_sum(array_map(fn($p) => $p->getMontant(), $paiements));
+        
+        return max(0, $totalAPayer - $totalPaye);
     }
 
-    
-    
+    /**
+     * Vérifie si un étudiant peut s'inscrire (a payé tous ses écolages de l'année précédente)
+     */
+    public function peutSInscrire(Etudiants $etudiant, int $anneeInscription): bool
+    {
+        $anneePrecedente = $anneeInscription - 1;
+        return $this->isEcolageCompletPourAnnee($etudiant, $anneePrecedente);
+    }
+
 }
