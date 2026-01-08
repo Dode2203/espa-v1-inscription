@@ -49,9 +49,6 @@ class PaymentEcolageService
         return $payementsEcolages; 
     }
 
-    /**
-     * Vérifie si un étudiant a payé toutes ses échéances pour une année donnée
-     */
     public function isEcolageCompletPourAnnee(Etudiants $etudiant, int $annee): bool
     {
         $paiements = $this->payementsEcolagesRepository->findBy([
