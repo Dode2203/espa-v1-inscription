@@ -40,16 +40,15 @@ class EtudiantsRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
-    public function getEtudiantsByNomAndPrenom(string $nom, string $prenom): ?Etudiants
+    public function getEtudiantsByNomAndPrenom(string $nom, string $prenom): array
     {
         return $this->createQueryBuilder('e')
-                ->where('e.nom = :nom')
-                ->andWhere('e.prenom = :prenom')
-                ->setParameter('nom', $nom)
-                ->setParameter('prenom', $prenom)
-                ->getQuery()
-                ->getOneOrNullResult()
-            ;
-        
+            ->where('e.nom LIKE :nom')
+            ->andWhere('e.prenom LIKE :prenom')
+            ->setParameter('nom', '%' . $nom . '%')
+            ->setParameter('prenom', '%' . $prenom . '%')
+            ->getQuery()
+            ->getResult(); // 🔹 retourne plusieurs résultats
     }
+
 }

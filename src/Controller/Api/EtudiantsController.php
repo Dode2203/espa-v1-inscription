@@ -75,52 +75,46 @@ class EtudiantsController extends AbstractController
             $nom = $data['nom'];
             $prenom = $data['prenom'];
 
-            $etudiant = $this->etudiantsService->rechercheEtudiant($nom, $prenom);
+            $etudiants = $this->etudiantsService->rechercheEtudiant($nom, $prenom);
 
-            if (!$etudiant) {
+            if (empty($etudiants)) {
                 return new JsonResponse([
                     'status' => 'error',
                     'message' => 'Étudiant non trouvé'
                 ], 404);
             }
 
-            $formationEtudiant = $this->formationEtudiantsService->getDernierFormationParEtudiant($etudiant);
-            $niveauActuel = $this->niveauEtudiantsService->getDernierNiveauParEtudiant($etudiant);
-            
-            if (!$etudiant) {
-                return new JsonResponse([
-                    'status' => 'error',
-                    'message' => 'Étudiant non trouvé'
-                ], 404);
-            }
-            $propos = $etudiant->getPropos();
-            $identite = [
-                    'id' => $etudiant->getId(),
-                    'nom' => $etudiant->getNom(),
-                    'prenom' => $etudiant->getPrenom(),
-                    'dateNaissance' => $etudiant->getDateNaissance() ? $etudiant->getDateNaissance()->format('Y-m-d') : null,
-                    'lieuNaissance' => $etudiant->getLieuNaissance(),
-                    'sexe' => $etudiant->getSexe() ? $etudiant->getSexe()->getNom() : null,
-                    'contact' => [
-                        'adresse' => $propos ? $propos->getAdresse() : null,
-                        'email' =>  $propos ? $propos->getEmail() : null,
-                    ],
+            $resultats = [];
 
-            ];
-            $formation=[
-                'formation' => $formationEtudiant ? $formationEtudiant->getFormation()->getNom() : null,
-                'formationType' => $formationEtudiant ? $formationEtudiant->getFormation()->getTypeFormation()->getNom() : null,
-                'niveau' => $niveauActuel ? $niveauActuel->getNiveau()->getNom() : null,
-                'mention' => $niveauActuel ? $niveauActuel->getMention()->getNom() : null,
-            ];
+            foreach ($etudiants as $etudiant) {
+                $propos = $etudiant->getPropos();
+                $resultats[] = [
+                    
+                        'id' => $etudiant->getId(),
+                        'nom' => $etudiant->getNom(),
+                        'prenom' => $etudiant->getPrenom(),
+                        'dateNaissance' => $etudiant->getDateNaissance()
+                            ? $etudiant->getDateNaissance()->format('Y-m-d')
+                            : null,
+                        'lieuNaissance' => $etudiant->getLieuNaissance(),
+                        'sexe' => $etudiant->getSexe()
+                            ? $etudiant->getSexe()->getNom()
+                            : null,
+                        'contact' => [
+                            'adresse' => $propos ? $propos->getAdresse() : null,
+                            'email' => $propos ? $propos->getEmail() : null,
+                        ],
+                    
+                    
+                ];
+            }
 
             return new JsonResponse([
                 'status' => 'success',
-                'data' => [
-                    'identite' => $identite,
-                    'formation' => $formation,
-                ]
+                'total' => count($resultats),
+                'data' => $resultats
             ], 200);
+
 
         } catch (\Exception $e) {
                 if ($e->getMessage() === 'Inactif') {
@@ -137,6 +131,96 @@ class EtudiantsController extends AbstractController
             }
 
     }
+    #[Route('', name: 'etudiant_show', methods: ['GET'])]
+    // #[TokenRequired(['Admin'])]
+    public function getEtudiantParId(Request $request): JsonResponse
+    {
+        try {
+            $idEtudiant = $request->query->get('idEtudiant');
+
+            if (!$idEtudiant) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Paramètre idEtudiant requis'
+                ], 400);
+            }
+
+            $idEtudiant = (int) $idEtudiant;
+            // 🔹 Recherche par ID
+            $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
+
+            if (!$etudiant) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant non trouvé'
+                ], 404);
+            }
+
+            $formationEtudiant = $this->formationEtudiantsService
+                ->getDernierFormationParEtudiant($etudiant);
+
+            $niveauActuel = $this->niveauEtudiantsService
+                ->getDernierNiveauParEtudiant($etudiant);
+
+            $propos = $etudiant->getPropos();
+
+            $identite = [
+                'id' => $etudiant->getId(),
+                'nom' => $etudiant->getNom(),
+                'prenom' => $etudiant->getPrenom(),
+                'dateNaissance' => $etudiant->getDateNaissance()
+                    ? $etudiant->getDateNaissance()->format('Y-m-d')
+                    : null,
+                'lieuNaissance' => $etudiant->getLieuNaissance(),
+                'sexe' => $etudiant->getSexe()
+                    ? $etudiant->getSexe()->getNom()
+                    : null,
+                'contact' => [
+                    'adresse' => $propos ? $propos->getAdresse() : null,
+                    'email' => $propos ? $propos->getEmail() : null,
+                ],
+            ];
+
+            $formation = [
+                'formation' => $formationEtudiant
+                    ? $formationEtudiant->getFormation()->getNom()
+                    : null,
+                'formationType' => $formationEtudiant
+                    ? $formationEtudiant->getFormation()
+                        ->getTypeFormation()->getNom()
+                    : null,
+                'niveau' => $niveauActuel
+                    ? $niveauActuel->getNiveau()->getNom()
+                    : null,
+                'mention' => $niveauActuel
+                    ? $niveauActuel->getMention()->getNom()
+                    : null,
+            ];
+
+            return new JsonResponse([
+                'status' => 'success',
+                'data' => [
+                    'identite' => $identite,
+                    'formation' => $formation,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+
+            if ($e->getMessage() === 'Inactif') {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant inactif'
+                ], 401);
+            }
+
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
 
     #[Route('/{id}/ecolages', name: 'etudiant_ecolages', methods: ['GET'])]
     public function getEcolages(int $id, Request $request): JsonResponse

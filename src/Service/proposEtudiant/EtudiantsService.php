@@ -26,7 +26,7 @@ class EtudiantsService
         $this->payementsEcolagesRepository = $payementsEcolagesRepository;
         $this->em = $em;
     }
-    public function rechercheEtudiant ($nom,$prenom): ?Etudiants 
+    public function rechercheEtudiant ($nom,$prenom): ?array
     {
         return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nom,$prenom);
       
