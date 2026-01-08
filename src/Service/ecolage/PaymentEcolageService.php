@@ -35,7 +35,7 @@ class PaymentEcolageService
         $this->niveauEtudiantsService = $niveauEtudiantsService;
     }
 
-    public function insertPaymentEcolage(Utilisateur $utilisateur,Etudiants $etudiant,PayementsEcolages $payementsEcolages): PayementsEcolages
+    public function insertPaymentEcolage(Utilisateur $utilisateur,Etudiants $etudiant,PayementsEcolages $payementsEcolages): ?PayementsEcolages
     {
         if ($payementsEcolages->getMontant()<=0) {
             return null;
@@ -75,7 +75,7 @@ class PaymentEcolageService
         $typeFormation = $formation->getTypeFormation();
         
         // Si la formation est académique, on ne vérifie pas les écolages
-        if ($typeFormation && strtolower($typeFormation->getNom()) === 'académique') 
+        if ($typeFormation && $typeFormation->getId() === 1)
         {    return true;    }
         
         // Vérifier si l'étudiant a déjà un niveau enregistré

@@ -89,6 +89,9 @@ class InscriptionService
 
             // Finalisation inscription
             $inscription->setDateInscription(new \DateTime());
+            $description = "Inscription de l'étudiant en " .$niveauEtudiantActuel->getNiveau()->getNom() . " - " .
+                $etudiant->getNom() . " " . $etudiant->getPrenom() ;
+            $inscription->setDescription($description);
             $this->em->persist($inscription);
 
             $this->em->flush();

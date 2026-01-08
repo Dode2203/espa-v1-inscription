@@ -13,10 +13,11 @@ class DroitService
     private $typeDroitsService;
     private EntityManagerInterface $em;
 
-    public function __construct(DroitsRepository $droitsRepository, TypeDroitService $typeDroitsRepository)
+    public function __construct(DroitsRepository $droitsRepository, TypeDroitService $typeDroitsRepository, EntityManagerInterface $em)
     {
         $this->droitsRepository = $droitsRepository;   
         $this->typeDroitsService = $typeDroitsRepository;
+        $this->em = $em;
 
     }
     public function insertDroit(Utilisateur $utilisateur,Etudiants $etudiant,Droits $droit,$typeDroit): Droits
