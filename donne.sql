@@ -24,10 +24,12 @@ VALUES (
 -- UPDATE utilisateur SET status_id = 2;
 
 -- Table Propos avec id manuel
-INSERT INTO propos (id, adresse, email, sexe)
+INSERT INTO Sexes (id, nom) VALUES (1, 'Masculin');
+INSERT INTO Sexes (id, nom) VALUES (2, 'Feminin');
+INSERT INTO propos (id, adresse, email)
 VALUES 
-(1, '123 Rue Analakely, Antananarivo', 'exemple1@gmail.com', 'M'),
-(2, '456 Rue Isoraka, Antananarivo', 'exemple2@gmail.com', 'F');
+(1, '123 Rue Analakely, Antananarivo', 'exemple1@gmail.com'),
+(2, '456 Rue Isoraka, Antananarivo', 'exemple2@gmail.com');
 
 -- Table Cin avec id manuel
 INSERT INTO cin (id, numero, date_cin, lieu, ancien_date, nouveau_date)
@@ -42,10 +44,10 @@ VALUES
 (2, 'BAC-2020-654321', 2020, 'D');
 
 -- Table Etudiants avec id manuel et relations
-INSERT INTO etudiants (id, nom, prenom, date_naissance, lieu_naissance, cin_id, bacc_id, propos_id)
+INSERT INTO etudiants (id, nom, prenom, date_naissance, lieu_naissance, cin_id, bacc_id, propos_id,sexe_id)
 VALUES
-(1, 'Rakoto', 'Jean', '2003-03-15', 'Antsirabe', 1, 1, 1),
-(2, 'Rabe', 'Marie', '2002-07-22', 'Fianarantsoa', 2, 2, 2);
+(1, 'Rakoto', 'Jean', '2003-03-15', 'Antsirabe', 1, 1, 1,1),
+(2, 'Rabe', 'Marie', '2002-07-22', 'Fianarantsoa', 2, 2, 2,2);
 
 
 -- Insertion des types de formation avec id manuel
@@ -59,7 +61,7 @@ VALUES
 INSERT INTO formations (id, nom, type_formation_id)
 VALUES 
 (1, 'Académique', 1), -- Académique
-(2, 'Atelier Luban', 2),          -- Professionnel
+(2, 'Atelier Luban', 2),-- Professionnel
 (3, 'Electrique Industrielle', 2), -- Académique
 (4, 'Tecnologie Information', 2),-- Professionnel
 (5, 'Maintenance automobile', 2);-- Professionnel

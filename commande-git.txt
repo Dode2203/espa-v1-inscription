@@ -13,3 +13,7 @@ git branch Dode_back
 #Pour changer de branche
 git checkout Dode_back
 
+git checkout main
+
+git config --global user.name "Dode2203"
+git config --global user.email "randriadode@gmail.com"

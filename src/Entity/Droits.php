@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\DroitsRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\DependencyInjection\Reference;
 
 #[ORM\Entity(repositoryClass: DroitsRepository::class)]
 class Droits
@@ -126,4 +127,15 @@ class Droits
 
         return $this;
     }
+    public function setAnatiny(int $annee,float $montant, string $reference, \DateTimeInterface $dateVersement): static
+    {
+        $this->annee = $annee;
+        $this->montant = $montant;
+        $this->reference = $reference;
+        $this->dateVersement= $dateVersement;
+
+        return $this;
+    }
+    
+
 }

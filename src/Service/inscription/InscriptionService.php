@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Service\droit;
+namespace App\Service\inscription;
 use App\Entity\Droits;
 use App\Entity\Inscrits;
 use App\Entity\PayementsEcolages;
 use App\Entity\Utilisateur;
 use App\Entity\Etudiants;
 use App\Repository\InscritsRepository;
+use App\Service\proposEtudiant\EtudiantsService;
+use App\Service\UtilisateurService;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\droit\DroitService;
 use App\Service\ecolage\PaymentEcolageService;
@@ -18,15 +20,19 @@ class InscriptionService
     private $droitService;
     private $ecolageService;
     private $niveauEtudiantsService;
-   
+    private $etudiantsService;
+    private $utilisateursService;
     private EntityManagerInterface $em;
 
-    public function __construct(InscritsRepository $inscriptionsRepository,DroitService $droitService,PaymentEcolageService $paymentEcolageService,NiveauEtudiantsService $niveauEtudiantsService)
+    public function __construct(InscritsRepository $inscriptionsRepository,DroitService $droitService,PaymentEcolageService $paymentEcolageService,NiveauEtudiantsService $niveauEtudiantsService,EtudiantsService $etudiantsService,UtilisateurService $utilisateurService,EntityManagerInterface $em)
     {
         $this->inscriptionRepository = $inscriptionsRepository;
         $this->droitService = $droitService;
         $this->ecolageService = $paymentEcolageService;
         $this->niveauEtudiantsService = $niveauEtudiantsService;
+        $this->etudiantsService = $etudiantsService;
+        $this->utilisateursService= $utilisateurService;
+        $this->em = $em;
 
 
     }
@@ -95,6 +101,22 @@ class InscriptionService
             // optionnel mais conseillé
             throw $e;
         }
+    }
+    public function inscrireEtudiantId(
+        $idEtudiant,
+        $idUtilisateur,
+        Droits $pedagogique,
+        Droits $administratif,
+        PayementsEcolages $payementsEcolages,
+        bool $passant
+    ): Inscrits
+    {
+        $etudiant= $this->etudiantsService->getEtudiantById($idEtudiant);
+        $utilisateur= $this->utilisateursService->getUserById($idUtilisateur);
+        $inscription= $this->inscrireEtudiant($etudiant,$utilisateur,$pedagogique,$administratif,$payementsEcolages,$passant);
+        return $inscription;
+
+
     }
     
     

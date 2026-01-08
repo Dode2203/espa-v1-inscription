@@ -212,18 +212,20 @@ class UtilisateurController extends AbstractController
         // 🔑 Vérification du login via le repository
         $user = $this->utilisateurService->login($email, $plainPassword);
 
+        
+        if (!$user) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Identifiants invalides'
+            ], 404);
+        }
+        
         $user_status= $user->getStatus()->getName();
         if ($user_status==="Inactif") {
             return new JsonResponse([
                 'status' => 'error',
                 'message' => 'Utilisateur inactif'
             ], 401);
-        }
-        if (!$user) {
-            return new JsonResponse([
-                'status' => 'error',
-                'message' => 'Identifiants invalides'
-            ], 404);
         }
         $claims = [
             'id' => $user->getId(),
