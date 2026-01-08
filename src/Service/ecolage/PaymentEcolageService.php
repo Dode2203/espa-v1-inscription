@@ -64,40 +64,34 @@ class PaymentEcolageService
     }
 
     /**
-     * Calcule le reste à payer pour une année donnée
+     * Vérifie si l'étudiant peut s'inscrire en fonction de son niveau, de sa formation et de ses écolages
+     * - Si c'est une première inscription (pas de niveau enregistré), c'est valide
+     * - Si la formation est de type académique, c'est toujours valide
+     * - Si la formation est professionnelle et que l'étudiant a un niveau, on vérifie les écolages
      */
-    public function calculerResteAPayer(Etudiants $etudiant, int $annee): float
+    public function isValideEcolagePourReinscription(Etudiants $etudiant): bool
     {
+        // Récupérer la dernière formation de l'étudiant
         $formationEtudiant = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
-        if (!$formationEtudiant || !$formationEtudiant->getFormation()) {
-            throw new \Exception("Aucune formation trouvée pour l'étudiant");
-        }
         
-        // Récupérer le montant total des écolages pour la formation
-        $ecolages = $this->ecolageRepository->findBy([
-            'formation' => $formationEtudiant->getFormation()
-        ]);
+        $formation = $formationEtudiant->getFormation();
+        $typeFormation = $formation->getTypeFormation();
         
-        $totalAPayer = array_sum(array_map(fn($e) => $e->getMontant(), $ecolages));
+        // Si la formation est académique, on ne vérifie pas les écolages
+        if ($typeFormation && strtolower($typeFormation->getNom()) === 'académique') 
+        {    return true;    }
         
-        // Récupérer le total des paiements
-        $paiements = $this->payementsEcolagesRepository->findBy([
-            'etudiant' => $etudiant,
-            'annee' => $annee
-        ]);
+        // Vérifier si l'étudiant a déjà un niveau enregistré
+        $niveauEtudiant = $this->niveauEtudiantsService->getDernierNiveauParEtudiant($etudiant);
         
-        $totalPaye = array_sum(array_map(fn($p) => $p->getMontant(), $paiements));
+        // Si l'étudiant n'a pas encore de niveau, c'est une première inscription
+        if (!$niveauEtudiant) 
+        {    return true;    }
         
-        return max(0, $totalAPayer - $totalPaye);
-    }
-
-    /**
-     * Vérifie si un étudiant peut s'inscrire (a payé tous ses écolages de l'année précédente)
-     */
-    public function peutSInscrire(Etudiants $etudiant, int $anneeInscription): bool
-    {
-        $anneePrecedente = $anneeInscription - 1;
+        // Pour les formations professionnelles avec niveau, vérifier les écolages de l'année précédente
+        $anneeActuelle = (int) date('Y');
+        $anneePrecedente = $anneeActuelle - 1;
+        
         return $this->isEcolageCompletPourAnnee($etudiant, $anneePrecedente);
     }
-
 }
