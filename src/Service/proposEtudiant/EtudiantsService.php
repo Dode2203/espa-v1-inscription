@@ -4,115 +4,109 @@ namespace App\Service\proposEtudiant;
 use App\Repository\EtudiantsRepository;
 use App\Repository\EcolagesRepository;
 use App\Repository\PayementsEcolagesRepository;
+use App\Repository\FormationEtudiantsRepository;
+use App\Repository\NiveauEtudiantsRepository;
 use App\Entity\Etudiants;
+use App\Entity\NiveauEtudiants;
+use App\Entity\FormationEtudiants;
+use App\Entity\Formations;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
 class EtudiantsService
 {   
-    private $etudiantsRepository;
+    private EtudiantsRepository $etudiantsRepository;
     private EcolagesRepository $ecolagesRepository;
     private EntityManagerInterface $em;
     private PayementsEcolagesRepository $payementsEcolagesRepository;
-
+    private FormationEtudiantsRepository $formationEtudiantRepository;
+    private $niveauEtudiantsRepository;
+    
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
         EcolagesRepository $ecolagesRepository,
         PayementsEcolagesRepository $payementsEcolagesRepository,
-        EntityManagerInterface $em
+        FormationEtudiantsRepository $formationEtudiantRepository,
+        NiveauEtudiantsRepository $niveauEtudiantsRepository,
+        EntityManagerInterface $em,
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->ecolagesRepository = $ecolagesRepository;
         $this->payementsEcolagesRepository = $payementsEcolagesRepository;
+        $this->formationEtudiantRepository = $formationEtudiantRepository;
+        $this->niveauEtudiantsRepository = $niveauEtudiantsRepository;
         $this->em = $em;
     }
     public function rechercheEtudiant ($nom,$prenom): ?array
+
     {
-        return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nom,$prenom);
-      
+        return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nom,$prenom);  
     }
+    
     public function insertEtudiant(Etudiants $etudiant): Etudiants
     {
         $this->em->persist($etudiant);
         $this->em->flush();
         return $etudiant;
     }
+
     public function getEtudiantById(int $id): ?Etudiants
     {
         return $this->etudiantsRepository->find($id);
     }
     
-    public function getAllEcolage(Etudiants $etudiant): array
+    public function getEcolagesParNiveau(string $etudiantId): array
     {
-        $ecolages = $this->ecolagesRepository->findEcolagesByEtudiant($etudiant->getId());
-        
-        $result = [];
-        
-        // Formater les données des écolages
-        foreach ($ecolages as $ecolage) {
-            $result[] = [
-                'id' => $ecolage->getId(),
-                'montant' => $ecolage->getMontant(),
-                'datePaiement' => $ecolage->getDateEcolage() ? $ecolage->getDateEcolage()->format('Y-m-d H:i:s') : null,
+        // 1. Récupérer l'étudiant
+        $etudiant = $this->etudiantsRepository->find($etudiantId);
+        if (!$etudiant) {    throw new \Exception("Étudiant non trouvé");    }
+
+        // 2. Récupérer la dernière formation de l'étudiant
+        $formationEtudiant = $this->formationEtudiantRepository->getDernierFormationEtudiant($etudiant);
+        if (!$formationEtudiant) {
+            return [
+                'status' => 'error',
+                'message' => 'Aucune formation trouvée pour cet étudiant'
             ];
         }
-        
-        return $result;
-    }
 
-    public function getEcolageSynthese(Etudiants $etudiant, ?int $formationId = null, ?string $anneeScolaire = null, ?int $niveauId = null): array
-    {
-        $rows = $this->payementsEcolagesRepository->getSyntheseEcolageParEtudiant($etudiant->getId(), $formationId, $anneeScolaire, $niveauId);
+        // 3. Récupérer le niveau actuel de l'étudiant
+        $niveauEtudiant = $this->niveauEtudiantsRepository->findOneBy(
+            ['etudiant' => $etudiant], 
+            ['annee' => 'DESC']
+        );
 
-        $grouped = [];
-        foreach ($rows as $r) {
-            $key = $r['formation_id'] . '-' . $r['annee_paiement'];
-            
-            if (!isset($grouped[$key])) {
-                $grouped[$key] = [
-                    'formationId' => (int)$r['formation_id'],
-                    'formation' => $r['formation_nom'],
-                    'typeFormation' => $r['type_formation'],
-                    'annee' => $r['annee_paiement'],
-                    'niveau' => $r['niveau_nom'],
-                    'montantTheorique' => $r['montant_ecolage'] !== null ? (float)$r['montant_ecolage'] : null,
-                    'totalPaye' => 0.0,
-                    'difference' => null,
-                    'statut' => 'EN_RETARD',
-                    'detailsPaiements' => [],
+        if (!$niveauEtudiant || !$niveauEtudiant->getNiveau()) {
+            return [
+                'status' => 'error',
+                'message' => 'Aucun niveau trouvé pour cet étudiant'
+            ];
+        }
+
+        $niveau = $niveauEtudiant->getNiveau();
+        $formation = $formationEtudiant->getFormation();
+
+        // 7. Récupérer les paiements existants
+        $paiements = $this->payementsEcolagesRepository->findPaiementsByEtudiant($etudiant);
+
+        // 9. Préparer la réponse
+        return [
+            'formation' => [
+                'id' => $formation->getId(),
+                'nom' => $formation->getNom(),
+                'type' => $formation->getTypeFormation() ? $formation->getTypeFormation()->getNom() : null,
+                'niveau' => $niveau->getNom()
+            ],
+            'paiements' => array_map(function($p) {
+                return [
+                    'id' => $p->getId(),
+                    'reference' => $p->getReference(),
+                    'date' => $p->getDatePayements() ? $p->getDatePayements()->format('Y-m-d') : null,
+                    'montant' => $p->getMontant(),
+                    'tranche' => $p->getTranche() ?? 'Non spécifiée'
                 ];
-            }
-            
-            $grouped[$key]['totalPaye'] += (float)$r['montant_paye'];
-            $grouped[$key]['detailsPaiements'][] = [
-                'paiementId' => (int)$r['paiement_id'],
-                'reference' => $r['reference_paiement'],
-                'date' => $r['date_paiement'],
-                'montant' => (float)$r['montant_paye'],
-                'tranche' => (int)$r['tranche'],
-            ];
-        }
-
-        // Finaliser difference et statut
-        foreach ($grouped as &$g) {
-            if ($g['montantTheorique'] !== null) {
-                $g['difference'] = $g['totalPaye'] - $g['montantTheorique'];
-                $g['statut'] = $g['totalPaye'] >= $g['montantTheorique'] ? 'PAYE' : 'EN_RETARD';
-            } else {
-                $g['difference'] = null;
-                $g['statut'] = 'INCONNU';
-            }
-        }
-        unset($g);
-
-        // Retour trié par annee desc puis formation
-        usort($grouped, function ($a, $b) {
-            if ($a['annee'] === $b['annee']) {
-                return strcmp($a['formation'], $b['formation']);
-            }
-            return $b['annee'] <=> $a['annee'];
-        });
-
-        return array_values($grouped);
+            }, $paiements)
+        ];
     }
+
 }

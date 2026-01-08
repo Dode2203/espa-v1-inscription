@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\FormationEtudiants;
+use App\Entity\Etudiants;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -51,4 +52,17 @@ class FormationEtudiantsRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
+
+    public function findFormationsByEtudiant(Etudiants $etudiant): array
+    {
+        return $this->createQueryBuilder('fe')
+            ->select('f.id, f.nom as formation_nom, tf.nom as type_formation')
+            ->join('fe.formation', 'f')
+            ->join('f.typeFormation', 'tf')
+            ->where('fe.etudiant = :etudiant')
+            ->setParameter('etudiant', $etudiant)
+            ->getQuery()
+            ->getResult();
+    }
+
 }

@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Service\ecolage;
+
 use App\Entity\PayementsEcolages;
 use App\Entity\Utilisateur;
 use App\Entity\Etudiants;
+use App\Entity\FormationEtudiants;
 use App\Repository\EcolagesRepository;
 use App\Repository\PayementsEcolagesRepository;
 use App\Repository\FormationEtudiantsRepository;
@@ -13,7 +15,7 @@ use Exception;
 
 class PaymentEcolageService
 {   
-    private $ecolageRepository;
+    private EcolagesRepository $ecolageRepository;
     private PayementsEcolagesRepository $payementsEcolagesRepository;
     private FormationEtudiantsRepository $formationEtudiantsRepository;
     private NiveauEtudiantsService $niveauEtudiantsService;
@@ -33,76 +35,60 @@ class PaymentEcolageService
         $this->niveauEtudiantsService = $niveauEtudiantsService;
     }
 
-    public function insertPaymentEcolage(Utilisateur $utilisateur,Etudiants $etudiant,PayementsEcolages $payementsEcolages): ?PayementsEcolages
+    public function insertPaymentEcolage(Utilisateur $utilisateur,Etudiants $etudiant,PayementsEcolages $payementsEcolages): PayementsEcolages
     {
         if ($payementsEcolages->getMontant()<=0) {
             return null;
         }
         $payementsEcolages->setUtilisateur($utilisateur);
         $payementsEcolages->setEtudiant($etudiant);
+        
         $this->em->persist($payementsEcolages);
         $this->em->flush();
+        
         return $payementsEcolages; 
-
     }
 
+    public function isEcolageCompletPourAnnee(Etudiants $etudiant, int $annee): bool
+    {
+        $paiements = $this->payementsEcolagesRepository->findBy([
+            'etudiant' => $etudiant,
+            'annee' => $annee
+        ]);
+        
+        // Vérifier qu'il y a au moins 2 paiements (2 tranches)
+        return count($paiements) >= 2;
+    }
+
+    /**
+     * Vérifie si l'étudiant peut s'inscrire en fonction de son niveau, de sa formation et de ses écolages
+     * - Si c'est une première inscription (pas de niveau enregistré), c'est valide
+     * - Si la formation est de type académique, c'est toujours valide
+     * - Si la formation est professionnelle et que l'étudiant a un niveau, on vérifie les écolages
+     */
     public function isValideEcolagePourReinscription(Etudiants $etudiant): bool
     {
-        // Dernier niveau pour obtenir le grade (L1=1, L2=2, ...)
-        $niveauActuel = $this->niveauEtudiantsService->getDernierNiveauParEtudiant($etudiant);
-        if (!$niveauActuel || !$niveauActuel->getNiveau()) {
-            return false;
-        }
-        $grade = (int)$niveauActuel->getNiveau()->getGrade();
-        if ($grade <= 0) {
-            return false;
-        }
-
-        // Dernière formation de l'étudiant
+        // Récupérer la dernière formation de l'étudiant
         $formationEtudiant = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
-        if (!$formationEtudiant || !$formationEtudiant->getFormation()) {
-            return false;
-        }
-        $formationId = (int)$formationEtudiant->getFormation()->getId();
-
-        // Synthèse des paiements (une ligne par paiement)
-        $rows = $this->payementsEcolagesRepository->getSyntheseEcolageParEtudiant(
-            $etudiant->getId(),
-            $formationId,
-            null
-        );
-
-        // Compter les paiements par année
-        $countsByYear = [];
-        foreach ($rows as $r) {
-            $y = (int)$r['annee_paiement'];
-            if (!isset($countsByYear[$y])) {
-                $countsByYear[$y] = 0;
-            }
-            $countsByYear[$y]++;
-        }
-        if (empty($countsByYear)) {
-            return false;
-        }
-
-        // Prendre les 'grade' années les plus récentes
-        krsort($countsByYear);
-        $years = array_keys($countsByYear);
-        $yearsToCheck = array_slice($years, 0, $grade);
-        if (count($yearsToCheck) < $grade) {
-            return false;
-        }
-
-        // Chaque année doit avoir au moins 2 paiements (2 tranches)
-        foreach ($yearsToCheck as $y) {
-            if ($countsByYear[$y] < 2) {
-                return false;
-            }
-        }
-
-        return true;
+        
+        $formation = $formationEtudiant->getFormation();
+        $typeFormation = $formation->getTypeFormation();
+        
+        // Si la formation est académique, on ne vérifie pas les écolages
+        if ($typeFormation && strtolower($typeFormation->getNom()) === 'académique') 
+        {    return true;    }
+        
+        // Vérifier si l'étudiant a déjà un niveau enregistré
+        $niveauEtudiant = $this->niveauEtudiantsService->getDernierNiveauParEtudiant($etudiant);
+        
+        // Si l'étudiant n'a pas encore de niveau, c'est une première inscription
+        if (!$niveauEtudiant) 
+        {    return true;    }
+        
+        // Pour les formations professionnelles avec niveau, vérifier les écolages de l'année précédente
+        $anneeActuelle = (int) date('Y');
+        $anneePrecedente = $anneeActuelle - 1;
+        
+        return $this->isEcolageCompletPourAnnee($etudiant, $anneePrecedente);
     }
-
-    
-    
 }
