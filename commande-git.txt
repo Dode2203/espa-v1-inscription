@@ -31,3 +31,7 @@ git branch
 #Pour envoyer le branch sur github
 git push -u origin Dode_front
 
+#Pour changer de branch
+git switch Dode_front
+
+
