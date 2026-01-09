@@ -26,9 +26,17 @@ class PayementsEcolages
     #[ORM\Column]
     private ?int $tranche = null;
 
-    #[ORM\ManyToOne(inversedBy: 'etudiants')]
+    #[ORM\ManyToOne(inversedBy: 'payementsEcolages')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Etudiants $etudiant = null;
+
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Utilisateur $utilisateur = null;
+
+    #[ORM\Column]
+    private ?int $annee = null;
 
     public function getId(): ?int
     {
@@ -94,4 +102,39 @@ class PayementsEcolages
 
         return $this;
     }
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): static
+    {
+        $this->utilisateur = $utilisateur;
+
+        return $this;
+    }
+
+    public function getAnnee(): ?int
+    {
+        return $this->annee;
+    }
+
+    public function setAnnee(int $annee): static
+    {
+        $this->annee = $annee;
+
+        return $this;
+    }
+    public function setAnatiny(int $annee,int $tranche,float $montant,string $reference,\DateTimeInterface $datepayements): static
+    {
+        $this->annee = $annee;
+        $this->tranche = $tranche;
+        $this->montant = $montant;
+        $this->reference = $reference;
+        $this->datepayements = $datepayements;
+
+        return $this;
+    }
+    
 }

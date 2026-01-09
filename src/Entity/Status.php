@@ -15,7 +15,6 @@ class Status
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -32,4 +31,6 @@ class Status
 
         return $this;
     }
+
+    
 }

@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\DroitsRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\DependencyInjection\Reference;
 
 #[ORM\Entity(repositoryClass: DroitsRepository::class)]
 class Droits
@@ -26,6 +27,17 @@ class Droits
     #[ORM\ManyToOne(inversedBy: 'typedroits')]
     #[ORM\JoinColumn(nullable: false)]
     private ?TypeDroits $typeDroit = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Utilisateur $utilisateur = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Etudiants $etudiant = null;
+
+    #[ORM\Column]
+    private ?int $annee = null;
 
     public function getId(): ?int
     {
@@ -79,4 +91,51 @@ class Droits
 
         return $this;
     }
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): static
+    {
+        $this->utilisateur = $utilisateur;
+
+        return $this;
+    }
+
+    public function getEtudiant(): ?Etudiants
+    {
+        return $this->etudiant;
+    }
+
+    public function setEtudiant(?Etudiants $etudiant): static
+    {
+        $this->etudiant = $etudiant;
+
+        return $this;
+    }
+
+    public function getAnnee(): ?int
+    {
+        return $this->annee;
+    }
+
+    public function setAnnee(int $annee): static
+    {
+        $this->annee = $annee;
+
+        return $this;
+    }
+    public function setAnatiny(int $annee,float $montant, string $reference, \DateTimeInterface $dateVersement): static
+    {
+        $this->annee = $annee;
+        $this->montant = $montant;
+        $this->reference = $reference;
+        $this->dateVersement= $dateVersement;
+
+        return $this;
+    }
+    
+
 }

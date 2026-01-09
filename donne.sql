@@ -1,4 +1,6 @@
 
+\c digitalisation
+
 INSERT INTO role (id, name) VALUES (1, 'Admin');
 INSERT INTO role (id, name) VALUES (2, 'Utilisateur');
 
@@ -6,9 +8,12 @@ INSERT INTO role (id, name) VALUES (2, 'Utilisateur');
 INSERT INTO Status (id, name) VALUES (1, 'Actif');
 INSERT INTO Status (id, name) VALUES (2, 'Inactif');
 
+INSERT INTO status_etudiants (id, name) VALUES (1, 'Passant');
+INSERT INTO status_etudiants (id, name) VALUES (2, 'Redoublant');
 
 
-INSERT INTO Utilisateur (id, email, password, prenom, nom, is_active, is_admin)
+
+INSERT INTO Utilisateur (id, email, mdp, prenom, nom, status_id, role_id)
 VALUES (
     4,
     'admin@gmail.com',
@@ -22,10 +27,12 @@ VALUES (
 -- UPDATE utilisateur SET status_id = 2;
 
 -- Table Propos avec id manuel
-INSERT INTO propos (id, adresse, email, sexe)
+INSERT INTO Sexes (id, nom) VALUES (1, 'Masculin');
+INSERT INTO Sexes (id, nom) VALUES (2, 'Feminin');
+INSERT INTO propos (id, adresse, email)
 VALUES 
-(1, '123 Rue Analakely, Antananarivo', 'exemple1@gmail.com', 'M'),
-(2, '456 Rue Isoraka, Antananarivo', 'exemple2@gmail.com', 'F');
+(1, '123 Rue Analakely, Antananarivo', 'exemple1@gmail.com'),
+(2, '456 Rue Isoraka, Antananarivo', 'exemple2@gmail.com');
 
 -- Table Cin avec id manuel
 INSERT INTO cin (id, numero, date_cin, lieu, ancien_date, nouveau_date)
@@ -40,10 +47,10 @@ VALUES
 (2, 'BAC-2020-654321', 2020, 'D');
 
 -- Table Etudiants avec id manuel et relations
-INSERT INTO etudiants (id, nom, prenom, date_naissance, lieu_naissance, cin_id, bacc_id, propos_id)
+INSERT INTO etudiants (id, nom, prenom, date_naissance, lieu_naissance, cin_id, bacc_id, propos_id,sexe_id)
 VALUES
-(1, 'Rakoto', 'Jean', '2003-03-15', 'Antsirabe', 1, 1, 1),
-(2, 'Rabe', 'Marie', '2002-07-22', 'Fianarantsoa', 2, 2, 2);
+(1, 'Rakoto', 'Jean', '2003-03-15', 'Antsirabe', 1, 1, 1,1),
+(2, 'Rabe', 'Marie', '2002-07-22', 'Fianarantsoa', 2, 2, 2,2);
 
 
 -- Insertion des types de formation avec id manuel
@@ -57,13 +64,13 @@ VALUES
 INSERT INTO formations (id, nom, type_formation_id)
 VALUES 
 (1, 'Académique', 1), -- Académique
-(2, 'Atelier Luban', 2),          -- Professionnel
+(2, 'Atelier Luban', 2),-- Professionnel
 (3, 'Electrique Industrielle', 2), -- Académique
 (4, 'Tecnologie Information', 2),-- Professionnel
 (5, 'Maintenance automobile', 2);-- Professionnel
 
 -- Insertion des données avec id manuel
-INSERT INTO formation_etudiants (id, etudiants_id, formation_id, date_formation)
+INSERT INTO formation_etudiants (id, etudiant_id, formation_id, date_formation)
 VALUES
 (1, 1, 1, '2025-01-10'), 
 (2, 2, 2, '2025-02-15'); 
@@ -103,3 +110,7 @@ INSERT INTO niveau_etudiants (
     2024,
     NOW()
 );
+
+INSERT INTO type_droits (id, nom) VALUES
+(1, 'Pédagogique'),
+(2, 'Administratif');

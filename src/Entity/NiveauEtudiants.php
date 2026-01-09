@@ -32,6 +32,9 @@ class NiveauEtudiants
     #[ORM\JoinColumn(nullable: false)]
     private ?Etudiants $etudiant = null;
 
+    #[ORM\ManyToOne(inversedBy: 'niveauEtudiants')]
+    private ?StatusEtudiants $statusEtudiant = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -93,6 +96,18 @@ class NiveauEtudiants
     public function setEtudiant(?Etudiants $etudiant): static
     {
         $this->etudiant = $etudiant;
+
+        return $this;
+    }
+
+    public function getStatusEtudiant(): ?StatusEtudiants
+    {
+        return $this->statusEtudiant;
+    }
+
+    public function setStatusEtudiant(?StatusEtudiants $statusEtudiant): static
+    {
+        $this->statusEtudiant = $statusEtudiant;
 
         return $this;
     }

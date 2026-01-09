@@ -23,10 +23,12 @@ class FormationEtudiantsService
         $this->em->flush();
         return $formationEtudiant;
     }
+    
     public function getDernierFormationParEtudiant(Etudiants $etudiant): ?FormationEtudiants
     {
         $formationEtudiant = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
         return $formationEtudiant;
     }
+    
     
 }

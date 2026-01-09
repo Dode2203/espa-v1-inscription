@@ -27,12 +27,16 @@ inscription
                 -propos 
             getAllEcolage(Etudiant) --zo
             getNiveauSuivant(Etudiant) -- dode --ok
-            insertionDroit(Etudiant,montant,dateVersement,TypeDroit) -- dode
             isValideEcolage(Etudiant) si etudiant academique toujours valide --- precedent --zo
-            getDroit(Etudiant,date) return droit pedagogique et / ou administratif
-            isValidDroit(Etudiant,date) superieur ou = a deux  getDroit(Etudiant,date) ->valide
+             --transaction
+                insertionDroit(Etudiant,montant,dateVersement,TypeDroit) -- dode --ok
+                insererPaymentEcolage() -- dode -- ok
+                insertionNiveauEtudiant() -- dode -- ok
+            getDroit(Etudiant,annee) return droit pedagogique et / ou administratif -- ok
+            isValidDroit(Etudiant,annee) superieur ou = a deux  getDroit(Etudiant,date) ->valide
             montantEcolage(Etudiant) toujours 0 pour les academique
             validationPaymentEcolage(Etudiant,montant,tranche,date) return la derniere tranche payer , 0 si ce n'il n'y a pas encore
-            paymentEcolage(Etudiant,montant,tranche,date) 
-            insererEcolage()
+             
+           
+                
 
