@@ -17,3 +17,17 @@ git checkout main
 
 git config --global user.name "Dode2203"
 git config --global user.email "randriadode@gmail.com"
+
+
+#Pour creer une branche
+git branch Dode_front
+
+#Pour changer de branche
+git checkout Dode_front
+
+#Pour connaitre sur quel branch on entités
+git branch
+
+#Pour envoyer le branch sur github
+git push -u origin Dode_front
+
