@@ -17,8 +17,7 @@ Pour forcer le nettoyage du cache en environnement dev :
 php bin/console cache:clear --env=dev
 
 pour lancer le serveur
-
-php -S 192.168.88.182:8000 -t public
+php -S 192.168.2.148:8000 -t public
 
 php -S 10.225.228.30:8000 -t public
 
