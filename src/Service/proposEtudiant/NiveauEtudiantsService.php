@@ -42,7 +42,14 @@ class NiveauEtudiantsService
         $gradeSuivant = $this->niveauService->getNiveauSuivant($niveauEtudiant);
         $niveauEtudiantActuel->setNiveau($gradeSuivant);
         return $niveauEtudiantActuel;
+    }
         
+    public function getNiveauxParEtudiant(Etudiants $etudiant): array
+    {
+        return $this->niveauEtudiantsRepository->findBy(
+            ['etudiant' => $etudiant],
+            ['annee' => 'ASC'] // Tri par année croissante
+        );
     }
     
 }
