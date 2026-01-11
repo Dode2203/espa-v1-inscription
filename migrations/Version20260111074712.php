@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260106182007 extends AbstractMigration
+final class Version20260111074712 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -38,14 +38,15 @@ final class Version20260106182007 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_E80152365200282E ON formation_etudiants (formation_id)');
         $this->addSql('CREATE TABLE formations (id SERIAL NOT NULL, type_formation_id INT NOT NULL, nom VARCHAR(100) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_40902137D543922B ON formations (type_formation_id)');
-        $this->addSql('CREATE TABLE inscrits (id SERIAL NOT NULL, utilisateur_id INT NOT NULL, etudiant_id INT NOT NULL, description VARCHAR(255) NOT NULL, date_inscription TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE inscrits (id SERIAL NOT NULL, utilisateur_id INT NOT NULL, etudiant_id INT NOT NULL, description VARCHAR(255) NOT NULL, date_inscription TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, matricule VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_2644257FFB88E14F ON inscrits (utilisateur_id)');
         $this->addSql('CREATE INDEX IDX_2644257FDDEAB1A3 ON inscrits (etudiant_id)');
-        $this->addSql('CREATE TABLE mentions (id SERIAL NOT NULL, nom VARCHAR(100) NOT NULL, PRIMARY KEY(id))');
-        $this->addSql('CREATE TABLE niveau_etudiants (id SERIAL NOT NULL, niveau_id INT NOT NULL, mention_id INT NOT NULL, etudiant_id INT NOT NULL, annee INT NOT NULL, date_insertion TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE mentions (id SERIAL NOT NULL, nom VARCHAR(100) NOT NULL, abr VARCHAR(20) DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE niveau_etudiants (id SERIAL NOT NULL, niveau_id INT NOT NULL, mention_id INT NOT NULL, etudiant_id INT NOT NULL, status_etudiant_id INT DEFAULT NULL, annee INT NOT NULL, date_insertion TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_70ADE61DB3E9C81 ON niveau_etudiants (niveau_id)');
         $this->addSql('CREATE INDEX IDX_70ADE61D7A4147F0 ON niveau_etudiants (mention_id)');
         $this->addSql('CREATE INDEX IDX_70ADE61DDDEAB1A3 ON niveau_etudiants (etudiant_id)');
+        $this->addSql('CREATE INDEX IDX_70ADE61DD930C452 ON niveau_etudiants (status_etudiant_id)');
         $this->addSql('CREATE TABLE niveaux (id SERIAL NOT NULL, nom VARCHAR(100) NOT NULL, type SMALLINT NOT NULL, grade SMALLINT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE parcours (id SERIAL NOT NULL, mention_id INT NOT NULL, nom VARCHAR(100) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_99B1DEE37A4147F0 ON parcours (mention_id)');
@@ -56,6 +57,7 @@ final class Version20260106182007 extends AbstractMigration
         $this->addSql('CREATE TABLE role (id SERIAL NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE sexes (id SERIAL NOT NULL, nom VARCHAR(50) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE status (id SERIAL NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE status_etudiants (id SERIAL NOT NULL, name VARCHAR(50) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE type_droits (id SERIAL NOT NULL, nom VARCHAR(100) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE type_formations (id SERIAL NOT NULL, nom VARCHAR(100) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE utilisateur (id SERIAL NOT NULL, role_id INT NOT NULL, status_id INT DEFAULT NULL, email VARCHAR(255) NOT NULL, mdp VARCHAR(255) NOT NULL, nom VARCHAR(255) NOT NULL, prenom VARCHAR(255) NOT NULL, date_creation TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
@@ -77,6 +79,7 @@ final class Version20260106182007 extends AbstractMigration
         $this->addSql('ALTER TABLE niveau_etudiants ADD CONSTRAINT FK_70ADE61DB3E9C81 FOREIGN KEY (niveau_id) REFERENCES niveaux (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE niveau_etudiants ADD CONSTRAINT FK_70ADE61D7A4147F0 FOREIGN KEY (mention_id) REFERENCES mentions (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE niveau_etudiants ADD CONSTRAINT FK_70ADE61DDDEAB1A3 FOREIGN KEY (etudiant_id) REFERENCES etudiants (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE niveau_etudiants ADD CONSTRAINT FK_70ADE61DD930C452 FOREIGN KEY (status_etudiant_id) REFERENCES status_etudiants (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE parcours ADD CONSTRAINT FK_99B1DEE37A4147F0 FOREIGN KEY (mention_id) REFERENCES mentions (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE payements_ecolages ADD CONSTRAINT FK_A6D31440DDEAB1A3 FOREIGN KEY (etudiant_id) REFERENCES etudiants (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE payements_ecolages ADD CONSTRAINT FK_A6D31440FB88E14F FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
@@ -104,6 +107,7 @@ final class Version20260106182007 extends AbstractMigration
         $this->addSql('ALTER TABLE niveau_etudiants DROP CONSTRAINT FK_70ADE61DB3E9C81');
         $this->addSql('ALTER TABLE niveau_etudiants DROP CONSTRAINT FK_70ADE61D7A4147F0');
         $this->addSql('ALTER TABLE niveau_etudiants DROP CONSTRAINT FK_70ADE61DDDEAB1A3');
+        $this->addSql('ALTER TABLE niveau_etudiants DROP CONSTRAINT FK_70ADE61DD930C452');
         $this->addSql('ALTER TABLE parcours DROP CONSTRAINT FK_99B1DEE37A4147F0');
         $this->addSql('ALTER TABLE payements_ecolages DROP CONSTRAINT FK_A6D31440DDEAB1A3');
         $this->addSql('ALTER TABLE payements_ecolages DROP CONSTRAINT FK_A6D31440FB88E14F');
@@ -126,6 +130,7 @@ final class Version20260106182007 extends AbstractMigration
         $this->addSql('DROP TABLE role');
         $this->addSql('DROP TABLE sexes');
         $this->addSql('DROP TABLE status');
+        $this->addSql('DROP TABLE status_etudiants');
         $this->addSql('DROP TABLE type_droits');
         $this->addSql('DROP TABLE type_formations');
         $this->addSql('DROP TABLE utilisateur');

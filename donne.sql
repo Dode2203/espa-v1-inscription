@@ -91,10 +91,19 @@ INSERT INTO niveaux (nom, type, grade) VALUES
 ('Master 1', 1, 4),
 ('Master 2', 1, 5);
 
-INSERT INTO mentions (id, nom) VALUES
-(1, 'Telecommunications'),
-(2, 'Genie Logiciel'),
-(3, 'Electronique');
+INSERT INTO niveaux (nom, type, grade) VALUES
+('LP 1', 2, 1),
+('LP 2', 2, 2),
+('LP 3', 2, 3),
+('MP 1', 2, 4),
+('MP', 2, 5);
+
+INSERT INTO mentions (id, nom,abr) VALUES
+(1, 'Telecommunications','TCO'),
+(2, 'Genie Logiciel','GLI'),
+(3, 'Electronique', 'ELEC'),
+(4, 'Reseaux et Systeme','RSY'),
+(5, 'Maintenance Industrielle','MI');
 
 
 INSERT INTO niveau_etudiants (
@@ -102,13 +111,15 @@ INSERT INTO niveau_etudiants (
     mention_id,
     etudiant_id,
     annee,
-    date_insertion
+    date_insertion,
+    status_etudiant_id
 ) VALUES (
     1,
     1,
     1,
     2024,
-    NOW()
+    NOW(),
+    1
 );
 
 INSERT INTO type_droits (id, nom) VALUES
