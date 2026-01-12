@@ -28,6 +28,9 @@ class Inscrits
     #[ORM\JoinColumn(nullable: false)]
     private ?Etudiants $etudiant = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $matricule = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -77,6 +80,18 @@ class Inscrits
     public function setEtudiant(?Etudiants $etudiant): static
     {
         $this->etudiant = $etudiant;
+
+        return $this;
+    }
+
+    public function getMatricule(): ?string
+    {
+        return $this->matricule;
+    }
+
+    public function setMatricule(string $matricule): static
+    {
+        $this->matricule = $matricule;
 
         return $this;
     }
