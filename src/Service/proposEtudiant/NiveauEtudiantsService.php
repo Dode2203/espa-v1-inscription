@@ -13,10 +13,11 @@ class NiveauEtudiantsService
     private $niveauService;
     private EntityManagerInterface $em;
 
-    public function __construct(NiveauEtudiantsRepository $niveauEtudiantsRepository,NiveauService $niveauService)
+    public function __construct(NiveauEtudiantsRepository $niveauEtudiantsRepository,NiveauService $niveauService, EntityManagerInterface $em)
     {
         $this->niveauEtudiantsRepository = $niveauEtudiantsRepository;
         $this->niveauService = $niveauService;
+        $this->em = $em;
 
     }
     
@@ -31,7 +32,7 @@ class NiveauEtudiantsService
         $niveauEtudiant = $this->niveauEtudiantsRepository->getDernierNiveauParEtudiant($etudiant);
         return $niveauEtudiant;
     }
-    public function getNiveauEtudiantSuivant(Etudiants $etudiant): ?Niveaux
+    public function getNiveauEtudiantSuivant(Etudiants $etudiant): ?NiveauEtudiants
     {
        $niveauEtudiantActuel = $this->getDernierNiveauParEtudiant($etudiant);
          if (!$niveauEtudiantActuel) {
@@ -39,7 +40,8 @@ class NiveauEtudiantsService
          }
         $niveauEtudiant= $niveauEtudiantActuel->getNiveau();
         $gradeSuivant = $this->niveauService->getNiveauSuivant($niveauEtudiant);
-        return $gradeSuivant;
+        $niveauEtudiantActuel->setNiveau($gradeSuivant);
+        return $niveauEtudiantActuel;
         
     }
     

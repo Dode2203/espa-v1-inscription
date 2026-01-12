@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\BaccRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: BaccRepository::class)]
 class Bacc
@@ -21,6 +23,13 @@ class Bacc
 
     #[ORM\Column(length: 50)]
     private ?string $serie = null;
+    #[ORM\OneToMany(mappedBy: 'bacc', targetEntity: Etudiants::class)]
+    private Collection $etudiants;
+
+    public function __construct() {
+        $this->etudiants = new ArrayCollection();
+    }
+
 
 
     public function getId(): ?int

@@ -14,9 +14,10 @@ class FormationEtudiants
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'etudiant')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Etudiants $etudiants = null;
+    #[ORM\ManyToOne(inversedBy: 'formationEtudiants')]
+    #[ORM\JoinColumn(name: 'etudiant_id', referencedColumnName: 'id', nullable: false)]
+    private ?Etudiants $etudiant = null;
+
 
     #[ORM\ManyToOne(inversedBy: 'formation')]
     #[ORM\JoinColumn(nullable: false)]
@@ -32,12 +33,12 @@ class FormationEtudiants
 
     public function getEtudiants(): ?Etudiants
     {
-        return $this->etudiants;
+        return $this->etudiant;
     }
 
-    public function setEtudiants(?Etudiants $etudiants): static
+    public function setEtudiant(?Etudiants $etudiant): static
     {
-        $this->etudiants = $etudiants;
+        $this->etudiant = $etudiant;
 
         return $this;
     }

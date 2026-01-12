@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Ecolages;
+use App\Entity\Formations;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,25 @@ class EcolagesRepository extends ServiceEntityRepository
         parent::__construct($registry, Ecolages::class);
     }
 
-    //    /**
-    //     * @return Ecolages[] Returns an array of Ecolages objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('e')
-    //            ->andWhere('e.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('e.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findEcolagesByEtudiant(string $etudiantId): array
+    {
+        return $this->createQueryBuilder('e')
+            ->join('e.formations', 'f')  // Relation avec Formations
+            ->join('f.formation', 'fe')  // Relation avec FormationEtudiants
+            ->join('fe.etudiants', 'et') // Relation avec Etudiants
+            ->where('et.id = :etudiantId')
+            ->setParameter('etudiantId', $etudiantId)
+            ->orderBy('e.dateEcolage', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Ecolages
-    //    {
-    //        return $this->createQueryBuilder('e')
-    //            ->andWhere('e.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findEcolagesByFormation(Formations $formation): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.formations = :formation')
+            ->setParameter('formation', $formation)
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -1,34 +1,36 @@
 <?php
 
-namespace App\Service\proposEtudiant;
-use App\Repository\EtudiantsRepository;
+namespace App\Service\droit;
+use App\Entity\Droits;
+use App\Entity\Utilisateur;
+use App\Repository\DroitsRepository;
 use App\Entity\Etudiants;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
 class DroitService
-{   private $etudiantsRepository;
+{   private $droitsRepository;
+    private $typeDroitsService;
     private EntityManagerInterface $em;
 
-    public function __construct(EtudiantsRepository $etudiantsRepository)
+    public function __construct(DroitsRepository $droitsRepository, TypeDroitService $typeDroitsRepository, EntityManagerInterface $em)
     {
-        $this->etudiantsRepository = $etudiantsRepository;
+        $this->droitsRepository = $droitsRepository;   
+        $this->typeDroitsService = $typeDroitsRepository;
+        $this->em = $em;
 
     }
-    public function rechercheEtudiant ($nom,$prenom): ?Etudiants 
+    public function insertDroit(Utilisateur $utilisateur,Etudiants $etudiant,Droits $droit,$typeDroit): Droits
     {
-        return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nom,$prenom);
-      
-    }
-    public function insertEtudiant(Etudiants $etudiant): Etudiants
-    {
-        $this->em->persist($etudiant);
+
+        $droit->setUtilisateur($utilisateur);
+        $typeDroitEntity = $this->typeDroitsService->getById($typeDroit);
+        $droit->setTypeDroit($typeDroitEntity);
+        $droit->setEtudiant($etudiant);
+        $this->em->persist($droit);
         $this->em->flush();
-        return $etudiant;
+        return $droit;
     }
-    public function getEtudiantById(int $id): ?Etudiants
-    {
-        return $this->etudiantsRepository->find($id);
-    }
+    
     
 }

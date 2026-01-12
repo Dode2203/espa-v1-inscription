@@ -21,14 +21,13 @@ class Propos
     #[ORM\Column(length: 255)]
     private ?string $email = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $sexe = null;
 
     /**
      * @var Collection<int, Etudiants>
      */
     #[ORM\OneToMany(targetEntity: Etudiants::class, mappedBy: 'propos')]
     private Collection $propos;
+
 
     public function __construct()
     {
@@ -64,17 +63,6 @@ class Propos
         return $this;
     }
 
-    public function getSexe(): ?string
-    {
-        return $this->sexe;
-    }
-
-    public function setSexe(string $sexe): static
-    {
-        $this->sexe = $sexe;
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, Etudiants>
@@ -105,4 +93,5 @@ class Propos
 
         return $this;
     }
+
 }
