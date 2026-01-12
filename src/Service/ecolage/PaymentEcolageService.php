@@ -64,7 +64,8 @@ class PaymentEcolageService
      * Vérifie si l'étudiant peut s'inscrire en fonction de son niveau, de sa formation et de ses écolages
      * - Si c'est une première inscription (pas de niveau enregistré), c'est valide
      * - Si la formation est de type académique, c'est toujours valide
-     * - Si la formation est professionnelle et que l'étudiant a un niveau, on vérifie les écolages
+     * - Si la formation est professionnelle, on vérifie les écolages pour toutes les années d'études
+     *   où l'étudiant a été inscrit
      */
     public function isValideEcolagePourReinscription(Etudiants $etudiant): bool
     {
@@ -75,20 +76,28 @@ class PaymentEcolageService
         $typeFormation = $formation->getTypeFormation();
         
         // Si la formation est académique, on ne vérifie pas les écolages
-        if ($typeFormation && $typeFormation->getId() === 1)
-        {    return true;    }
+        if ($typeFormation && $typeFormation->getId() === 1) {
+            return true;
+        }
         
-        // Vérifier si l'étudiant a déjà un niveau enregistré
-        $niveauEtudiant = $this->niveauEtudiantsService->getDernierNiveauParEtudiant($etudiant);
+        // Récupérer tous les niveaux de l'étudiant triés par année
+        $niveauxEtudiant = $this->niveauEtudiantsService->getNiveauxParEtudiant($etudiant);
         
         // Si l'étudiant n'a pas encore de niveau, c'est une première inscription
-        if (!$niveauEtudiant) 
-        {    return true;    }
+        if (empty($niveauxEtudiant)) {
+            return true;
+        }
         
-        // Pour les formations professionnelles avec niveau, vérifier les écolages de l'année précédente
-        $anneeActuelle = (int) date('Y');
-        $anneePrecedente = $anneeActuelle - 1;
+        // Pour chaque année où l'étudiant a un niveau, vérifier les écolages
+        foreach ($niveauxEtudiant as $niveau) {
+            $annee = $niveau->getAnnee();
+            
+            // Vérifier si l'écolage est payé pour cette année
+            if (!$this->isEcolageCompletPourAnnee($etudiant, $annee)) {
+                return false;               // Si un écolage n'est pas payé pour une année, on retourne false
+            }
+        }
         
-        return $this->isEcolageCompletPourAnnee($etudiant, $anneePrecedente);
+        return true; // Tous les écolages sont payés pour toutes les années
     }
 }

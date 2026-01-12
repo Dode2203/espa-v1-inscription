@@ -196,6 +196,7 @@ class EtudiantsController extends AbstractController
                 'mention' => $niveauActuel
                     ? $niveauActuel->getMention()->getNom()
                     : null,
+                'statusEtudiant' => $niveauActuel?->getStatusEtudiant()?->getName(),
             ];
 
             return new JsonResponse([
@@ -243,7 +244,7 @@ class EtudiantsController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
 
-            $requiredFields = ['idEtudiant','typeFormation','refAdmin', 'dateAdmin','montantAdmin','refPedag','datePedag','montantPedag','passant'];
+            $requiredFields = ['idEtudiant','typeFormation','refAdmin', 'dateAdmin','montantAdmin','refPedag','datePedag','montantPedag','idNiveau','idFormation'];
             
             if(isset($data['typeFormation']) && $data['typeFormation']=="Professionnel"){
                 $requiredFields[]='montantEcolage';
@@ -266,7 +267,8 @@ class EtudiantsController extends AbstractController
                     'missingFields' => $missingFields
                 ], 400);
             }
-            $passant = $data['passant'];
+            $idNiveau = $data['idNiveau'];
+            $idFormation = $data['idFormation'];
             $token = $this->jwtTokenManager->extractTokenFromRequest($request);
             $arrayToken = $this->jwtTokenManager->extractClaimsFromToken($token);
             $idUser = $arrayToken['id']; // Récupérer l'id de l'utilisateur à partir du token
@@ -296,16 +298,19 @@ class EtudiantsController extends AbstractController
             $payementEcolage->setAnatiny($annee,1,$montantEcolage,$refEcolage, $dateEcolage);
             
 
-            $inscription = $this->inscriptionService->inscrireEtudiantId($idEtudiant,$idUser,$pedagogique,$administratif,$payementEcolage,$passant);
+            $inscription = $this->inscriptionService->inscrireEtudiantId($idEtudiant,$idUser,$pedagogique,$administratif,$payementEcolage,$idNiveau,$idFormation);
 
             return new JsonResponse([
                 'status' => 'success',
                 'data' => [
-                    'inscription' => [
+                    
                         'id' => $inscription->getId(),
+                        'matricule' => $inscription->getMatricule(),
+                        'dateInscription' => $inscription->getDateInscription()->format('Y-m-d'),
+                        'description' => $inscription->getDescription(),
                         // 'nom' => $etudiant->getNom(),
                         // 'prenom' => $etudiant->getPrenom()
-                    ],
+                    
                     // 'ecolages' => $ecolages
                 ]
             ], 200);
@@ -327,4 +332,77 @@ class EtudiantsController extends AbstractController
             }
 
     }
+    #[Route('/niveaux', name: 'etudiant_niveaux', methods: ['GET'])]
+    // #[TokenRequired(['Admin'])]
+    public function getNiveaux(Request $request): JsonResponse
+    {
+        try {
+            $niveauxClass = $this->niveauEtudiantsService->getAllNiveaux();
+            $resultats = [];
+            foreach ($niveauxClass as $niveau) {
+                $resultats[] = [
+                    'id' => $niveau->getId(),
+                    'nom' => $niveau->getNom(),
+                    'grade' => $niveau->getGrade(),
+                ];
+            }
+            return new JsonResponse([
+                'status' => 'success',
+            
+                'data' => $resultats
+            ], 200);
+
+
+        } catch (\Exception $e) {
+                if ($e->getMessage() === 'Inactif') {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'message' => 'Utilsateur inactif'
+                    ], 401); // ← renvoie bien 401
+                }
+
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }
+
+    }
+    #[Route('/formations', name: 'etudiant_formations', methods: ['GET'])]
+    // #[TokenRequired(['Admin'])]
+    public function getFormation(Request $request): JsonResponse
+    {
+        try {
+            $formationClass = $this->formationEtudiantsService->getAllFormations();
+            $resultats = [];
+            foreach ($formationClass as $formation) {
+                $resultats[] = [
+                    'id' => $formation->getId(),
+                    'nom' => $formation->getNom(),
+                    'typeFormation' => $formation->getTypeFormation()->getNom(),
+                ];
+            }
+            return new JsonResponse([
+                'status' => 'success',
+            
+                'data' => $resultats
+            ], 200);
+
+
+        } catch (\Exception $e) {
+                if ($e->getMessage() === 'Inactif') {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'message' => 'Etudiants inactif'
+                    ], 401); // ← renvoie bien 401
+                }
+
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }
+
+    }
+
 }

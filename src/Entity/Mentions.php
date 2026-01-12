@@ -30,6 +30,9 @@ class Mentions
     #[ORM\OneToMany(targetEntity: Parcours::class, mappedBy: 'mention')]
     private Collection $mention;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $abr = null;
+
     public function __construct()
     {
         $this->mentions = new ArrayCollection();
@@ -89,5 +92,17 @@ class Mentions
     public function getMention(): Collection
     {
         return $this->mention;
+    }
+
+    public function getAbr(): ?string
+    {
+        return $this->abr;
+    }
+
+    public function setAbr(?string $abr): static
+    {
+        $this->abr = $abr;
+
+        return $this;
     }
 }
