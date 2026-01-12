@@ -27,5 +27,13 @@ class NiveauService
         $niveauSuivant = $this->niveauxRepository->getNiveauSuivant($niveauActuel);
         return $niveauSuivant;
     }
+    public function getById($id): ?Niveaux
+    {
+        return $this->niveauxRepository->find($id);
+    }
+    public function getAllNiveaux(): array
+    {
+        return $this->niveauxRepository->findAll();
+    }
     
 }

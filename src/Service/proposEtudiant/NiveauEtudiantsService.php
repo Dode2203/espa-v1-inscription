@@ -51,5 +51,50 @@ class NiveauEtudiantsService
             ['annee' => 'ASC'] // Tri par année croissante
         );
     }
+    public function getNiveauxById($id): ?Niveaux
+    {
+        return $this->niveauService->getById($id);
+    }
+    public function affecterNouveauNiveauEtudiant(
+        Etudiants $etudiant,
+        Niveaux $niveau,
+        ?\DateTimeInterface $dateInsertion = null
+    ): NiveauEtudiants
+    {
+        $niveauEtudiant = new NiveauEtudiants();
+        $niveauEtudiant->setEtudiant($etudiant);
+        $niveauEtudiant->setNiveau($niveau);
+
+        // Si la date est null, on met la date actuelle
+        $niveauEtudiant->setDateInsertion(
+            $dateInsertion ?? new \DateTime()
+        );
+        return $niveauEtudiant;
+    }
+    public function isValideNiveauVaovao(
+        ?Niveaux $niveauxSuivant,
+        ?Niveaux $niveauxPrecedent
+    ): void
+    {
+        $gradeAcien = $niveauxPrecedent?->getGrade() ?? 0;
+        $gradeVaovao = $niveauxSuivant?->getGrade() ?? 0;
+
+        $elanelana = $gradeVaovao - $gradeAcien;
+
+        if ($elanelana < 0) {
+            throw new Exception(
+                "Le niveau suivant ne peut pas être inférieur au niveau précédent."
+            );
+        } elseif ($elanelana > 1) {
+            throw new Exception(
+                "Le niveau suivant ne peut pas sauter plus d'un grade."
+            );
+        }
+    }
+    public function getAllNiveaux(): array
+    {
+        return $this->niveauService->getAllNiveaux();
+    }
+
     
 }

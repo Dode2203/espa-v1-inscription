@@ -4,16 +4,22 @@ namespace App\Service\proposEtudiant;
 use App\Repository\FormationEtudiantsRepository;
 use App\Entity\FormationEtudiants;
 use App\Entity\Etudiants;
+use App\Entity\Formations;
+use App\Repository\FormationsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
 class FormationEtudiantsService
 {   private $formationEtudiantsRepository;
-    private EntityManagerInterface $em;
+    private $em;
+    private $formationRepository;
 
-    public function __construct(FormationEtudiantsRepository $formationEtudiantsRepository)
+    public function __construct(FormationEtudiantsRepository $formationEtudiantsRepository,EntityManagerInterface $em,FormationsRepository $formationsRepository)
     {
         $this->formationEtudiantsRepository = $formationEtudiantsRepository;
+        $this->em = $em;
+        $this->formationRepository = $formationsRepository;
+        
 
     }
     
@@ -29,6 +35,34 @@ class FormationEtudiantsService
         $formationEtudiant = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
         return $formationEtudiant;
     }
-    
+    public function getFormationById($id): ?Formations
+    {
+        return $this->formationRepository->find($id);
+    }
+    public function isEgalFormation(Formations $formation1, Formations $formation2): bool
+    {
+        return $formation1->getNom() === $formation2->getNom();
+    }
+    public function affecterNouvelleFormationEtudiant(
+        Etudiants $etudiant,
+        Formations $formation,
+        ?\DateTimeInterface $dateFormation = null
+    ): FormationEtudiants
+    {
+        $formationEtudiant = new FormationEtudiants();
+        $formationEtudiant->setEtudiant($etudiant);
+        $formationEtudiant->setFormation($formation);
+
+        // Si la date est null, on met la date actuelle
+        $formationEtudiant->setDateFormation(
+            $dateFormation ?? new \DateTime()
+        );
+
+        return $formationEtudiant;
+    }
+    public function getAllFormations(): array
+    {
+        return $this->formationRepository->findAll();
+    }
     
 }

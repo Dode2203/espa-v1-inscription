@@ -40,7 +40,7 @@ php bin/console doctrine:database:drop --force
 
 #pour lancer le serveur
 
-php -S 192.168.1.212:8000 -t public
+php -S 192.168.88.108:8000 -t public
 php -S 192.168.2.143:8000 -t public
 
 php -S 10.225.228.30:8000 -t public
