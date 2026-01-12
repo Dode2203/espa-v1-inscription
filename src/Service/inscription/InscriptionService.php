@@ -118,12 +118,17 @@ class InscriptionService
             $niveauEtudiantActuel->setNiveau($niveau);
             $anneeDate = new \DateTime();
             $annee = (int)$anneeDate->format('Y');
-            $niveauEtudiantActuel->setDateInsertion(new \DateTime());
-            $niveauEtudiantActuel->setAnnee($annee);
+
+
+            $nouvelleNiveauEtudiant = $this->niveauEtudiantsService->affecterNouveauNiveauEtudiant(
+                $etudiant,
+                $niveauEtudiantActuel->getNiveau(),
+                new \DateTime()
+            );
+            $nouvelleNiveauEtudiant->setMention($niveauEtudiantActuel->getMention());   
+            $nouvelleNiveauEtudiant->setAnnee($annee);
             
-
-
-            $this->niveauEtudiantsService->insertNiveauEtudiant($niveauEtudiantActuel);
+            $this->niveauEtudiantsService->insertNiveauEtudiant($nouvelleNiveauEtudiant);
 
             $description = "Inscription de l'étudiant en " .$niveauEtudiantActuel->getNiveau()->getNom() . " - " .
                 $etudiant->getNom() . " " . $etudiant->getPrenom() ;

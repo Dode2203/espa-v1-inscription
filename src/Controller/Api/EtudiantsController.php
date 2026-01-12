@@ -303,14 +303,14 @@ class EtudiantsController extends AbstractController
             return new JsonResponse([
                 'status' => 'success',
                 'data' => [
-                    'inscription' => [
+                    
                         'id' => $inscription->getId(),
                         'matricule' => $inscription->getMatricule(),
                         'dateInscription' => $inscription->getDateInscription()->format('Y-m-d'),
                         'description' => $inscription->getDescription(),
                         // 'nom' => $etudiant->getNom(),
                         // 'prenom' => $etudiant->getPrenom()
-                    ],
+                    
                     // 'ecolages' => $ecolages
                 ]
             ], 200);
