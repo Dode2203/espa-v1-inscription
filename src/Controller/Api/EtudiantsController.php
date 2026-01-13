@@ -197,12 +197,21 @@ class EtudiantsController extends AbstractController
             ];
 
             $formation = [
+                'idFormation' => $formationEtudiant
+                    ? $formationEtudiant->getFormation()->getId()
+                    : null,
                 'formation' => $formationEtudiant
                     ? $formationEtudiant->getFormation()->getNom()
                     : null,
                 'formationType' => $formationEtudiant
                     ? $formationEtudiant->getFormation()
                         ->getTypeFormation()->getNom()
+                    : null,
+                'typeNiveau' => $niveauActuel
+                    ? $niveauActuel->getNiveau()->getType()
+                    : null,
+                'gradeNiveau' => $niveauActuel
+                    ? $niveauActuel->getNiveau()->getGrade()
                     : null,
                 'niveau' => $niveauActuel
                     ? $niveauActuel->getNiveau()->getNom()
@@ -357,6 +366,7 @@ class EtudiantsController extends AbstractController
                 $resultats[] = [
                     'id' => $niveau->getId(),
                     'nom' => $niveau->getNom(),
+                    'type' => $niveau->getType(),
                     'grade' => $niveau->getGrade(),
                 ];
             }
