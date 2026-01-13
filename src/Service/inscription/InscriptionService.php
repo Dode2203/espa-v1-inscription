@@ -173,6 +173,21 @@ class InscriptionService
 
 
     }
+    public function dejaInscritEtudiantAnnee(Etudiants $etudiant,int $annee): bool 
+    {
+        $valiny= false;
+        $inscript= $this->inscriptionRepository->getByEtudiantAnnee($etudiant,$annee);
+        if ($inscript) {
+            $valiny= true;
+        }    
+        return $valiny;
+    }
+    
+    public function dejaInscritEtudiantAnneeId($idEtudiant,int $annee): bool 
+    {
+        $etudiant= $this->etudiantsService->getEtudiantById($idEtudiant);
+        return $this->dejaInscritEtudiantAnnee($etudiant,$annee);
+    }
     
     
 }
