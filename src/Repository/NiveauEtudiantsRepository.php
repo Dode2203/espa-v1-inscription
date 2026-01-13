@@ -58,6 +58,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
 
             return $this->createQueryBuilder('i')
                 ->andWhere('i.dateInsertion BETWEEN :debut AND :fin')
+                ->andWhere('i.niveau IS NOT NULL')
                 ->setParameter('debut', $dateDebut)
                 ->setParameter('fin', $dateFin)
                 ->orderBy('i.dateInsertion', 'ASC')
