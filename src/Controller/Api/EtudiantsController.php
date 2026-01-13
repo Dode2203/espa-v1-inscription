@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Annotation\TokenRequired;
+use App\Service\proposEtudiant\MentionsService;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 #[Route('/etudiants')]
@@ -30,8 +31,12 @@ class EtudiantsController extends AbstractController
     private NiveauEtudiantsService $niveauEtudiantsService;
     private FormationEtudiantsService $formationEtudiantsService;
     private InscriptionService $inscriptionService;
+    private MentionsService $mentionsService;
     private DroitsRepository $droitsRepository;
     private PayementsEcolagesRepository $payementsEcolagesRepository;
+
+    // public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService,InscriptionService $inscriptionService, MentionsService $mentionsService)
+    // {
 
     public function __construct(
         EntityManagerInterface $em,
@@ -41,6 +46,7 @@ class EtudiantsController extends AbstractController
         NiveauEtudiantsService $niveauEtudiantsService,
         FormationEtudiantsService $formationEtudiantsService,
         InscriptionService $inscriptionService,
+        MentionsService $mentionsService,
         DroitsRepository $droitsRepository,
         PayementsEcolagesRepository $payementsEcolagesRepository
     ) {
@@ -51,6 +57,7 @@ class EtudiantsController extends AbstractController
         $this->niveauEtudiantsService = $niveauEtudiantsService;
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->inscriptionService = $inscriptionService;
+        $this->mentionsService = $mentionsService;
         $this->droitsRepository = $droitsRepository;
         $this->payementsEcolagesRepository = $payementsEcolagesRepository;
     }
@@ -153,7 +160,18 @@ class EtudiantsController extends AbstractController
             }
 
             $idEtudiant = (int) $idEtudiant;
+            $date = new \DateTime(); // ou une autre date
+            $annee = (int)$date->format('Y');
             // 🔹 Recherche par ID
+            $dejaInscrit = $this->inscriptionService->dejaInscritEtudiantAnneeId($idEtudiant,$annee);
+            if($dejaInscrit){
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant deja inscrit',
+                    'error' => 'Étudiant deja inscrit'
+                ], 400);
+                
+            }
             $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
 
             if (!$etudiant) {
@@ -399,7 +417,7 @@ class EtudiantsController extends AbstractController
                 if ($e->getMessage() === 'Inactif') {
                     return new JsonResponse([
                         'status' => 'error',
-                        'message' => 'Etudiants inactif'
+                        'message' => 'Utilisateur inactif'
                     ], 401); // ← renvoie bien 401
                 }
 
@@ -409,6 +427,40 @@ class EtudiantsController extends AbstractController
                 ], 400);
             }
 
+    }
+    #[Route('/mentions', name:'get_mention', methods: ['GET'])]
+    // #[TokenRequired(['Admin'])]
+    public function getAllMentions(Request $request): JsonResponse{
+        try {
+            $mentionClass = $this->mentionsService->getAllMentions();
+            $resultats = [];
+            foreach ($mentionClass as $mention) {
+                $resultats[] = [
+                    'id' => $mention->getId(),
+                    'nom' => $mention->getNom(),
+                    'abr' => $mention->getAbr(),
+                ];
+            }
+            return new JsonResponse([
+                'status' => 'success',
+            
+                'data' => $resultats
+            ], 200);
+
+
+        } catch (\Exception $e) {
+                if ($e->getMessage() === 'Inactif') {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'message' => 'Utilisateur inactif'
+                    ], 401); // ← renvoie bien 401
+                }
+
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }        
     }
 
     #[Route('/inscrits-par-annee', name: 'etudiants_inscrits_par_annee', methods: ['GET'])]

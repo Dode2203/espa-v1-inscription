@@ -1,5 +1,6 @@
 inscription
-
+        affichage
+            identite
         table 
             Bacc(id_bacc,annee,serie)
             Cin(id_cin,date_cin,lieu,ancien,nouveau)
@@ -35,8 +36,21 @@ inscription
             getDroit(Etudiant,annee) return droit pedagogique et / ou administratif -- ok
             isValidDroit(Etudiant,annee) superieur ou = a deux  getDroit(Etudiant,date) ->valide
             montantEcolage(Etudiant) toujours 0 pour les academique
-            validationPaymentEcolage(Etudiant,montant,tranche,date) return la derniere tranche payer , 0 si ce n'il n'y a pas encore
-             
-           
+            validationPaymentEcolage(Etudiant,montant,tranche,date) return la derniere tranche payer , 0 si ce n'il n'y a pas encore --zo
+            getAllNiveau()
+            getAllFormation()
+            inscrire(etudiant,utilisateur,niveau,formation)     
+        
+            
+rechercheEtudiant
+    affichage
+        formulaireRecherche(listeMention,listeNiveau)
+        exporterPdf()
+    fonction
+        getAllMention()
+        getAllListeNiveau()
+        rechercheParMentionNiveaux(mention,niveau)
+        
+                  
                 
 

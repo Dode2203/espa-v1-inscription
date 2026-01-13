@@ -10,6 +10,7 @@ use App\Entity\Formations;
 use App\Entity\Niveaux;
 use App\Repository\InscritsRepository;
 use App\Repository\DroitsRepository;
+use App\Repository\PayementsEcolagesRepository;
 use App\Service\proposEtudiant\EtudiantsService;
 use App\Service\UtilisateurService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -42,7 +43,8 @@ class InscriptionService
         UtilisateurService $utilisateurService,
         EntityManagerInterface $em, 
         FormationEtudiantsService $formationEtudiantsService,
-        DroitsRepository $droitsRepository
+        DroitsRepository $droitsRepository,
+        PayementsEcolagesRepository $payementsEcolagesRepository
     )
     {
         $this->inscriptionRepository = $inscriptionsRepository;
@@ -54,9 +56,9 @@ class InscriptionService
         $this->em = $em;
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->droitsRepository = $droitsRepository;
-
-
+        $this->payementsEcolagesRepository = $payementsEcolagesRepository;
     }
+
     public function affecterNouveauInscrit(Etudiants $etudiant,Utilisateur $utilisateur,$description,$numeroInscription,?\DateTimeInterface $dateInscription = null) : Inscrits
     {
         $inscription = new Inscrits();
@@ -185,6 +187,21 @@ class InscriptionService
         return $inscription;
 
 
+    }
+    public function dejaInscritEtudiantAnnee(Etudiants $etudiant,int $annee): bool 
+    {
+        $valiny= false;
+        $inscript= $this->inscriptionRepository->getByEtudiantAnnee($etudiant,$annee);
+        if ($inscript) {
+            $valiny= true;
+        }    
+        return $valiny;
+    }
+    
+    public function dejaInscritEtudiantAnneeId($idEtudiant,int $annee): bool 
+    {
+        $etudiant= $this->etudiantsService->getEtudiantById($idEtudiant);
+        return $this->dejaInscritEtudiantAnnee($etudiant,$annee);
     }
 
     public function getListeEtudiantsInscritsParAnnee(int $annee): array

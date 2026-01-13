@@ -15,7 +15,7 @@ class NiveauEtudiants
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'niveaux')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Niveaux $niveau = null;
 
     #[ORM\ManyToOne(inversedBy: 'mentions')]
