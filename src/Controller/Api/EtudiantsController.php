@@ -147,7 +147,18 @@ class EtudiantsController extends AbstractController
             }
 
             $idEtudiant = (int) $idEtudiant;
+            $date = new \DateTime(); // ou une autre date
+            $annee = (int)$date->format('Y');
             // 🔹 Recherche par ID
+            $dejaInscrit = $this->inscriptionService->dejaInscritEtudiantAnneeId($idEtudiant,$annee);
+            if($dejaInscrit){
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant deja inscrit',
+                    'error' => 'Étudiant deja inscrit'
+                ], 400);
+                
+            }
             $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
 
             if (!$etudiant) {
