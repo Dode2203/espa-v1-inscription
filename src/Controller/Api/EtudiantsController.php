@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Annotation\TokenRequired;
+use App\Service\proposEtudiant\MentionsService;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Vtiful\Kernel\Format;
 
@@ -38,8 +39,9 @@ class EtudiantsController extends AbstractController
     private FormationEtudiantsService $formationEtudiantsService;
 
     private InscriptionService $inscriptionService;
+    private MentionsService $mentionsService;
 
-    public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService,InscriptionService $inscriptionService)
+    public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService,InscriptionService $inscriptionService, MentionsService $mentionsService)
     {
         $this->em = $em;
         $this->etudiantsService = $etudiantsService;
@@ -48,6 +50,7 @@ class EtudiantsController extends AbstractController
         $this->niveauEtudiantsService = $niveauEtudiantsService;
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->inscriptionService = $inscriptionService;
+        $this->mentionsService = $mentionsService;
     }
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
     // #[TokenRequired(['Admin'])]
@@ -404,7 +407,7 @@ class EtudiantsController extends AbstractController
                 if ($e->getMessage() === 'Inactif') {
                     return new JsonResponse([
                         'status' => 'error',
-                        'message' => 'Etudiants inactif'
+                        'message' => 'Utilisateur inactif'
                     ], 401); // ← renvoie bien 401
                 }
 
@@ -414,6 +417,40 @@ class EtudiantsController extends AbstractController
                 ], 400);
             }
 
+    }
+    #[Route('/mentions', name:'get_mention', methods: ['GET'])]
+    // #[TokenRequired(['Admin'])]
+    public function getAllMentions(Request $request): JsonResponse{
+        try {
+            $mentionClass = $this->mentionsService->getAllMentions();
+            $resultats = [];
+            foreach ($mentionClass as $mention) {
+                $resultats[] = [
+                    'id' => $mention->getId(),
+                    'nom' => $mention->getNom(),
+                    'abr' => $mention->getAbr(),
+                ];
+            }
+            return new JsonResponse([
+                'status' => 'success',
+            
+                'data' => $resultats
+            ], 200);
+
+
+        } catch (\Exception $e) {
+                if ($e->getMessage() === 'Inactif') {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'message' => 'Utilisateur inactif'
+                    ], 401); // ← renvoie bien 401
+                }
+
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }        
     }
 
 }
