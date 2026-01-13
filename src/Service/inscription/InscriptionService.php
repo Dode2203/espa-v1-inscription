@@ -9,6 +9,7 @@ use App\Entity\Etudiants;
 use App\Entity\Formations;
 use App\Entity\Niveaux;
 use App\Repository\InscritsRepository;
+use App\Repository\DroitsRepository;
 use App\Service\proposEtudiant\EtudiantsService;
 use App\Service\UtilisateurService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,8 +31,19 @@ class InscriptionService
     private $em;
 
     private $formationEtudiantsService;
+    private $droitsRepository;
 
-    public function __construct(InscritsRepository $inscriptionsRepository,DroitService $droitService,PaymentEcolageService $paymentEcolageService,NiveauEtudiantsService $niveauEtudiantsService,EtudiantsService $etudiantsService,UtilisateurService $utilisateurService,EntityManagerInterface $em, FormationEtudiantsService $formationEtudiantsService)
+    public function __construct(
+        InscritsRepository $inscriptionsRepository,
+        DroitService $droitService,
+        PaymentEcolageService $paymentEcolageService,
+        NiveauEtudiantsService $niveauEtudiantsService,
+        EtudiantsService $etudiantsService,
+        UtilisateurService $utilisateurService,
+        EntityManagerInterface $em, 
+        FormationEtudiantsService $formationEtudiantsService,
+        DroitsRepository $droitsRepository
+    )
     {
         $this->inscriptionRepository = $inscriptionsRepository;
         $this->droitService = $droitService;
@@ -41,6 +53,7 @@ class InscriptionService
         $this->utilisateursService= $utilisateurService;
         $this->em = $em;
         $this->formationEtudiantsService = $formationEtudiantsService;
+        $this->droitsRepository = $droitsRepository;
 
 
     }
@@ -172,6 +185,166 @@ class InscriptionService
         return $inscription;
 
 
+    }
+
+    public function getListeEtudiantsInscritsParAnnee(int $annee): array
+    {
+        // Récupérer tous les étudiants uniques ayant payé des droits pour l'année
+        $etudiantsAvecPaiements = $this->droitsRepository->createQueryBuilder('d')
+            ->select('DISTINCT IDENTITY(d.etudiant) as id')
+            ->where('d.annee = :annee')
+            ->setParameter('annee', $annee)
+            ->getQuery()
+            ->getResult();
+
+        $etudiantsInscrits = [];
+
+        foreach ($etudiantsAvecPaiements as $item) {
+            $etudiant = $this->etudiantsService->getEtudiantById($item['id']);
+
+            if (!$etudiant) {
+                continue;
+            }
+
+            $etudiantsInscrits[] = [
+                'id' => $etudiant->getId(),
+                'nom' => $etudiant->getNom(),
+                'prenom' => $etudiant->getPrenom()
+            ];
+        }
+
+        return $etudiantsInscrits;
+    }
+
+    public function getDetailsEtudiantParAnnee(int $idEtudiant, int $annee): ?array
+    {
+        $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
+
+        if (!$etudiant) {
+            return null;
+        }
+
+        // Vérifier si l'étudiant a payé des droits pour cette année
+        $aPaye = $this->droitsRepository->createQueryBuilder('d')
+            ->select('COUNT(d.id)')
+            ->where('d.etudiant = :etudiant')
+            ->andWhere('d.annee = :annee')
+            ->setParameter('etudiant', $etudiant)
+            ->setParameter('annee', $annee)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        if ($aPaye == 0) {
+            return null; // L'étudiant n'est pas inscrit pour cette année
+        }
+
+        $propos = $etudiant->getPropos();
+        $formationEtudiant = $this->formationEtudiantsService->getDernierFormationParEtudiant($etudiant);
+
+        // Informations de base
+        $details = [
+            'id' => $etudiant->getId(),
+            'nom' => $etudiant->getNom(),
+            'prenom' => $etudiant->getPrenom(),
+            'dateNaissance' => $etudiant->getDateNaissance()
+                ? $etudiant->getDateNaissance()->format('Y-m-d')
+                : null,
+            'lieuNaissance' => $etudiant->getLieuNaissance(),
+            'sexe' => $etudiant->getSexe()
+                ? $etudiant->getSexe()->getNom()
+                : null,
+            'contact' => [
+                'adresse' => $propos ? $propos->getAdresse() : null,
+                'email' => $propos ? $propos->getEmail() : null,
+            ]
+        ];
+
+        // Type de formation
+        if ($formationEtudiant && $formationEtudiant->getFormation()) {
+            $typeFormation = $formationEtudiant->getFormation()->getTypeFormation();
+            $details['typeFormation'] = [
+                'id' => $typeFormation->getId(),
+                'nom' => $typeFormation->getNom()
+            ];
+        }
+
+        // Droits payés pour cette année
+        $details['droitsPayes'] = $this->getDroitsPayesParAnnee($etudiant, $annee);
+
+        // Écolages payés pour cette année (si formation professionnelle)
+        $details['ecolage'] = $this->getEcolagesPayesParAnnee($etudiant, $annee, $formationEtudiant);
+
+        return $details;
+    }
+
+    private function getDroitsPayesParAnnee(Etudiants $etudiant, int $annee): array
+    {
+        $droitsPayes = $this->droitsRepository->findBy([
+            'etudiant' => $etudiant,
+            'annee' => $annee
+        ], ['dateVersement' => 'ASC']);
+
+        return array_map(function ($paiement) {
+            return [
+                'montant' => $paiement->getMontant(),
+                'datePaiement' => $paiement->getDateVersement()
+                    ? $paiement->getDateVersement()->format('Y-m-d')
+                    : null,
+                'typeDroit' => $paiement->getTypeDroit()
+                    ? $paiement->getTypeDroit()->getNom()
+                    : null,
+                'reference' => $paiement->getReference()
+            ];
+        }, $droitsPayes);
+    }
+
+    private function getEcolagesPayesParAnnee(Etudiants $etudiant, int $annee, $formationEtudiant): ?array
+    {
+        // Vérifier si c'est une formation professionnelle (id=2)
+        $isProfessionnel = $formationEtudiant
+            && $formationEtudiant->getFormation()
+            && $formationEtudiant->getFormation()->getTypeFormation()
+            && $formationEtudiant->getFormation()->getTypeFormation()->getId() === 2;
+
+        if (!$isProfessionnel) {
+            return null;
+        }
+
+        // Récupérer tous les paiements d'écolage pour l'année
+        $paiementsEcolage = $this->payementsEcolagesRepository->findBy([
+            'etudiant' => $etudiant,
+            'annee' => $annee
+        ], ['datepayements' => 'ASC']);
+
+        if (empty($paiementsEcolage)) {
+            return null;
+        }
+
+        return array_map(function ($paiement) {
+            return [
+                'montant' => $paiement->getMontant(),
+                'datePaiement' => $paiement->getDatepayements()
+                    ? $paiement->getDatepayements()->format('Y-m-d')
+                    : null,
+                'tranche' => $paiement->getTranche(),
+                'reference' => $paiement->getReference()
+            ];
+        }, $paiementsEcolage);
+    }
+
+    public function validerAnnee($annee): ?int
+    {
+        if ($annee === null) {
+            return (int)(new \DateTime())->format('Y');
+        }
+
+        $anneeInt = is_numeric($annee) ? (int)$annee : null;
+
+        if ($anneeInt === null || $anneeInt < 2000 || $anneeInt > 2100) {
+            return null;
+        }
+
+        return $anneeInt;
     }
     
     

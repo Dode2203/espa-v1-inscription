@@ -2,10 +2,8 @@
 
 namespace App\Controller\Api;
 
-
 use App\Entity\Droits;
 use App\Entity\Etudiants;
-use App\Entity\Inscrits;
 use App\Entity\PayementsEcolages;
 use App\Service\inscription\InscriptionService;
 use App\Service\JwtTokenManager;
@@ -18,33 +16,34 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Annotation\TokenRequired;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Vtiful\Kernel\Format;
-
 
 #[Route('/etudiants')]
 class EtudiantsController extends AbstractController
 {
     private ParameterBagInterface $params;
     private EntityManagerInterface $em;
-
     private EtudiantsService $etudiantsService;
-
     private JwtTokenManager $jwtTokenManager;
-    
     private NiveauEtudiantsService $niveauEtudiantsService;
-    
     private FormationEtudiantsService $formationEtudiantsService;
-
     private InscriptionService $inscriptionService;
     private DroitsRepository $droitsRepository;
     private PayementsEcolagesRepository $payementsEcolagesRepository;
 
-    public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService,InscriptionService $inscriptionService, DroitsRepository $droitsRepository, PayementsEcolagesRepository $payementsEcolagesRepository)
-    {
+    public function __construct(
+        EntityManagerInterface $em,
+        EtudiantsService $etudiantsService,
+        JwtTokenManager $jwtTokenManager,
+        ParameterBagInterface $params,
+        NiveauEtudiantsService $niveauEtudiantsService,
+        FormationEtudiantsService $formationEtudiantsService,
+        InscriptionService $inscriptionService,
+        DroitsRepository $droitsRepository,
+        PayementsEcolagesRepository $payementsEcolagesRepository
+    ) {
         $this->em = $em;
         $this->etudiantsService = $etudiantsService;
         $this->jwtTokenManager = $jwtTokenManager;
@@ -55,6 +54,7 @@ class EtudiantsController extends AbstractController
         $this->droitsRepository = $droitsRepository;
         $this->payementsEcolagesRepository = $payementsEcolagesRepository;
     }
+    
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
     // #[TokenRequired(['Admin'])]
     public function getEtudiants(Request $request): JsonResponse
@@ -415,121 +415,88 @@ class EtudiantsController extends AbstractController
     public function getEtudiantsInscritsParAnnee(Request $request): JsonResponse
     {
         try {
-            // Utiliser l'année en cours par défaut si non spécifiée
-            $annee = $request->query->get('annee', (new \DateTime())->format('Y'));
-            
-            // S'assurer que l'année est un nombre valide
-            if (!is_numeric($annee) || $annee < 2000 || $annee > 2100) {
+            $anneeParam = $request->query->get('annee', (new \DateTime())->format('Y'));
+
+            // Validation de l'année via le service
+            $annee = $this->inscriptionService->validerAnnee($anneeParam);
+
+            if ($annee === null) {
                 return new JsonResponse([
                     'status' => 'error',
                     'message' => 'L\'année doit être comprise entre 2000 et 2100',
-                    'annee_utilisee' => (new \DateTime())->format('Y')
+                    'annee_fournie' => $anneeParam
                 ], 400);
             }
 
-            // Récupérer tous les étudiants uniques qui ont payé des droits pour l'année spécifiée
-            $etudiantsAvecPaiements = $this->droitsRepository->createQueryBuilder('d')
-                ->select('DISTINCT IDENTITY(d.etudiant) as id')
-                ->where('d.annee = :annee')
-                ->setParameter('annee', $annee)
-                ->getQuery()
-                ->getResult();
-            
-            $etudiantsInscrits = [];
-            
-            foreach ($etudiantsAvecPaiements as $item) {
-                $etudiant = $this->em->getRepository(Etudiants::class)->find($item['id']);
-                $propos = $etudiant->getPropos();
-                
-                // Vérifier si l'étudiant a déjà été traité
-                if (isset($etudiantsInscrits[$etudiant->getId()])) {
-                    continue;
-                }
-                
-                $formationEtudiant = $this->formationEtudiantsService
-                    ->getDernierFormationParEtudiant($etudiant);
-                
-                // Vérifier si l'étudiant est en formation professionnelle (id=2)
-                $isProfessionnel = $formationEtudiant && 
-                                 $formationEtudiant->getFormation() && 
-                                 $formationEtudiant->getFormation()->getId() === 2;
-                
-                $ecolage = null;
-                if ($isProfessionnel) {
-                    // Récupérer le paiement d'écolage pour l'année en cours
-                    $paiementEcolage = $this->payementsEcolagesRepository->findOneBy([
-                        'etudiant' => $etudiant,
-                        'annee' => $annee
-                    ]);
-                    
-                    if ($paiementEcolage) {
-                        $ecolage = [
-                            'montant' => $paiementEcolage->getMontant(),
-                            'datePaiement' => $paiementEcolage->getDatePaiement()->format('Y-m-d'),
-                            'mois' => $paiementEcolage->getMois()
-                        ];
-                    }
-                }
-                
-                // Récupérer les informations sur la formation
-                $typeFormation = $formationEtudiant->getFormation()->getTypeFormation();
-                $typeFormationId = $typeFormation->getId();
-                $typeFormationNom = $typeFormation->getNom();
-                
-                // Récupérer tous les paiements de droits pour cet étudiant et cette année
-                $droitsPayes = $this->droitsRepository->findBy([
-                    'etudiant' => $etudiant,
-                    'annee' => $annee
-                ], ['dateVersement' => 'ASC']);
-                
-                // Transformer les paiements en tableau
-                $droitsPayes = array_map(function($paiement) {
-                    return [
-                        'montant' => $paiement->getMontant(),
-                        'datePaiement' => $paiement->getDateVersement() ? $paiement->getDateVersement()->format('Y-m-d') : null,
-                        'typeDroit' => $paiement->getTypeDroit() ? $paiement->getTypeDroit()->getNom() : null,
-                        'reference' => $paiement->getReference()
-                    ];
-                }, $droitsPayes);
-                
-                $etudiantData = [
-                    'id' => $etudiant->getId(),
-                    'matricule' => method_exists($etudiant, 'getMatricule') ? $etudiant->getMatricule() : null,
-                    'nom' => $etudiant->getNom(),
-                    'prenom' => $etudiant->getPrenom(),
-                    'typeFormation' => [
-                        'id' => $typeFormationId,
-                        'nom' => $typeFormationNom
-                    ],
-                    'dateNaissance' => $etudiant->getDateNaissance()
-                        ? $etudiant->getDateNaissance()->format('Y-m-d')
-                        : null,
-                    'lieuNaissance' => $etudiant->getLieuNaissance(),
-                    'sexe' => $etudiant->getSexe()
-                        ? $etudiant->getSexe()->getNom()
-                        : null,
-                    'contact' => [
-                        'adresse' => ($propos && method_exists($propos, 'getAdresse')) ? $propos->getAdresse() : null,
-                        'email' => ($propos && method_exists($propos, 'getEmail')) ? $propos->getEmail() : null,
-                    ],
-                    'droitsPayes' => $droitsPayes,
-                    'ecolage' => $ecolage
-                ];
-                
-                $etudiantsInscrits[$etudiant->getId()] = $etudiantData;
-            }
-            
+            // Récupération de la liste via le service
+            $etudiants = $this->inscriptionService->getListeEtudiantsInscritsParAnnee($annee);
+
             return new JsonResponse([
                 'status' => 'success',
                 'annee' => $annee,
-                'total' => count($etudiantsInscrits),
-                'data' => array_values($etudiantsInscrits)
+                'total' => count($etudiants),
+                'data' => $etudiants
             ]);
-            
+
         } catch (\Exception $e) {
             return new JsonResponse([
                 'status' => 'error',
                 'message' => 'Une erreur est survenue lors de la récupération des étudiants',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/details-par-annee', name: 'etudiant_details_par_annee', methods: ['GET'])]
+    public function getDetailsEtudiantParAnnee(Request $request): JsonResponse
+    {
+        try {
+            $idEtudiant = $request->query->get('idEtudiant');
+            $anneeParam = $request->query->get('annee', (new \DateTime())->format('Y'));
+
+            // Validation des paramètres
+            if (!$idEtudiant) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Le paramètre idEtudiant est requis'
+                ], 400);
+            }
+
+            $annee = $this->inscriptionService->validerAnnee($anneeParam);
+
+            if ($annee === null) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'L\'année doit être comprise entre 2000 et 2100',
+                    'annee_fournie' => $anneeParam
+                ], 400);
+            }
+
+            // Récupération des détails via le service
+            $details = $this->inscriptionService->getDetailsEtudiantParAnnee(
+                (int) $idEtudiant,
+                $annee
+            );
+
+            if ($details === null) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant non trouvé ou non inscrit pour cette année',
+                    'idEtudiant' => $idEtudiant,
+                    'annee' => $annee
+                ], 404);
+            }
+
+            return new JsonResponse([
+                'status' => 'success',
+                'annee' => $annee,
+                'data' => $details
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue lors de la récupération des détails',
                 'error' => $e->getMessage()
             ], 500);
         }
