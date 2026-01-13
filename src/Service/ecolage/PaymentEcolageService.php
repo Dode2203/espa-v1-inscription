@@ -69,35 +69,47 @@ class PaymentEcolageService
      */
     public function isValideEcolagePourReinscription(Etudiants $etudiant): bool
     {
-        // Récupérer la dernière formation de l'étudiant
+        $anneesManquantes = [];
+        
         $formationEtudiant = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
         
         $formation = $formationEtudiant->getFormation();
         $typeFormation = $formation->getTypeFormation();
         
         // Si la formation est académique, on ne vérifie pas les écolages
-        if ($typeFormation && $typeFormation->getId() === 1) {
-            return true;
-        }
+        if ($typeFormation && $typeFormation->getId() === 1) 
+        {    return true;    }
         
         // Récupérer tous les niveaux de l'étudiant triés par année
         $niveauxEtudiant = $this->niveauEtudiantsService->getNiveauxParEtudiant($etudiant);
         
         // Si l'étudiant n'a pas encore de niveau, c'est une première inscription
-        if (empty($niveauxEtudiant)) {
-            return true;
-        }
+        if (empty($niveauxEtudiant)) 
+        {    return true;    }
         
         // Pour chaque année où l'étudiant a un niveau, vérifier les écolages
         foreach ($niveauxEtudiant as $niveau) {
             $annee = $niveau->getAnnee();
             
-            // Vérifier si l'écolage est payé pour cette année
-            if (!$this->isEcolageCompletPourAnnee($etudiant, $annee)) {
-                return false;               // Si un écolage n'est pas payé pour une année, on retourne false
-            }
+            if (!$this->isEcolageCompletPourAnnee($etudiant, $annee)) 
+            {    $anneesManquantes[] = $annee;    }
+
         }
         
-        return true; // Tous les écolages sont payés pour toutes les années
+        
+        // S'il y a des années manquantes, on log en rouge et on retourne false
+        if (!empty($anneesManquantes)) {
+            $redColor = "\033[31m"; 
+            $resetColor = "\033[0m";
+            
+            error_log(sprintf(
+                $redColor . 'ERREUR: Écolages manquants pour l\'étudiant ID %d - Années: %s' . $resetColor,
+                $etudiant->getId(),
+                implode(', ', $anneesManquantes)
+            ));
+            return false;
+        }
+        
+        return true;                    // Tous les écolages sont payés
     }
 }

@@ -2,45 +2,54 @@
 
 namespace App\Controller\Api;
 
-
 use App\Entity\Droits;
 use App\Entity\Etudiants;
-use App\Entity\Inscrits;
 use App\Entity\PayementsEcolages;
 use App\Service\inscription\InscriptionService;
 use App\Service\JwtTokenManager;
 use App\Service\proposEtudiant\EtudiantsService;
 use App\Service\proposEtudiant\FormationEtudiantsService;
 use App\Service\proposEtudiant\NiveauEtudiantsService;
+use App\Repository\DroitsRepository;
+use App\Repository\PayementsEcolagesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Annotation\TokenRequired;
+use App\Service\proposEtudiant\MentionsService;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Vtiful\Kernel\Format;
-
 
 #[Route('/etudiants')]
 class EtudiantsController extends AbstractController
 {
     private ParameterBagInterface $params;
     private EntityManagerInterface $em;
-
     private EtudiantsService $etudiantsService;
-
     private JwtTokenManager $jwtTokenManager;
-    
     private NiveauEtudiantsService $niveauEtudiantsService;
-    
     private FormationEtudiantsService $formationEtudiantsService;
-
     private InscriptionService $inscriptionService;
+    private MentionsService $mentionsService;
+    private DroitsRepository $droitsRepository;
+    private PayementsEcolagesRepository $payementsEcolagesRepository;
 
-    public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService,InscriptionService $inscriptionService)
-    {
+    // public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService,InscriptionService $inscriptionService, MentionsService $mentionsService)
+    // {
+
+    public function __construct(
+        EntityManagerInterface $em,
+        EtudiantsService $etudiantsService,
+        JwtTokenManager $jwtTokenManager,
+        ParameterBagInterface $params,
+        NiveauEtudiantsService $niveauEtudiantsService,
+        FormationEtudiantsService $formationEtudiantsService,
+        InscriptionService $inscriptionService,
+        MentionsService $mentionsService,
+        DroitsRepository $droitsRepository,
+        PayementsEcolagesRepository $payementsEcolagesRepository
+    ) {
         $this->em = $em;
         $this->etudiantsService = $etudiantsService;
         $this->jwtTokenManager = $jwtTokenManager;
@@ -48,7 +57,11 @@ class EtudiantsController extends AbstractController
         $this->niveauEtudiantsService = $niveauEtudiantsService;
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->inscriptionService = $inscriptionService;
+        $this->mentionsService = $mentionsService;
+        $this->droitsRepository = $droitsRepository;
+        $this->payementsEcolagesRepository = $payementsEcolagesRepository;
     }
+    
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
     // #[TokenRequired(['Admin'])]
     public function getEtudiants(Request $request): JsonResponse
@@ -147,7 +160,18 @@ class EtudiantsController extends AbstractController
             }
 
             $idEtudiant = (int) $idEtudiant;
+            $date = new \DateTime(); // ou une autre date
+            $annee = (int)$date->format('Y');
             // 🔹 Recherche par ID
+            $dejaInscrit = $this->inscriptionService->dejaInscritEtudiantAnneeId($idEtudiant,$annee);
+            if($dejaInscrit){
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant deja inscrit',
+                    'error' => 'Étudiant deja inscrit'
+                ], 400);
+                
+            }
             $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
 
             if (!$etudiant) {
@@ -183,12 +207,21 @@ class EtudiantsController extends AbstractController
             ];
 
             $formation = [
+                'idFormation' => $formationEtudiant
+                    ? $formationEtudiant->getFormation()->getId()
+                    : null,
                 'formation' => $formationEtudiant
                     ? $formationEtudiant->getFormation()->getNom()
                     : null,
                 'formationType' => $formationEtudiant
                     ? $formationEtudiant->getFormation()
                         ->getTypeFormation()->getNom()
+                    : null,
+                'typeNiveau' => $niveauActuel
+                    ? $niveauActuel->getNiveau()->getType()
+                    : null,
+                'gradeNiveau' => $niveauActuel
+                    ? $niveauActuel->getNiveau()->getGrade()
                     : null,
                 'niveau' => $niveauActuel
                     ? $niveauActuel->getNiveau()->getNom()
@@ -303,14 +336,14 @@ class EtudiantsController extends AbstractController
             return new JsonResponse([
                 'status' => 'success',
                 'data' => [
-                    'inscription' => [
+                    
                         'id' => $inscription->getId(),
                         'matricule' => $inscription->getMatricule(),
                         'dateInscription' => $inscription->getDateInscription()->format('Y-m-d'),
                         'description' => $inscription->getDescription(),
                         // 'nom' => $etudiant->getNom(),
                         // 'prenom' => $etudiant->getPrenom()
-                    ],
+                    
                     // 'ecolages' => $ecolages
                 ]
             ], 200);
@@ -343,6 +376,7 @@ class EtudiantsController extends AbstractController
                 $resultats[] = [
                     'id' => $niveau->getId(),
                     'nom' => $niveau->getNom(),
+                    'type' => $niveau->getType(),
                     'grade' => $niveau->getGrade(),
                 ];
             }
@@ -393,7 +427,7 @@ class EtudiantsController extends AbstractController
                 if ($e->getMessage() === 'Inactif') {
                     return new JsonResponse([
                         'status' => 'error',
-                        'message' => 'Etudiants inactif'
+                        'message' => 'Utilisateur inactif'
                     ], 401); // ← renvoie bien 401
                 }
 
@@ -404,5 +438,129 @@ class EtudiantsController extends AbstractController
             }
 
     }
+    #[Route('/mentions', name:'get_mention', methods: ['GET'])]
+    // #[TokenRequired(['Admin'])]
+    public function getAllMentions(Request $request): JsonResponse{
+        try {
+            $mentionClass = $this->mentionsService->getAllMentions();
+            $resultats = [];
+            foreach ($mentionClass as $mention) {
+                $resultats[] = [
+                    'id' => $mention->getId(),
+                    'nom' => $mention->getNom(),
+                    'abr' => $mention->getAbr(),
+                ];
+            }
+            return new JsonResponse([
+                'status' => 'success',
+            
+                'data' => $resultats
+            ], 200);
 
+
+        } catch (\Exception $e) {
+                if ($e->getMessage() === 'Inactif') {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'message' => 'Utilisateur inactif'
+                    ], 401); // ← renvoie bien 401
+                }
+
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }        
+    }
+
+    #[Route('/inscrits-par-annee', name: 'etudiants_inscrits_par_annee', methods: ['GET'])]
+    public function getEtudiantsInscritsParAnnee(Request $request): JsonResponse
+    {
+        try {
+            $anneeParam = $request->query->get('annee', (new \DateTime())->format('Y'));
+
+            // Validation de l'année via le service
+            $annee = $this->inscriptionService->validerAnnee($anneeParam);
+
+            if ($annee === null) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'L\'année doit être comprise entre 2000 et 2100',
+                    'annee_fournie' => $anneeParam
+                ], 400);
+            }
+
+            // Récupération de la liste via le service
+            $etudiants = $this->inscriptionService->getListeEtudiantsInscritsParAnnee($annee);
+
+            return new JsonResponse([
+                'status' => 'success',
+                'annee' => $annee,
+                'total' => count($etudiants),
+                'data' => $etudiants
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue lors de la récupération des étudiants',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/details-par-annee', name: 'etudiant_details_par_annee', methods: ['GET'])]
+    public function getDetailsEtudiantParAnnee(Request $request): JsonResponse
+    {
+        try {
+            $idEtudiant = $request->query->get('idEtudiant');
+            $anneeParam = $request->query->get('annee', (new \DateTime())->format('Y'));
+
+            // Validation des paramètres
+            if (!$idEtudiant) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Le paramètre idEtudiant est requis'
+                ], 400);
+            }
+
+            $annee = $this->inscriptionService->validerAnnee($anneeParam);
+
+            if ($annee === null) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'L\'année doit être comprise entre 2000 et 2100',
+                    'annee_fournie' => $anneeParam
+                ], 400);
+            }
+
+            // Récupération des détails via le service
+            $details = $this->inscriptionService->getDetailsEtudiantParAnnee(
+                (int) $idEtudiant,
+                $annee
+            );
+
+            if ($details === null) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant non trouvé ou non inscrit pour cette année',
+                    'idEtudiant' => $idEtudiant,
+                    'annee' => $annee
+                ], 404);
+            }
+
+            return new JsonResponse([
+                'status' => 'success',
+                'annee' => $annee,
+                'data' => $details
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue lors de la récupération des détails',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -51,5 +51,21 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
+       public function getAllNiveauEtudiantAnnee(int $annee): array
+       {
+            $dateDebut = new \DateTime("$annee-01-01 00:00:00");
+            $dateFin   = new \DateTime("$annee-12-31 23:59:59");
+
+            return $this->createQueryBuilder('i')
+                ->andWhere('i.dateInsertion BETWEEN :debut AND :fin')
+                ->andWhere('i.niveau IS NOT NULL')
+                ->setParameter('debut', $dateDebut)
+                ->setParameter('fin', $dateFin)
+                ->orderBy('i.dateInsertion', 'ASC')
+                ->getQuery()
+                ->getResult()
+            ;
+       }
+    
     
 }
