@@ -31,6 +31,27 @@ class DroitService
         $this->em->flush();
         return $droit;
     }
+
+    public function getDroitsPayesParAnnee(Etudiants $etudiant, int $annee): array
+    {
+        $droitsPayes = $this->droitsRepository->findBy([
+            'etudiant' => $etudiant,
+            'annee' => $annee
+        ], ['dateVersement' => 'ASC']);
+
+        return array_map(function ($paiement) {
+            return [
+                'montant' => $paiement->getMontant(),
+                'datePaiement' => $paiement->getDateVersement()
+                    ? $paiement->getDateVersement()->format('Y-m-d')
+                    : null,
+                'typeDroit' => $paiement->getTypeDroit()
+                    ? $paiement->getTypeDroit()->getNom()
+                    : null,
+                'reference' => $paiement->getReference()
+            ];
+        }, $droitsPayes);
+    }
     
     
 }

@@ -112,4 +112,35 @@ class PaymentEcolageService
         
         return true;                    // Tous les écolages sont payés
     }
+
+    public function getEcolagesPayesParAnnee(Etudiants $etudiant, int $annee, $formationEtudiant): ?array
+    {
+        // Vérifier si c'est une formation professionnelle (id=2)
+        $isProfessionnel = $formationEtudiant
+            && $formationEtudiant->getFormation()
+            && $formationEtudiant->getFormation()->getTypeFormation()
+            && $formationEtudiant->getFormation()->getTypeFormation()->getId() === 2;
+
+        if (!$isProfessionnel) {    return null;    }
+
+        // Récupérer tous les paiements d'écolage pour l'année
+        $paiementsEcolage = $this->payementsEcolagesRepository->findBy([
+            'etudiant' => $etudiant,
+            'annee' => $annee
+        ], ['datepayements' => 'ASC']);
+
+        if (empty($paiementsEcolage)) 
+        {    return null;    }
+
+        return array_map(function ($paiement) {
+            return [
+                'montant' => $paiement->getMontant(),
+                'datePaiement' => $paiement->getDatepayements()
+                    ? $paiement->getDatepayements()->format('Y-m-d')
+                    : null,
+                'tranche' => $paiement->getTranche(),
+                'reference' => $paiement->getReference()
+            ];
+        }, $paiementsEcolage);
+    }
 }

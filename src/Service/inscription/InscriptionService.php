@@ -10,7 +10,6 @@ use App\Entity\Formations;
 use App\Entity\Niveaux;
 use App\Repository\InscritsRepository;
 use App\Repository\DroitsRepository;
-use App\Repository\PayementsEcolagesRepository;
 use App\Service\proposEtudiant\EtudiantsService;
 use App\Service\UtilisateurService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -43,8 +42,7 @@ class InscriptionService
         UtilisateurService $utilisateurService,
         EntityManagerInterface $em, 
         FormationEtudiantsService $formationEtudiantsService,
-        DroitsRepository $droitsRepository,
-        PayementsEcolagesRepository $payementsEcolagesRepository
+        DroitsRepository $droitsRepository
     )
     {
         $this->inscriptionRepository = $inscriptionsRepository;
@@ -56,7 +54,6 @@ class InscriptionService
         $this->em = $em;
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->droitsRepository = $droitsRepository;
-        $this->payementsEcolagesRepository = $payementsEcolagesRepository;
     }
 
     public function affecterNouveauInscrit(Etudiants $etudiant,Utilisateur $utilisateur,$description,$numeroInscription,?\DateTimeInterface $dateInscription = null) : Inscrits
@@ -234,7 +231,6 @@ class InscriptionService
 
         if (!$etudiant) {    return null;    }
 
-        // Utilisation de la méthode du repository
         if (!$this->droitsRepository->hasPaiementsPourAnnee($etudiant, $annee)) 
         {    return null;    }
 
@@ -300,64 +296,12 @@ class InscriptionService
         }
 
         // Droits payés pour cette année
-        $details['droitsPayes'] = $this->getDroitsPayesParAnnee($etudiant, $annee);
+        $details['droitsPayes'] = $this->droitService->getDroitsPayesParAnnee($etudiant, $annee);
 
         // Écolages payés pour cette année (si formation professionnelle)
-        $details['ecolage'] = $this->getEcolagesPayesParAnnee($etudiant, $annee, $formationEtudiant);
+        $details['ecolage'] = $this->ecolageService->getEcolagesPayesParAnnee($etudiant, $annee, $formationEtudiant);
 
         return $details;
-    }
-
-    private function getDroitsPayesParAnnee(Etudiants $etudiant, int $annee): array
-    {
-        $droitsPayes = $this->droitsRepository->findBy([
-            'etudiant' => $etudiant,
-            'annee' => $annee
-        ], ['dateVersement' => 'ASC']);
-
-        return array_map(function ($paiement) {
-            return [
-                'montant' => $paiement->getMontant(),
-                'datePaiement' => $paiement->getDateVersement()
-                    ? $paiement->getDateVersement()->format('Y-m-d')
-                    : null,
-                'typeDroit' => $paiement->getTypeDroit()
-                    ? $paiement->getTypeDroit()->getNom()
-                    : null,
-                'reference' => $paiement->getReference()
-            ];
-        }, $droitsPayes);
-    }
-
-    private function getEcolagesPayesParAnnee(Etudiants $etudiant, int $annee, $formationEtudiant): ?array
-    {
-        // Vérifier si c'est une formation professionnelle (id=2)
-        $isProfessionnel = $formationEtudiant
-            && $formationEtudiant->getFormation()
-            && $formationEtudiant->getFormation()->getTypeFormation()
-            && $formationEtudiant->getFormation()->getTypeFormation()->getId() === 2;
-
-        if (!$isProfessionnel) {    return null;    }
-
-        // Récupérer tous les paiements d'écolage pour l'année
-        $paiementsEcolage = $this->payementsEcolagesRepository->findBy([
-            'etudiant' => $etudiant,
-            'annee' => $annee
-        ], ['datepayements' => 'ASC']);
-
-        if (empty($paiementsEcolage)) 
-        {    return null;    }
-
-        return array_map(function ($paiement) {
-            return [
-                'montant' => $paiement->getMontant(),
-                'datePaiement' => $paiement->getDatepayements()
-                    ? $paiement->getDatepayements()->format('Y-m-d')
-                    : null,
-                'tranche' => $paiement->getTranche(),
-                'reference' => $paiement->getReference()
-            ];
-        }, $paiementsEcolage);
     }
 
     public function validerAnnee($annee): ?int
