@@ -145,6 +145,7 @@ class EtudiantsController extends AbstractController
             }
 
     }
+    
     #[Route('', name: 'etudiant_show', methods: ['GET'])]
     // #[TokenRequired(['Admin'])]
     public function getEtudiantParId(Request $request): JsonResponse
@@ -217,6 +218,9 @@ class EtudiantsController extends AbstractController
                     ? $formationEtudiant->getFormation()
                         ->getTypeFormation()->getNom()
                     : null,
+                'idNiveau' => $niveauActuel
+                    ? $niveauActuel->getNiveau()->getId()
+                    : null,
                 'typeNiveau' => $niveauActuel
                     ? $niveauActuel->getNiveau()->getType()
                     : null,
@@ -256,7 +260,6 @@ class EtudiantsController extends AbstractController
         }
     }
 
-
     #[Route('/{id}/ecolages', name: 'etudiant_ecolages', methods: ['GET'])]
     public function getEcolages(Etudiants $etudiant): JsonResponse
     {
@@ -270,6 +273,7 @@ class EtudiantsController extends AbstractController
             ], 400);
         }
     }
+
     #[Route('/inscrire', name: 'etudiant_inscrire', methods: ['POST'])]
     #[TokenRequired(['Utilisateur'])]
     public function inscrire(Request $request): JsonResponse
@@ -365,6 +369,7 @@ class EtudiantsController extends AbstractController
             }
 
     }
+
     #[Route('/niveaux', name: 'etudiant_niveaux', methods: ['GET'])]
     // #[TokenRequired(['Admin'])]
     public function getNiveaux(Request $request): JsonResponse
@@ -402,6 +407,7 @@ class EtudiantsController extends AbstractController
             }
 
     }
+
     #[Route('/formations', name: 'etudiant_formations', methods: ['GET'])]
     // #[TokenRequired(['Admin'])]
     public function getFormation(Request $request): JsonResponse
@@ -438,6 +444,7 @@ class EtudiantsController extends AbstractController
             }
 
     }
+    
     #[Route('/mentions', name:'get_mention', methods: ['GET'])]
     // #[TokenRequired(['Admin'])]
     public function getAllMentions(Request $request): JsonResponse{
@@ -473,6 +480,7 @@ class EtudiantsController extends AbstractController
             }        
     }
 
+    // Fonction de zo 
     #[Route('/inscrits-par-annee', name: 'etudiants_inscrits_par_annee', methods: ['GET'])]
     public function getEtudiantsInscritsParAnnee(Request $request): JsonResponse
     {
@@ -563,4 +571,24 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
+    #[Route('/statistiques', name: 'etudiant_statistiques', methods: ['GET'])]
+    public function getStatistiquesInscriptions(): JsonResponse
+    {
+        try {
+            $statistiques = $this->inscriptionService->getStatistiquesInscriptions();
+            
+            return new JsonResponse([
+                'status' => 'success',
+                'data' => $statistiques
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue lors de la récupération des statistiques',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

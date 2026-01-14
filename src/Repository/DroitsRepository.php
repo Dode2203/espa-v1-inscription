@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Droits;
+use App\Entity\Etudiants;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,57 @@ class DroitsRepository extends ServiceEntityRepository
         parent::__construct($registry, Droits::class);
     }
 
-    //    /**
-    //     * @return Droits[] Returns an array of Droits objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('d.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function getEtudiantsIdsParAnnee(int $annee): array
+    {
+        return $this->createQueryBuilder('d')
+            ->select('DISTINCT IDENTITY(d.etudiant) as id')
+            ->where('d.annee = :annee')
+            ->setParameter('annee', $annee)
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Droits
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function hasPaiementsPourAnnee(Etudiants $etudiant, int $annee): bool
+    {
+        $count = $this->createQueryBuilder('d')
+            ->select('COUNT(d.id)')
+            ->where('d.etudiant = :etudiant')
+            ->andWhere('d.annee = :annee')
+            ->setParameter('etudiant', $etudiant)
+            ->setParameter('annee', $annee)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
+    }
+
+    public function getDroitsParEtudiantEtAnnee(Etudiants $etudiant, int $annee): array
+    {
+        return $this->findBy([
+            'etudiant' => $etudiant,
+            'annee' => $annee
+        ], ['dateVersement' => 'ASC']);
+    }
+
+    public function countEtudiantsInscritsParAnnee(int $annee): int
+    {
+        return (int) $this->createQueryBuilder('d')
+            ->select('COUNT(DISTINCT d.etudiant)')
+            ->where('d.annee = :annee')
+            ->setParameter('annee', $annee)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getTotalPaiementsParAnnee(int $annee): float
+    {
+        $result = $this->createQueryBuilder('d')
+            ->select('COALESCE(SUM(d.montant), 0) as total')
+            ->where('d.annee = :annee')
+            ->setParameter('annee', $annee)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (float) $result;
+    }
 }
