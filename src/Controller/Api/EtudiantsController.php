@@ -217,6 +217,9 @@ class EtudiantsController extends AbstractController
                     ? $formationEtudiant->getFormation()
                         ->getTypeFormation()->getNom()
                     : null,
+                'idNiveau' => $niveauActuel
+                    ? $niveauActuel->getNiveau()->getId()
+                    : null,
                 'typeNiveau' => $niveauActuel
                     ? $niveauActuel->getNiveau()->getType()
                     : null,
