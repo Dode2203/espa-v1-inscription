@@ -206,22 +206,16 @@ class InscriptionService
 
     public function getListeEtudiantsInscritsParAnnee(int $annee): array
     {
-        // Récupérer tous les étudiants uniques ayant payé des droits pour l'année
-        $etudiantsAvecPaiements = $this->droitsRepository->createQueryBuilder('d')
-            ->select('DISTINCT IDENTITY(d.etudiant) as id')
-            ->where('d.annee = :annee')
-            ->setParameter('annee', $annee)
-            ->getQuery()
-            ->getResult();
+        // Utilisation de la méthode du repository
+        $etudiantsAvecPaiements = $this->droitsRepository->getEtudiantsIdsParAnnee($annee);
 
         $etudiantsInscrits = [];
 
         foreach ($etudiantsAvecPaiements as $item) {
             $etudiant = $this->etudiantsService->getEtudiantById($item['id']);
 
-            if (!$etudiant) {
-                continue;
-            }
+            if (!$etudiant) 
+            {    continue;    }
 
             $etudiantsInscrits[] = [
                 'id' => $etudiant->getId(),
@@ -233,31 +227,23 @@ class InscriptionService
         return $etudiantsInscrits;
     }
 
+
     public function getDetailsEtudiantParAnnee(int $idEtudiant, int $annee): ?array
     {
         $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
 
-        if (!$etudiant) {
-            return null;
-        }
+        if (!$etudiant) {    return null;    }
 
-        // Vérifier si l'étudiant a payé des droits pour cette année
-        $aPaye = $this->droitsRepository->createQueryBuilder('d')
-            ->select('COUNT(d.id)')
-            ->where('d.etudiant = :etudiant')
-            ->andWhere('d.annee = :annee')
-            ->setParameter('etudiant', $etudiant)
-            ->setParameter('annee', $annee)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        if ($aPaye == 0) {
-            return null; // L'étudiant n'est pas inscrit pour cette année
-        }
+        // Utilisation de la méthode du repository
+        if (!$this->droitsRepository->hasPaiementsPourAnnee($etudiant, $annee)) 
+        {    return null;    }
 
         $propos = $etudiant->getPropos();
         $formationEtudiant = $this->formationEtudiantsService->getDernierFormationParEtudiant($etudiant);
-
+        
+        // Récupérer le niveau d'étude actuel
+        $niveauEtudiant = $this->niveauEtudiantsService->getDernierNiveauParEtudiant($etudiant);
+        
         // Informations de base
         $details = [
             'id' => $etudiant->getId(),
@@ -276,12 +262,40 @@ class InscriptionService
             ]
         ];
 
-        // Type de formation
+        // Détails de la formation
         if ($formationEtudiant && $formationEtudiant->getFormation()) {
-            $typeFormation = $formationEtudiant->getFormation()->getTypeFormation();
-            $details['typeFormation'] = [
-                'id' => $typeFormation->getId(),
-                'nom' => $typeFormation->getNom()
+            $formation = $formationEtudiant->getFormation();
+            $typeFormation = $formation->getTypeFormation();
+            
+            $details['formation'] = [
+                'id' => $formation->getId(),
+                'nom' => $formation->getNom(),
+                'type' => $typeFormation ? [
+                    'id' => $typeFormation->getId(),
+                    'nom' => $typeFormation->getNom()
+                ] : null,
+                'dateDebut' => $formationEtudiant->getDateFormation() ? 
+                    $formationEtudiant->getDateFormation()->format('Y-m-d') : null
+            ];
+        }
+
+        // Niveau d'étude
+        if ($niveauEtudiant && $niveauEtudiant->getNiveau()) {
+            $niveau = $niveauEtudiant->getNiveau();
+            $details['niveau'] = [
+                'id' => $niveau->getId(),
+                'nom' => $niveau->getNom(),
+                'type' => $niveau->getType(),
+                'grade' => $niveau->getGrade()
+            ];
+        }
+
+        // Mentions (si disponibles)
+        if ($niveauEtudiant && $niveauEtudiant->getMention()) {
+            $mention = $niveauEtudiant->getMention();
+            $details['mention'] = [
+                'id' => $mention->getId(),
+                'nom' => $mention->getNom()
             ];
         }
 
@@ -323,9 +337,7 @@ class InscriptionService
             && $formationEtudiant->getFormation()->getTypeFormation()
             && $formationEtudiant->getFormation()->getTypeFormation()->getId() === 2;
 
-        if (!$isProfessionnel) {
-            return null;
-        }
+        if (!$isProfessionnel) {    return null;    }
 
         // Récupérer tous les paiements d'écolage pour l'année
         $paiementsEcolage = $this->payementsEcolagesRepository->findBy([
@@ -333,9 +345,8 @@ class InscriptionService
             'annee' => $annee
         ], ['datepayements' => 'ASC']);
 
-        if (empty($paiementsEcolage)) {
-            return null;
-        }
+        if (empty($paiementsEcolage)) 
+        {    return null;    }
 
         return array_map(function ($paiement) {
             return [
@@ -351,18 +362,40 @@ class InscriptionService
 
     public function validerAnnee($annee): ?int
     {
-        if ($annee === null) {
-            return (int)(new \DateTime())->format('Y');
-        }
+        if ($annee === null) 
+        {    return (int)(new \DateTime())->format('Y');    }
 
         $anneeInt = is_numeric($annee) ? (int)$annee : null;
 
-        if ($anneeInt === null || $anneeInt < 2000 || $anneeInt > 2100) {
-            return null;
-        }
+        if ($anneeInt === null || $anneeInt < 2000 || $anneeInt > 2100) 
+        {    return null;    }
 
         return $anneeInt;
     }
     
-    
+    public function getStatistiquesInscriptions(): array
+    {
+        $dateActuelle = new \DateTime();
+        $anneeEnCours = (int)$dateActuelle->format('Y');
+        
+        // Date d'il y a 7 jours
+        $dateDebutNouvellesInscriptions = (clone $dateActuelle)->modify('-7 days');
+        
+        // Utilisation des méthodes des repositories
+        $totalInscrits = $this->droitsRepository->countEtudiantsInscritsParAnnee($anneeEnCours);
+        
+        $totalPaiements = $this->droitsRepository->getTotalPaiementsParAnnee($anneeEnCours);
+        
+        $nouvellesInscriptions = $this->inscriptionRepository->countInscriptionsPeriode(
+            $dateDebutNouvellesInscriptions,
+            $dateActuelle
+        );
+        
+        return [
+            'total_etudiants' => $totalInscrits,
+            'total_paiements' => $totalPaiements,
+            'nouvelles_inscriptions' => $nouvellesInscriptions
+        ];
+    }
+
 }
