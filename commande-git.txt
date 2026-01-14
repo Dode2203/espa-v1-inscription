@@ -5,33 +5,11 @@ git commit -m "variable et donnee"
 
 
 #pour envoyer sur le main 
+
+git push -u origin main
+
 git push -u origin Dode_back
 
-#Pour creer une branche
-git branch Dode_back
+git checkout -b Dode_back
 
-#Pour changer de branche
-git checkout Dode_back
-
-git checkout main
-
-git config --global user.name "Dode2203"
-git config --global user.email "randriadode@gmail.com"
-
-
-#Pour creer une branche
-git branch Dode_front
-
-#Pour changer de branche
-git checkout Dode_front
-
-#Pour connaitre sur quel branch on entités
-git branch
-
-#Pour envoyer le branch sur github
-git push -u origin Dode_front
-
-#Pour changer de branch
-git switch Dode_front
-
-
+git switch Dode_back

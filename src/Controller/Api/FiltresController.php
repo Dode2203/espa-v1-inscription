@@ -2,43 +2,52 @@
 
 namespace App\Controller\Api;
 
-
-use App\Entity\Utilisateur;
 use App\Service\JwtTokenManager;
 use App\Service\UtilisateurService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Annotation\TokenRequired;
 use App\Service\proposEtudiant\NiveauEtudiantsService;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 #[Route('/filtres')]
 class FiltresController extends AbstractController
 {
-    private $utilisateurService;
-    private $jwtTokenManager;
     private $niveauEtudiantsService;
-    public function __construct(UtilisateurService $utilisateurService, JwtTokenManager $jwtTokenManager, NiveauEtudiantsService $niveauEtudiantsService){
-        $this->utilisateurService = $utilisateurService;
-        $this->jwtTokenManager = $jwtTokenManager;
+
+    public function __construct(NiveauEtudiantsService $niveauEtudiantsService) {
         $this->niveauEtudiantsService = $niveauEtudiantsService;
     }
     
     #[Route('/etudiant', name: 'filtre_etudiant', methods: ['GET'])]
-    // #[TokenRequired(['Admin'])]
     public function getUtilisateur(Request $request): JsonResponse
     {
         try {
-            $date = new \DateTime(); // ou une autre date
+            $date = new \DateTime();
             $annee = (int)$date->format('Y');
 
+            // 1. Récupération des critères de filtrage depuis l'URL
+            $idMention = $request->query->get('idMention');
+            $idNiveau = $request->query->get('idNiveau');
 
+            // 2. Récupération de tous les étudiants de l'année
             $niveauEtudiants = $this->niveauEtudiantsService->getAllNiveauEtudiantAnnee($annee);
 
-            $niveauEtudiantsArray = array_map(function ($e) {
+            // 3. Filtrage manuel du tableau selon les critères reçus
+            if ($idMention) {
+                $niveauEtudiants = array_filter($niveauEtudiants, function($e) use ($idMention) {
+                    return $e->getMention()->getId() == $idMention;
+                });
+            }
+
+            if ($idNiveau) {
+                $niveauEtudiants = array_filter($niveauEtudiants, function($e) use ($idNiveau) {
+                    return $e->getNiveau()->getId() == $idNiveau;
+                });
+            }
+
+            // 4. Formatage de la réponse (on utilise array_values pour réindexer après le filter)
+            $data = array_map(function ($e) {
                 $etudiant = $e->getEtudiant();
                 $mention = $e->getMention();
                 $niveau = $e->getNiveau();
@@ -51,29 +60,19 @@ class FiltresController extends AbstractController
                     'idMention' => $mention->getId(),
                     'niveau' => $niveau->getNom(),
                     'idNiveau' => $niveau->getId(),
-                    
                 ];
-            }, $niveauEtudiants);
+            }, array_values($niveauEtudiants));
 
             return new JsonResponse([
                 'status' => 'success',
-                'data' => $niveauEtudiantsArray
+                'data' => $data
             ], 200);
 
         } catch (\Exception $e) {
-                if ($e->getMessage() === 'Inactif') {
-                    return new JsonResponse([
-                        'status' => 'error',
-                        'message' => 'Utilisateur inactif'
-                    ], 401); // ← renvoie bien 401
-                }
-
-                return new JsonResponse([
-                    'status' => 'error',
-                    'message' => $e->getMessage()
-                ], 400);
-            }
-
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
-
 }
