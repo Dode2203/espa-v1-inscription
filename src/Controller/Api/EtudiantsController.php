@@ -467,7 +467,6 @@ class EtudiantsController extends AbstractController
             }        
     }
 
-    // Fonction de zo 
     #[Route('/inscrits-par-annee', name: 'etudiants_inscrits_par_annee', methods: ['GET'])]
     public function getEtudiantsInscritsParAnnee(Request $request): JsonResponse
     {
