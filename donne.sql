@@ -65,11 +65,11 @@ VALUES
 -- Insertion des formations avec id manuel et lien vers le type de formation
 INSERT INTO formations (id, nom, type_formation_id)
 VALUES 
-(1, 'ACADEMIQUE', 1), -- Académique
-(2, 'PROFESSIONNELLE LUBAN', 2),-- Professionnel
-(3, 'PROFESSIONNELLE', 2), -- Académique
-(4, 'MASTER RECHERCHE', 1), -- Académique
-(5, 'INSCRIPTION ANNULEE', 1); -- Académique
+(1, 'ACADEMIQUE', 1),
+(2, 'PROFESSIONNELLE LUBAN', 2),
+(3, 'PROFESSIONNELLE', 2), 
+(4, 'MASTER RECHERCHE', 1),
+(5, 'INSCRIPTION ANNULEE', 1);
 
 
 -- Insertion des données avec id manuel
@@ -87,19 +87,37 @@ VALUES
 (4, 4, 900.0, '2025-03-01'),  -- Tecnologie Information
 (5, 5, 1000.0, '2025-03-10'); -- Maintenance automobile
 
-INSERT INTO niveaux (nom, type, grade) VALUES
-('Licence 1', 1, 1),
-('Licence 2', 1, 2),
-('Licence 3', 1, 3),
-('Master 1', 1, 4),
-('Master 2', 1, 5);
+INSERT INTO niveaux (id, nom, type, grade) VALUES
+(1,  'L1',   1, 1),
+(2,  'L2',   1, 2),
+(3,  'L3',   1, 3),
+(4,  'M1',   1, 4),
+(5,  'M2',   1, 5),
+(6,  'LP1',  2, 1),
+(7,  'LP2',  2, 2),
+(8,  'LP3',  2, 3),
+(9,  'MP1',  2, 4),
+(10, 'MP2',  2, 5),
+(11, 'LP1L', 1, 1),
+(12, 'LP2L', 1, 2),
+(13, 'LP3L', 1, 3),
+(14, 'MVR',  1, 4),
+(15, 'MRS',  1, 4);
 
-INSERT INTO niveaux (nom, type, grade) VALUES
-('LP 1', 2, 1),
-('LP 2', 2, 2),
-('LP 3', 2, 3),
-('MP 1', 2, 4),
-('MP', 2, 5);
+
+-- INSERT INTO niveaux (nom, type, grade) VALUES
+-- ('Licence 1', 1, 1),
+-- ('Licence 2', 1, 2),
+-- ('Licence 3', 1, 3),
+-- ('Master 1', 1, 4),
+-- ('Master 2', 1, 5);
+
+-- INSERT INTO niveaux (nom, type, grade) VALUES
+-- ('LP 1', 2, 1),
+-- ('LP 2', 2, 2),
+-- ('LP 3', 2, 3),
+-- ('MP 1', 2, 4),
+-- ('MP', 2, 5);
 
 INSERT INTO public.mentions (id, nom, abr) VALUES
     (1,  'BTP', 'BTP'),
