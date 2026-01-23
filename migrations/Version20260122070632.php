@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260112072439 extends AbstractMigration
+final class Version20260122070632 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,8 +20,8 @@ final class Version20260112072439 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE TABLE bacc (id SERIAL NOT NULL, numero VARCHAR(255) DEFAULT NULL, annee INT NOT NULL, serie VARCHAR(50) NOT NULL, PRIMARY KEY(id))');
-        $this->addSql('CREATE TABLE cin (id SERIAL NOT NULL, numero INT NOT NULL, date_cin TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, lieu VARCHAR(255) NOT NULL, ancien_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, nouveau_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE bacc (id SERIAL NOT NULL, numero VARCHAR(255) DEFAULT NULL, annee INT DEFAULT NULL, serie VARCHAR(50) DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE cin (id SERIAL NOT NULL, numero VARCHAR(50) NOT NULL, date_cin TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, lieu VARCHAR(255) NOT NULL, ancien_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, nouveau_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE droits (id SERIAL NOT NULL, type_droit_id INT NOT NULL, utilisateur_id INT NOT NULL, etudiant_id INT NOT NULL, reference VARCHAR(255) NOT NULL, date_versement TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, montant DOUBLE PRECISION NOT NULL, annee INT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_7A9D4CE9756148C ON droits (type_droit_id)');
         $this->addSql('CREATE INDEX IDX_7A9D4CEFB88E14F ON droits (utilisateur_id)');
@@ -42,7 +42,7 @@ final class Version20260112072439 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_2644257FFB88E14F ON inscrits (utilisateur_id)');
         $this->addSql('CREATE INDEX IDX_2644257FDDEAB1A3 ON inscrits (etudiant_id)');
         $this->addSql('CREATE TABLE mentions (id SERIAL NOT NULL, nom VARCHAR(100) NOT NULL, abr VARCHAR(20) DEFAULT NULL, PRIMARY KEY(id))');
-        $this->addSql('CREATE TABLE niveau_etudiants (id SERIAL NOT NULL, niveau_id INT NOT NULL, mention_id INT NOT NULL, etudiant_id INT NOT NULL, status_etudiant_id INT DEFAULT NULL, annee INT NOT NULL, date_insertion TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE niveau_etudiants (id SERIAL NOT NULL, niveau_id INT DEFAULT NULL, mention_id INT NOT NULL, etudiant_id INT NOT NULL, status_etudiant_id INT DEFAULT NULL, annee INT NOT NULL, date_insertion TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_70ADE61DB3E9C81 ON niveau_etudiants (niveau_id)');
         $this->addSql('CREATE INDEX IDX_70ADE61D7A4147F0 ON niveau_etudiants (mention_id)');
         $this->addSql('CREATE INDEX IDX_70ADE61DDDEAB1A3 ON niveau_etudiants (etudiant_id)');
@@ -53,7 +53,7 @@ final class Version20260112072439 extends AbstractMigration
         $this->addSql('CREATE TABLE payements_ecolages (id SERIAL NOT NULL, etudiant_id INT NOT NULL, utilisateur_id INT NOT NULL, reference VARCHAR(255) NOT NULL, datepayements TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, montant DOUBLE PRECISION NOT NULL, tranche INT NOT NULL, annee INT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_A6D31440DDEAB1A3 ON payements_ecolages (etudiant_id)');
         $this->addSql('CREATE INDEX IDX_A6D31440FB88E14F ON payements_ecolages (utilisateur_id)');
-        $this->addSql('CREATE TABLE propos (id SERIAL NOT NULL, adresse VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE propos (id SERIAL NOT NULL, adresse VARCHAR(255) DEFAULT NULL, email VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE role (id SERIAL NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE sexes (id SERIAL NOT NULL, nom VARCHAR(50) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE status (id SERIAL NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id))');

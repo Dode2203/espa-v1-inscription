@@ -16,19 +16,19 @@ class Cin
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?int $numero = null;
+    #[ORM\Column(length: 50)]
+    private ?string $numero = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCin = null;
 
     #[ORM\Column(length: 255)]
     private ?string $lieu = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true )]
     private ?\DateTimeInterface $ancienDate = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $nouveauDate = null;
     #[ORM\OneToMany(mappedBy: 'cin', targetEntity: Etudiants::class)]
     private Collection $etudiants;
