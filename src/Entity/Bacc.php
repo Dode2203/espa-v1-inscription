@@ -18,10 +18,10 @@ class Bacc
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $numero = null;
 
-    #[ORM\Column]
+    #[ORM\Column (nullable: true)]
     private ?int $annee = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50 , nullable: true)]
     private ?string $serie = null;
     #[ORM\OneToMany(mappedBy: 'bacc', targetEntity: Etudiants::class)]
     private Collection $etudiants;

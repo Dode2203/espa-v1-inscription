@@ -16,16 +16,16 @@ class Etudiants
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255 , nullable: true)]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255 , nullable: true)]
     private ?string $prenom = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE , nullable: true)]
     private ?\DateTimeInterface $dateNaissance = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255 , nullable: true)]
     private ?string $lieuNaissance = null;
 
     #[ORM\ManyToOne(inversedBy: 'etudiants')]

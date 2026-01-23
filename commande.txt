@@ -29,19 +29,9 @@ php bin/console cache:clear
 Pour forcer le nettoyage du cache en environnement dev :
 php bin/console cache:clear --env=dev
 
-#Pour faire la validation
-php bin/console doctrine:schema:validate
+pour lancer le serveur
 
-#Utilise la commande suivante pour que Doctrine te montre les différences exactes entre entités et base :
-php bin/console doctrine:schema:update --dump-sql
-
-#Pour dropper le database
-php bin/console doctrine:database:drop --force
-
-#pour lancer le serveur
-
-php -S 192.168.88.108:8000 -t public
-php -S 192.168.2.143:8000 -t public
+php -S 192.168.1.159:8000 -t public
 
 php -S 10.225.228.30:8000 -t public
 

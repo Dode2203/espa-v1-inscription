@@ -1,6 +1,8 @@
 
 \c digitalisation
 
+\encoding UTF8
+
 INSERT INTO role (id, name) VALUES (1, 'Admin');
 INSERT INTO role (id, name) VALUES (2, 'Utilisateur');
 
@@ -56,18 +58,19 @@ VALUES
 -- Insertion des types de formation avec id manuel
 INSERT INTO type_formations (id, nom)
 VALUES
-(1, 'Académique'),
-(2, 'Professionnel');
+(1, 'Academique'),
+(2, 'Professionnelle');
 
 
 -- Insertion des formations avec id manuel et lien vers le type de formation
 INSERT INTO formations (id, nom, type_formation_id)
 VALUES 
-(1, 'Académique', 1), -- Académique
-(2, 'Atelier Luban', 2),-- Professionnel
-(3, 'Electrique Industrielle', 2), -- Académique
-(4, 'Tecnologie Information', 2),-- Professionnel
-(5, 'Maintenance automobile', 2);-- Professionnel
+(1, 'ACADEMIQUE', 1), -- Académique
+(2, 'PROFESSIONNELLE LUBAN', 2),-- Professionnel
+(3, 'PROFESSIONNELLE', 2), -- Académique
+(4, 'MASTER RECHERCHE', 1), -- Académique
+(5, 'INSCRIPTION ANNULEE', 1); -- Académique
+
 
 -- Insertion des données avec id manuel
 INSERT INTO formation_etudiants (id, etudiant_id, formation_id, date_formation)
@@ -98,12 +101,32 @@ INSERT INTO niveaux (nom, type, grade) VALUES
 ('MP 1', 2, 4),
 ('MP', 2, 5);
 
-INSERT INTO mentions (id, nom,abr) VALUES
-(1, 'Telecommunications','TCO'),
-(2, 'Genie Logiciel','GLI'),
-(3, 'Electronique', 'ELEC'),
-(4, 'Reseaux et Systeme','RSY'),
-(5, 'Maintenance Industrielle','MI');
+INSERT INTO public.mentions (id, nom, abr) VALUES
+    (1,  'BTP', 'BTP'),
+    (2,  'EN', 'EN'),
+    (3,  'GC', 'GC'),
+    (4,  'GE', 'GE'),
+    (5,  'GER', 'GER'),
+    (6,  'GGEO', 'GGEO'),
+    (7,  'GMI', 'GMI'),
+    (8,  'GPCI', 'GPCI'),
+    (9,  'GPI', 'GPI'),
+    (10, 'GST', 'GST'),
+    (11, 'GSTI', 'GSTI'),
+    (12, 'HYD', 'HYD'),
+    (13, 'IGAT', 'IGAT'),
+    (14, 'IMIN', 'IMIN'),
+    (15, 'INSCRIPTION ANNULEE', 'INSCRIPTION ANNULEE'),
+    (16, 'IPE', 'IPE'),
+    (17, 'ISA', 'ISA'),
+    (18, 'MTO', 'MTO'),
+    (19, 'RENVOYEE', 'RENVOYEE'),
+    (20, 'SIM', 'SIM'),
+    (21, 'STI', 'STI'),
+    (22, 'SUSPENDU', 'SUSPENDU'),
+    (23, 'TCO', 'TCO'),
+    (24, 'UAGC', 'UAGC');
+
 
 
 INSERT INTO niveau_etudiants (

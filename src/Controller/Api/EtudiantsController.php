@@ -283,7 +283,7 @@ class EtudiantsController extends AbstractController
 
             $requiredFields = ['idEtudiant','typeFormation','refAdmin', 'dateAdmin','montantAdmin','refPedag','datePedag','montantPedag','idNiveau','idFormation'];
             
-            if(isset($data['typeFormation']) && $data['typeFormation']=="Professionnel"){
+            if(isset($data['typeFormation']) && $data['typeFormation']=="Professionnelle"){
                 $requiredFields[]='montantEcolage';
                 $requiredFields[]='refEcolage';
                 $requiredFields[]='dateEcolage';
