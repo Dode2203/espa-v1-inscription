@@ -165,4 +165,5 @@ INSERT INTO niveau_etudiants (
 
 INSERT INTO type_droits (id, nom) VALUES
 (1, 'Pédagogique'),
-(2, 'Administratif');
+(2, 'Administratif'),
+(3, 'Ecolage');

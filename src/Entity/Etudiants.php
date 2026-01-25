@@ -56,6 +56,12 @@ class Etudiants
     #[ORM\JoinColumn(nullable: false)]
     private ?Sexes $sexe = null;
 
+    /**
+     * @var Collection<int, Payments>
+     */
+    #[ORM\OneToMany(targetEntity: Payments::class, mappedBy: 'etudiant')]
+    private Collection $payments;
+
     
 
     public function __construct()
@@ -63,6 +69,7 @@ class Etudiants
         $this->formationEtudiants = new ArrayCollection();
         $this->payementsEcolages = new ArrayCollection();
         $this->inscrits = new ArrayCollection();
+        $this->payments = new ArrayCollection();
         
     }
 
@@ -194,6 +201,36 @@ class Etudiants
     public function setSexe(?Sexes $sexe): static
     {
         $this->sexe = $sexe;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Payment>
+     */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payments $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments->add($payment);
+            $payment->setEtudiant($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payments $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            // set the owning side to null (unless already changed)
+            if ($payment->getEtudiant() === $this) {
+                $payment->setEtudiant(null);
+            }
+        }
 
         return $this;
     }

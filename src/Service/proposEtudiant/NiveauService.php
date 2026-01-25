@@ -35,5 +35,17 @@ class NiveauService
     {
         return $this->niveauxRepository->findAll();
     }
+    public function toArray(?Niveaux $niveau ): array
+    {
+        if ($niveau === null) {
+            return [];
+        }
+        return [
+            'id'    => $niveau->getId(),
+            'nom'   => $niveau->getNom(),
+            'type'  => $niveau->getType(),
+            'grade' => $niveau->getGrade(),
+        ];
+    }
     
 }

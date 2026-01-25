@@ -24,9 +24,16 @@ class TypeDroits
     #[ORM\OneToMany(targetEntity: Droits::class, mappedBy: 'typeDroit')]
     private Collection $typedroits;
 
+    /**
+     * @var Collection<int, Payments>
+     */
+    #[ORM\OneToMany(targetEntity: Payments::class, mappedBy: 'type')]
+    private Collection $payments;
+
     public function __construct()
     {
         $this->typedroits = new ArrayCollection();
+        $this->payments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -70,6 +77,36 @@ class TypeDroits
             // set the owning side to null (unless already changed)
             if ($typedroit->getTypeDroit() === $this) {
                 $typedroit->setTypeDroit(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Payments>
+     */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payments $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments->add($payment);
+            $payment->setType($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payments $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            // set the owning side to null (unless already changed)
+            if ($payment->getType() === $this) {
+                $payment->setType(null);
             }
         }
 

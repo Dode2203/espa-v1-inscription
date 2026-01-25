@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\Droits;
 use App\Entity\Etudiants;
 use App\Entity\PayementsEcolages;
+use App\Entity\Payments;
 use App\Service\inscription\InscriptionService;
 use App\Service\JwtTokenManager;
 use App\Service\proposEtudiant\EtudiantsService;
@@ -313,26 +314,26 @@ class EtudiantsController extends AbstractController
             
             $annee = date('Y');
             
-            $pedagogique = new Droits();
+            $pedagogique = new Payments();
             $montantPedag = $data['montantPedag'];
             $refPedag = $data['refPedag'];
             $datePedagString = $data['datePedag'];
             $datePedag = new \DateTime($datePedagString);
             $pedagogique->setAnatiny($annee,$montantPedag,$refPedag, $datePedag);
 
-            $administratif = new Droits();
+            $administratif = new Payments();
             $montantAdmin = $data['montantAdmin'];
             $refAdmin = $data['refAdmin'];
             $dateAdminString = $data['dateAdmin'];
             $dateAdmin= new \DateTime($dateAdminString);
             $administratif->setAnatiny($annee,$montantAdmin,$refAdmin, $dateAdmin);
 
-            $payementEcolage= new PayementsEcolages();
+            $payementEcolage= new Payments();
             $montantEcolage = (float) ($data['montantEcolage'] ?? 0);
             $refEcolage = $data['refEcolage'];
             $dateEcolageString = $data['dateEcolage'];
             $dateEcolage= new \DateTime($dateEcolageString);
-            $payementEcolage->setAnatiny($annee,1,$montantEcolage,$refEcolage, $dateEcolage);
+            $payementEcolage->setAnatiny($annee,$montantEcolage,$refEcolage, $dateEcolage);
             
 
             $inscription = $this->inscriptionService->inscrireEtudiantId($idEtudiant,$idUser,$pedagogique,$administratif,$payementEcolage,$idNiveau,$idFormation);
@@ -543,7 +544,7 @@ class EtudiantsController extends AbstractController
             }
 
             // Récupération des détails via le service
-            $details = $this->inscriptionService->getDetailsEtudiantParAnnee(
+            $details = $this->inscriptionService->getDetailsEtudiantParAnneeId(
                 (int) $idEtudiant,
                 $annee
             );
