@@ -2,17 +2,13 @@
 
 namespace App\Controller\Api;
 
-use App\Entity\Droits;
 use App\Entity\Etudiants;
-use App\Entity\PayementsEcolages;
 use App\Entity\Payments;
 use App\Service\inscription\InscriptionService;
 use App\Service\JwtTokenManager;
 use App\Service\proposEtudiant\EtudiantsService;
 use App\Service\proposEtudiant\FormationEtudiantsService;
 use App\Service\proposEtudiant\NiveauEtudiantsService;
-use App\Repository\DroitsRepository;
-use App\Repository\PayementsEcolagesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -33,9 +29,7 @@ class EtudiantsController extends AbstractController
     private FormationEtudiantsService $formationEtudiantsService;
     private InscriptionService $inscriptionService;
     private MentionsService $mentionsService;
-    private DroitsRepository $droitsRepository;
-    private PayementsEcolagesRepository $payementsEcolagesRepository;
-
+    
     // public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService,InscriptionService $inscriptionService, MentionsService $mentionsService)
     // {
 
@@ -48,8 +42,7 @@ class EtudiantsController extends AbstractController
         FormationEtudiantsService $formationEtudiantsService,
         InscriptionService $inscriptionService,
         MentionsService $mentionsService,
-        DroitsRepository $droitsRepository,
-        PayementsEcolagesRepository $payementsEcolagesRepository
+    
     ) {
         $this->em = $em;
         $this->etudiantsService = $etudiantsService;
@@ -59,8 +52,6 @@ class EtudiantsController extends AbstractController
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->inscriptionService = $inscriptionService;
         $this->mentionsService = $mentionsService;
-        $this->droitsRepository = $droitsRepository;
-        $this->payementsEcolagesRepository = $payementsEcolagesRepository;
     }
     
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
@@ -256,7 +247,9 @@ class EtudiantsController extends AbstractController
 
             return new JsonResponse([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
             ], 400);
         }
     }

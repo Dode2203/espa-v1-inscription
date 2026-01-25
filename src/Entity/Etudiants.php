@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-
+use App\Entity\Payments;
 #[ORM\Entity(repositoryClass: EtudiantsRepository::class)]
 class Etudiants
 {
@@ -43,9 +43,7 @@ class Etudiants
     #[ORM\OneToMany(mappedBy: 'etudiant', targetEntity: FormationEtudiants::class)]
     private Collection $formationEtudiants;
 
-    #[ORM\OneToMany(mappedBy: 'etudiant', targetEntity: PayementsEcolages::class)]
-    private Collection $payementsEcolages;
-
+    
     /**
      * @var Collection<int, Inscrits>
      */
@@ -67,7 +65,6 @@ class Etudiants
     public function __construct()
     {
         $this->formationEtudiants = new ArrayCollection();
-        $this->payementsEcolages = new ArrayCollection();
         $this->inscrits = new ArrayCollection();
         $this->payments = new ArrayCollection();
         

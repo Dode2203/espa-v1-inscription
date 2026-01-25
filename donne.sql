@@ -79,13 +79,29 @@ VALUES
 (2, 2, 2, '2025-02-15'); 
 
 -- Insertion des données d'écolage avec id manuel
-INSERT INTO ecolages (id, formations_id, montant, date_ecolage)
-VALUES
-(1, 1, 0.0, '2025-01-05'),  -- Académique
-(2, 2, 500.0, '2025-01-10'),  -- Atelier Luban
-(3, 3, 800.0, '2025-02-15'),  -- Electrique Industrielle
-(4, 4, 900.0, '2025-03-01'),  -- Tecnologie Information
-(5, 5, 1000.0, '2025-03-10'); -- Maintenance automobile
+INSERT INTO payments (
+    reference,
+    montant,
+    date_payment,
+    annee,
+    niveau_id,
+    etudiant_id,
+    type_id,
+    numero,
+    utilisateur_id
+)
+VALUES (
+    'PAY-2026-001',
+    150000.00,
+    NOW(),
+    2026,
+    3,      -- id du niveau
+    12,     -- id de l'étudiant
+    2,      -- id du type de droits
+    'REC-45987',
+    1       -- id de l'utilisateur
+);
+
 
 INSERT INTO niveaux (id, nom, type, grade) VALUES
 (1,  'L1',   1, 1),
