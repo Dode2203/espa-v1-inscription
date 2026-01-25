@@ -32,8 +32,13 @@ class InscritsRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function countInscriptionsPeriode(\DateTimeInterface $dateDebut, \DateTimeInterface $dateFin): int
-    {
+    public function countInscriptionsPeriode(
+    \DateTimeInterface $dateDebut,
+    ?\DateTimeInterface $dateFin = null
+    ): int {
+        // Si dateFin est null → aujourd’hui
+        $dateFin ??= new \DateTimeImmutable('today');
+
         return (int) $this->createQueryBuilder('i')
             ->select('COUNT(i.id)')
             ->where('i.dateInscription >= :dateDebut')
@@ -42,5 +47,23 @@ class InscritsRepository extends ServiceEntityRepository
             ->setParameter('dateFin', $dateFin)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+    public function countInscriptionsAnnee(int $annee): int
+    {
+        $dateDebut = new \DateTime("$annee-01-01 00:00:00");
+        $dateFin   = new \DateTime("$annee-12-31 23:59:59");
+        return $this->countInscriptionsPeriode($dateDebut, $dateFin);
+    }
+
+    public function getListeEtudiantInsriptAnnee($annee): array
+    {
+        $dateDebut = new \DateTime("$annee-01-01 00:00:00");
+        $dateFin   = new \DateTime("$annee-12-31 23:59:59");
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.dateInscription BETWEEN :debut AND :fin')
+            ->setParameter('debut', $dateDebut)
+            ->setParameter('fin', $dateFin)
+            ->getQuery()
+            ->getResult();
     }
 }

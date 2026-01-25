@@ -21,6 +21,10 @@ class NiveauEtudiantsService
 
     }
     
+    public function toArrayNiveau(?Niveaux $niveau) : array
+    {
+        return $this->niveauService->toArray($niveau);
+    }
     public function insertNiveauEtudiant(NiveauEtudiants $niveauEtudiant): NiveauEtudiants
     {
         $this->em->persist($niveauEtudiant);

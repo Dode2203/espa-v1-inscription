@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260122070632 extends AbstractMigration
+final class Version20260123080012 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -21,14 +21,14 @@ final class Version20260122070632 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE bacc (id SERIAL NOT NULL, numero VARCHAR(255) DEFAULT NULL, annee INT DEFAULT NULL, serie VARCHAR(50) DEFAULT NULL, PRIMARY KEY(id))');
-        $this->addSql('CREATE TABLE cin (id SERIAL NOT NULL, numero VARCHAR(50) NOT NULL, date_cin TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, lieu VARCHAR(255) NOT NULL, ancien_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, nouveau_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE cin (id SERIAL NOT NULL, numero VARCHAR(50) NOT NULL, date_cin TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, lieu VARCHAR(255) NOT NULL, ancien_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, nouveau_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE droits (id SERIAL NOT NULL, type_droit_id INT NOT NULL, utilisateur_id INT NOT NULL, etudiant_id INT NOT NULL, reference VARCHAR(255) NOT NULL, date_versement TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, montant DOUBLE PRECISION NOT NULL, annee INT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_7A9D4CE9756148C ON droits (type_droit_id)');
         $this->addSql('CREATE INDEX IDX_7A9D4CEFB88E14F ON droits (utilisateur_id)');
         $this->addSql('CREATE INDEX IDX_7A9D4CEDDEAB1A3 ON droits (etudiant_id)');
         $this->addSql('CREATE TABLE ecolages (id SERIAL NOT NULL, formations_id INT NOT NULL, montant DOUBLE PRECISION NOT NULL, date_ecolage TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_FD93F2AA3BF5B0C2 ON ecolages (formations_id)');
-        $this->addSql('CREATE TABLE etudiants (id SERIAL NOT NULL, cin_id INT DEFAULT NULL, bacc_id INT NOT NULL, propos_id INT NOT NULL, sexe_id INT NOT NULL, nom VARCHAR(255) NOT NULL, prenom VARCHAR(255) NOT NULL, date_naissance TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, lieu_naissance VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE etudiants (id SERIAL NOT NULL, cin_id INT DEFAULT NULL, bacc_id INT NOT NULL, propos_id INT NOT NULL, sexe_id INT NOT NULL, nom VARCHAR(255) DEFAULT NULL, prenom VARCHAR(255) DEFAULT NULL, date_naissance TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, lieu_naissance VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_227C02EBE9795579 ON etudiants (cin_id)');
         $this->addSql('CREATE INDEX IDX_227C02EB2CEC171F ON etudiants (bacc_id)');
         $this->addSql('CREATE INDEX IDX_227C02EB75EB8397 ON etudiants (propos_id)');
