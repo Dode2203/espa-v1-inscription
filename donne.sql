@@ -13,7 +13,7 @@ INSERT INTO status_etudiants (id, name) VALUES (2, 'Redoublant');
 
 
 
-INSERT INTO Utilisateur (id, email, mdp, prenom, nom, status_id, role_id)
+INSERT INTO utilisateur (id, email, mdp, prenom, nom, status_id, role_id)
 VALUES (
     4,
     'admin@gmail.com',
