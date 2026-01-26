@@ -203,7 +203,7 @@ class Etudiants
     }
 
     /**
-     * @return Collection<int, Payment>
+     * @return Collection<int, Payments>
      */
     public function getPayments(): Collection
     {

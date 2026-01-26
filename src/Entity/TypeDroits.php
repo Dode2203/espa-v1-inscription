@@ -18,11 +18,6 @@ class TypeDroits
     #[ORM\Column(length: 100)]
     private ?string $nom = null;
 
-    /**
-     * @var Collection<int, Droits>
-     */
-    #[ORM\OneToMany(targetEntity: Droits::class, mappedBy: 'typeDroit')]
-    private Collection $typedroits;
 
     /**
      * @var Collection<int, Payments>
@@ -32,7 +27,6 @@ class TypeDroits
 
     public function __construct()
     {
-        $this->typedroits = new ArrayCollection();
         $this->payments = new ArrayCollection();
     }
 
@@ -53,36 +47,11 @@ class TypeDroits
         return $this;
     }
 
-    /**
-     * @return Collection<int, Droits>
-     */
-    public function getTypedroits(): Collection
-    {
-        return $this->typedroits;
-    }
+    
 
-    public function addTypedroit(Droits $typedroit): static
-    {
-        if (!$this->typedroits->contains($typedroit)) {
-            $this->typedroits->add($typedroit);
-            $typedroit->setTypeDroit($this);
-        }
+    
 
-        return $this;
-    }
-
-    public function removeTypedroit(Droits $typedroit): static
-    {
-        if ($this->typedroits->removeElement($typedroit)) {
-            // set the owning side to null (unless already changed)
-            if ($typedroit->getTypeDroit() === $this) {
-                $typedroit->setTypeDroit(null);
-            }
-        }
-
-        return $this;
-    }
-
+    
     /**
      * @return Collection<int, Payments>
      */
