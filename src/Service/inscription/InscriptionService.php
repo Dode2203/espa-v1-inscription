@@ -82,10 +82,7 @@ class InscriptionService
         $this->em->beginTransaction();
 
         try {
-            // Avant ca on doit verifier l'ecolage 
-            // if (!$this->ecolageService->isValideEcolagePourReinscription($etudiant)) {
-            //     throw new Exception('Ecolage incomplet pour reinscription');
-            // }
+            $this->etudiantsService->isValideEcolage($etudiant);
 
             $dernierFormationEtudiant = $this->formationEtudiantsService
                 ->getDernierFormationParEtudiant($etudiant);
