@@ -1,11 +1,8 @@
 <?php
 
 namespace App\Service\proposEtudiant;
-use App\Repository\NiveauxRepository;
-use App\Entity\Niveaux;
 use App\Repository\MentionsRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Exception;
+use App\Entity\Mentions;
 
 class MentionsService
 {   private $mentionRepository;
@@ -20,5 +17,16 @@ class MentionsService
         return $this->mentionRepository->findAll();
     }
     
+    public function toArray(?Mentions $mention): array
+    {
+        if ($mention === null) {
+            return [];
+        }
+        
+        return [
+            'id'    => $mention->getId(),
+            'nom'   => $mention->getNom(),
+        ];
+    }
     
 }

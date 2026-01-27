@@ -31,9 +31,16 @@ class Niveaux
     #[ORM\Column(type: Types::SMALLINT)]
     private ?int $grade = null;
 
+    /**
+     * @var Collection<int, Payment>
+     */
+    #[ORM\OneToMany(targetEntity: Payments::class, mappedBy: 'niveau')]
+    private Collection $payments;
+
     public function __construct()
     {
         $this->niveaux = new ArrayCollection();
+        $this->payments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -103,6 +110,36 @@ class Niveaux
     public function setGrade(int $grade): static
     {
         $this->grade = $grade;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Payments>
+     */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payments $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments->add($payment);
+            $payment->setNiveau($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payments $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            // set the owning side to null (unless already changed)
+            if ($payment->getNiveau() === $this) {
+                $payment->setNiveau(null);
+            }
+        }
 
         return $this;
     }

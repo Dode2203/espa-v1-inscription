@@ -22,6 +22,27 @@ class FormationEtudiantsService
         
 
     }
+    public function toArray(?FormationEtudiants $formationEtudiant ): ?array
+    {
+        if ($formationEtudiant === null) {
+            return [];
+        }
+
+        $formation = $formationEtudiant->getFormation();
+        $typeFormation = $formation->getTypeFormation();
+
+        return [
+            'id'   => $formation->getId(),
+            'nom'  => $formation->getNom(),
+            'type' => $typeFormation ? [
+                'id'  => $typeFormation->getId(),
+                'nom' => $typeFormation->getNom(),
+            ] : null,
+            'dateFormation' => $formationEtudiant->getDateFormation()
+                ? $formationEtudiant->getDateFormation()->format('Y-m-d')
+                : null,
+        ];
+    }
     
     public function insertFormationEtudiant(FormationEtudiants $formationEtudiant): FormationEtudiants
     {
@@ -29,7 +50,6 @@ class FormationEtudiantsService
         $this->em->flush();
         return $formationEtudiant;
     }
-    
     public function getDernierFormationParEtudiant(Etudiants $etudiant): ?FormationEtudiants
     {
         $formationEtudiant = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
@@ -63,6 +83,10 @@ class FormationEtudiantsService
     public function getAllFormations(): array
     {
         return $this->formationRepository->findAll();
+    }
+    public function getAllFormationParEtudiant(Etudiants $etudiant): array
+    {
+        return $this->formationEtudiantsRepository->getAllFormationParEtudiant($etudiant);
     }
     
 }

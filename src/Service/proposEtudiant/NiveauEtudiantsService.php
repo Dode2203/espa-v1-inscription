@@ -21,6 +21,10 @@ class NiveauEtudiantsService
 
     }
     
+    public function toArrayNiveau(?Niveaux $niveau) : array
+    {
+        return $this->niveauService->toArray($niveau);
+    }
     public function insertNiveauEtudiant(NiveauEtudiants $niveauEtudiant): NiveauEtudiants
     {
         $this->em->persist($niveauEtudiant);
@@ -99,6 +103,9 @@ class NiveauEtudiantsService
         $valiny = $this->niveauEtudiantsRepository->getAllNiveauEtudiantAnnee($annee);
         return $valiny;
     }
-
+    public function getAllNiveauxParEtudiant(Etudiants $etudiant): array {
+        $valiny = $this->niveauEtudiantsRepository->getAllNiveauxParEtudiant($etudiant);
+        return $valiny;
+    }
     
 }

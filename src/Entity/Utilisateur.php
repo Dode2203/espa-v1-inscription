@@ -47,9 +47,16 @@ class Utilisateur
     #[ORM\OneToMany(targetEntity: Inscrits::class, mappedBy: 'utilisateur')]
     private Collection $inscrits;
 
+    /**
+     * @var Collection<int, Payments>
+     */
+    #[ORM\OneToMany(targetEntity: Payments::class, mappedBy: 'utilisateur')]
+    private Collection $payments;
+
     public function __construct()
     {
         $this->inscrits = new ArrayCollection();
+        $this->payments = new ArrayCollection();
     }
 
 
@@ -163,6 +170,36 @@ class Utilisateur
             // set the owning side to null (unless already changed)
             if ($inscrit->getUtilisateur() === $this) {
                 $inscrit->setUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Payments>
+     */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payments $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments->add($payment);
+            $payment->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payments $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            // set the owning side to null (unless already changed)
+            if ($payment->getUtilisateur() === $this) {
+                $payment->setUtilisateur(null);
             }
         }
 

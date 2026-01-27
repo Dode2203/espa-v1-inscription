@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-
+use App\Entity\Payments;
 #[ORM\Entity(repositoryClass: EtudiantsRepository::class)]
 class Etudiants
 {
@@ -16,16 +16,16 @@ class Etudiants
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255 , nullable: true)]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255 , nullable: true)]
     private ?string $prenom = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE , nullable: true)]
     private ?\DateTimeInterface $dateNaissance = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255 , nullable: true)]
     private ?string $lieuNaissance = null;
 
     #[ORM\ManyToOne(inversedBy: 'etudiants')]
@@ -43,9 +43,7 @@ class Etudiants
     #[ORM\OneToMany(mappedBy: 'etudiant', targetEntity: FormationEtudiants::class)]
     private Collection $formationEtudiants;
 
-    #[ORM\OneToMany(mappedBy: 'etudiant', targetEntity: PayementsEcolages::class)]
-    private Collection $payementsEcolages;
-
+    
     /**
      * @var Collection<int, Inscrits>
      */
@@ -56,13 +54,19 @@ class Etudiants
     #[ORM\JoinColumn(nullable: false)]
     private ?Sexes $sexe = null;
 
+    /**
+     * @var Collection<int, Payments>
+     */
+    #[ORM\OneToMany(targetEntity: Payments::class, mappedBy: 'etudiant')]
+    private Collection $payments;
+
     
 
     public function __construct()
     {
         $this->formationEtudiants = new ArrayCollection();
-        $this->payementsEcolages = new ArrayCollection();
         $this->inscrits = new ArrayCollection();
+        $this->payments = new ArrayCollection();
         
     }
 
@@ -194,6 +198,36 @@ class Etudiants
     public function setSexe(?Sexes $sexe): static
     {
         $this->sexe = $sexe;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Payments>
+     */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payments $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments->add($payment);
+            $payment->setEtudiant($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payments $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            // set the owning side to null (unless already changed)
+            if ($payment->getEtudiant() === $this) {
+                $payment->setEtudiant(null);
+            }
+        }
 
         return $this;
     }
