@@ -18,6 +18,17 @@ INSERT INTO Status (id, name) VALUES (2, 'Inactif');
 INSERT INTO Utilisateur (id, email, mdp, prenom, nom, status_id, role_id)
 VALUES (
     1,
+    'admin@gmail.com',
+    '$2y$10$Djns8FgsL.xk2GBACEtJh.Hs1civTyvdGQ9s6gqbSgDN81QkOHvTi',
+    'admin',
+    'admin',
+    1,
+    1
+);
+
+INSERT INTO Utilisateur (id, email, mdp, prenom, nom, status_id, role_id)
+VALUES (
+    2,
     'dode@gmail.com',
     '$2y$10$Djns8FgsL.xk2GBACEtJh.Hs1civTyvdGQ9s6gqbSgDN81QkOHvTi',
     'dode',
@@ -25,7 +36,6 @@ VALUES (
     1,
     2
 );
-
 -- UPDATE utilisateur SET status_id = 2;
 
 -- Table Propos avec id manuel
