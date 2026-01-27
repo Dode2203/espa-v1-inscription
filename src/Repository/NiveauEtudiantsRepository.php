@@ -6,7 +6,6 @@ use App\Entity\Etudiants;
 use App\Entity\NiveauEtudiants;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use App\Entity\Etudiants;
 /**
  * @extends ServiceEntityRepository<NiveauEtudiants>
  */
