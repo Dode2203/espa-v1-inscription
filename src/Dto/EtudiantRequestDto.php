@@ -2,6 +2,8 @@
 
 namespace App\Dto;
 
+use Symfony\Component\Serializer\Annotation\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class EtudiantRequestDto
@@ -16,6 +18,7 @@ class EtudiantRequestDto
     public ?string $prenom = null;
 
     #[Assert\NotBlank]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\TH:i:sP'])]
     public ?\DateTimeInterface $dateNaissance = null;
 
     #[Assert\NotBlank]
@@ -32,6 +35,7 @@ class EtudiantRequestDto
     public ?string $cinLieu = null;
 
     #[Assert\NotBlank]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\TH:i:sP'])]
     public ?\DateTimeInterface $dateCin = null;
 
     // Champs du Bacc
@@ -48,7 +52,7 @@ class EtudiantRequestDto
     #[Assert\NotBlank]
     #[Assert\Email]
     public ?string $proposEmail = null;
-
+    
     #[Assert\NotBlank]
     public ?string $proposAdresse = null;
 
