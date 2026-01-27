@@ -86,90 +86,6 @@ class EtudiantsService
         return $this->etudiantsRepository->find($id);
     }
     
-    /**
-     * Sauvegarde un étudiant avec ses informations associées (CIN, Bacc, Propos)
-     *
-     * @param EtudiantRequestDto $dto Le DTO contenant les données de l'étudiant
-     * @return int L'ID de l'étudiant créé ou mis à jour
-     * @throws \Exception Si une erreur survient lors de la sauvegarde
-     */
-    public function saveEtudiant(EtudiantRequestDto $dto): int
-    {
-        // Démarrer une transaction
-        $this->em->beginTransaction();
-        
-        try {
-            // Récupérer ou créer l'étudiant
-            if ($dto->getId()) {
-                $etudiant = $this->etudiantsRepository->find($dto->getId());
-                if (!$etudiant) {
-                    throw new \Exception('Étudiant non trouvé');
-                }
-            } else {
-                $etudiant = new Etudiants();
-            }
-
-            // Mettre à jour les informations de base de l'étudiant
-            $etudiant->setNom($dto->getNom());
-            $etudiant->setPrenom($dto->getPrenom());
-            $etudiant->setDateNaissance($dto->getDateNaissance());
-            $etudiant->setLieuNaissance($dto->getLieuNaissance());
-            
-            // Définir le sexe
-            $sexe = $this->sexesRepository->find($dto->getSexeId());
-            if (!$sexe) {
-                throw new \Exception('Sexe non trouvé');
-            }
-            $etudiant->setSexe($sexe);
-
-            // Gestion du CIN
-            $cin = $etudiant->getCin();
-            if (!$cin) {
-                $cin = new Cin();
-            }
-            $cin->setNumero($dto->getCinNumero());
-            $cin->setLieu($dto->getCinLieu());
-            $cin->setDateCin($dto->getDateCin());
-            $this->em->persist($cin);
-            $etudiant->setCin($cin);
-
-            // Gestion du Bacc
-            $bacc = $etudiant->getBacc();
-            if (!$bacc) {
-                $bacc = new Bacc();
-            }
-            $bacc->setNumero($dto->getBaccNumero());
-            $bacc->setAnnee($dto->getBaccAnnee());
-            $bacc->setSerie($dto->getBaccSerie());
-            $this->em->persist($bacc);
-            $etudiant->setBacc($bacc);
-
-            // Gestion du Propos
-            $propos = $etudiant->getPropos();
-            if (!$propos) {
-                $propos = new Propos();
-            }
-            $propos->setAdresse($dto->getProposAdresse());
-            $propos->setEmail($dto->getProposEmail());
-            $this->em->persist($propos);
-            $etudiant->setPropos($propos);
-
-            // Persister et sauvegarder l'étudiant
-            $this->em->persist($etudiant);
-            $this->em->flush();
-            
-            // Valider la transaction
-            $this->em->commit();
-            
-            return $etudiant->getId();
-            
-        } catch (\Exception $e) {
-            // En cas d'erreur, annuler la transaction
-            $this->em->rollback();
-            throw $e;
-        }
-    }
-
     public function getEcolagesParNiveau(string $etudiantId): array
     {
         // 1. Récupérer l'étudiant
@@ -237,6 +153,82 @@ class EtudiantsService
             throw new Exception("Étudiant non trouvé pour l'ID: " . $etudiantId);
         }
         return $this->niveauEtudiantsService->getAllNiveauxParEtudiant($etudiant);
+    }
+
+    public function saveEtudiant(EtudiantRequestDto $dto): int
+    {
+        // Démarrer une transaction
+        $this->em->beginTransaction();
+        
+        try {
+            // Récupérer ou créer l'étudiant
+            if ($dto->getId()) {
+                $etudiant = $this->etudiantsRepository->find($dto->getId());
+                if (!$etudiant) 
+                {    throw new \Exception('Étudiant non trouvé');    }
+            } 
+            else 
+            {    $etudiant = new Etudiants();    }
+
+            // Mettre à jour les informations de base de l'étudiant
+            $etudiant->setNom($dto->getNom());
+            $etudiant->setPrenom($dto->getPrenom());
+            $etudiant->setDateNaissance($dto->getDateNaissance());
+            $etudiant->setLieuNaissance($dto->getLieuNaissance());
+            
+            // Définir le sexe
+            $sexe = $this->sexesRepository->find($dto->getSexeId());
+            if (!$sexe) 
+            {    throw new \Exception('Sexe non trouvé');    }
+
+            $etudiant->setSexe($sexe);
+
+            // Gestion du CIN
+            $cin = $etudiant->getCin();
+            if (!$cin) 
+            {    $cin = new Cin();    }
+            
+            $cin->setNumero($dto->getCinNumero());
+            $cin->setLieu($dto->getCinLieu());
+            $cin->setDateCin($dto->getDateCin());
+            $this->em->persist($cin);
+            $etudiant->setCin($cin);
+
+            // Gestion du Bacc
+            $bacc = $etudiant->getBacc();
+            if (!$bacc) 
+            {    $bacc = new Bacc();    }
+
+            $bacc->setNumero($dto->getBaccNumero());
+            $bacc->setAnnee($dto->getBaccAnnee());
+            $bacc->setSerie($dto->getBaccSerie());
+            $this->em->persist($bacc);
+            $etudiant->setBacc($bacc);
+
+            // Gestion du Propos
+            $propos = $etudiant->getPropos();
+            if (!$propos) 
+            {    $propos = new Propos();    }
+
+            $propos->setAdresse($dto->getProposAdresse());
+            $propos->setEmail($dto->getProposEmail());
+            $this->em->persist($propos);
+            $etudiant->setPropos($propos);
+
+            // Persister et sauvegarder l'étudiant
+            $this->em->persist($etudiant);
+            $this->em->flush();
+            
+            // Valider la transaction
+            $this->em->commit();
+            
+            return $etudiant->getId();
+            
+        } catch (\Exception $e) {
+            // En cas d'erreur, annuler la transaction
+            $this->em->rollback();
+            throw $e;
+        }
     }
 
 }

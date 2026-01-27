@@ -60,49 +60,6 @@ class EtudiantsController extends AbstractController
         $this->validator = $validator;
     }
 
-    #[Route('/save', name: 'etudiant_save', methods: ['POST'])]
-    public function save(Request $request): JsonResponse
-    {
-        try {
-            // Désérialiser la requête en DTO
-            $dto = $this->serializer->deserialize(
-                $request->getContent(),
-                EtudiantRequestDto::class,
-                'json'
-            );
-
-            // Valider le DTO
-            $errors = $this->validator->validate($dto);
-            if (count($errors) > 0) {
-                $errorMessages = [];
-                foreach ($errors as $error) {
-                    $errorMessages[$error->getPropertyPath()] = $error->getMessage();
-                }
-                return $this->json([
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $errorMessages
-                ], Response::HTTP_BAD_REQUEST);
-            }
-
-            // Appeler le service pour sauvegarder l'étudiant
-            $etudiantId = $this->etudiantsService->saveEtudiant($dto);
-
-            return $this->json([
-                'status' => 'success',
-                'message' => $dto->getId() ? 'Étudiant mis à jour avec succès' : 'Étudiant créé avec succès',
-                'etudiantId' => $etudiantId
-            ]);
-
-        } catch (\Exception $e) {
-            return $this->json([
-                'status' => 'error',
-                'message' => 'Une erreur est survenue lors de la sauvegarde de l\'étudiant',
-                'error' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-    
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
     // #[TokenRequired(['Admin'])]
     public function getEtudiants(Request $request): JsonResponse
@@ -673,6 +630,48 @@ class EtudiantsController extends AbstractController
                 ], 400);
             }
 
+    }
+    #[Route('/save', name: 'etudiant_save', methods: ['POST'])]
+    public function save(Request $request): JsonResponse
+    {
+        try {
+            // Désérialiser la requête en DTO
+            $dto = $this->serializer->deserialize(
+                $request->getContent(),
+                EtudiantRequestDto::class,
+                'json'
+            );
+
+            // Valider le DTO
+            $errors = $this->validator->validate($dto);
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                }
+                return $this->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $errorMessages
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Appeler le service pour sauvegarder l'étudiant
+            $etudiantId = $this->etudiantsService->saveEtudiant($dto);
+
+            return $this->json([
+                'status' => 'success',
+                'message' => $dto->getId() ? 'Étudiant mis à jour avec succès' : 'Étudiant créé avec succès',
+                'etudiantId' => $etudiantId
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue lors de la sauvegarde de l\'étudiant',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
 }
