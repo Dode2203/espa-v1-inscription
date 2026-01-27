@@ -18,10 +18,6 @@ class TypeDroits
     #[ORM\Column(length: 100)]
     private ?string $nom = null;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 5e2192dec66f80d896f26271a2dbfd9320987a15
     /**
      * @var Collection<int, Payments>
      */
@@ -52,10 +48,7 @@ class TypeDroits
 
     
 
-<<<<<<< HEAD
     
-=======
->>>>>>> 5e2192dec66f80d896f26271a2dbfd9320987a15
 
     
     /**

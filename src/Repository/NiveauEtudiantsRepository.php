@@ -6,7 +6,6 @@ use App\Entity\Etudiants;
 use App\Entity\NiveauEtudiants;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use App\Entity\Etudiants;
 /**
  * @extends ServiceEntityRepository<NiveauEtudiants>
  */
@@ -63,7 +62,6 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
                 ->getResult()
             ;
        }
-<<<<<<< HEAD
           /**
         * @return NiveauEtudiants[] Returns an array of NiveauEtudiants objects
         */
@@ -73,14 +71,6 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
                ->andWhere('n.etudiant = :etudiant')
                ->setParameter('etudiant', $etudiant)
                ->orderBy('n.dateInsertion', 'DESC')
-=======
-       public function getAllNiveauxParEtudiant(Etudiants $etudiant): array
-       {
-           return $this->createQueryBuilder('f')
-               ->andWhere('f.etudiant = :val')
-               ->setParameter('val', $etudiant)
-               ->orderBy('f.annee', 'ASC')
->>>>>>> 5e2192dec66f80d896f26271a2dbfd9320987a15
                ->getQuery()
                ->getResult()
            ;
