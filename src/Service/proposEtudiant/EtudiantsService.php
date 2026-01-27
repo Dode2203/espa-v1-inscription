@@ -1,12 +1,17 @@
 <?php
 
 namespace App\Service\proposEtudiant;
+use App\Entity\TypeDroits;
 use App\Repository\EtudiantsRepository;
 use App\Repository\FormationEtudiantsRepository;
 use App\Repository\NiveauEtudiantsRepository;
 use App\Entity\Etudiants;
+use App\Service\droit\TypeDroitService;
+use App\Service\payment\EcolageService;
+use App\Service\payment\PaymentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use App\Entity\Ecolages;
 
 class EtudiantsService
 {   
@@ -16,6 +21,10 @@ class EtudiantsService
     private $niveauEtudiantsRepository;
     private FormationEtudiantsService $formationEtudiantsService;
     private NiveauEtudiantsService $niveauEtudiantsService;
+    private PaymentService $paymentService;
+
+    private TypeDroitService $typeDroitService;
+    private EcolageService $ecolageService;
     
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
@@ -23,7 +32,10 @@ class EtudiantsService
         NiveauEtudiantsRepository $niveauEtudiantsRepository,
         EntityManagerInterface $em,
         FormationEtudiantsService $formationEtudiantsService,
-        NiveauEtudiantsService $niveauEtudiantsService
+        NiveauEtudiantsService $niveauEtudiantsService,
+        PaymentService $paymentService,
+        TypeDroitService $typeDroitService,
+        EcolageService $ecolageService  
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->formationEtudiantRepository = $formationEtudiantRepository;
@@ -31,6 +43,9 @@ class EtudiantsService
         $this->em = $em;
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->niveauEtudiantsService = $niveauEtudiantsService;
+        $this->paymentService = $paymentService;
+        $this->typeDroitService = $typeDroitService;
+        $this->ecolageService = $ecolageService;
     }
 
     public function toArray(?Etudiants $etudiant = null): array
@@ -145,5 +160,61 @@ class EtudiantsService
         }
         return $this->niveauEtudiantsService->getAllNiveauxParEtudiant($etudiant);
     }
+    public function getMontantResteParAnnee(Etudiants $etudiant,Ecolages $ecolage, int $annee): float
+    {
+        $valiny = 0.0;
+        $typeDroit = $this->typeDroitService->getById(3);
+        if (!$typeDroit) {
+            throw new Exception("Le type droit ecolage non trouvé");
+        }
+        $ecolageParAnnee = $ecolage ? (float) ($ecolage->getMontant() ?? 0) : 0.0;
+        $montantEcolagePayer = $this->paymentService->getSommeMontantByEtudiantTypeAnnee($etudiant, $typeDroit, $annee);
+        $valiny = $ecolageParAnnee - $montantEcolagePayer;
+        return $valiny;
+    }
+    public function isValideEcolage(Etudiants $etudiant): void
+    {
+        $formationEtudiantActuelle = $this->formationEtudiantsService->getDernierFormationParEtudiant($etudiant);
+        $idTypeFormationActuelle = $formationEtudiantActuelle
+            ->getFormation()?->getTypeFormation()?->getId() ?? 1;
+
+        if ($idTypeFormationActuelle == 1) {
+            return;
+        }
+
+        $niveauEtudiants = $this->niveauEtudiantsService->getAllNiveauxParEtudiant($etudiant);
+        $listeErreur = [];
+        $ecolage = $this->ecolageService->getEcolageParFormation($formationEtudiantActuelle->getFormation() );
+
+        foreach ($niveauEtudiants as $niveauEtudiant) {
+            if (!$niveauEtudiant->getNiveau()) {
+                continue;
+            }
+            
+            $montantReste = $this->getMontantResteParAnnee($etudiant, $ecolage, $niveauEtudiant->getAnnee());
+
+            if ($montantReste > 0) {
+                $listeErreur[] = [
+                    'annee'   => $niveauEtudiant->getAnnee(),
+                    'montant' => $montantReste,
+                ];
+            }
+        }
+
+        // Si des erreurs ont été détectées, on lance une seule exception
+        if (!empty($listeErreur)) {
+            $erreursTexte = [];
+            foreach ($listeErreur as $erreur) {
+                $erreursTexte[] = "Année {$erreur['annee']}, montant restant {$erreur['montant']}";
+            }
+
+            $message = "Écolages incomplets : " . implode("; ", $erreursTexte);
+
+            throw new Exception($message);
+        }
+
+    }
+
+
 
 }
