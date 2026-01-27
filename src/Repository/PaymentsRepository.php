@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\Payments;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\Etudiants;
+use App\Entity\TypeDroits;
 
 /**
  * @extends ServiceEntityRepository<Payments>
@@ -51,5 +53,24 @@ class PaymentsRepository extends ServiceEntityRepository
 
         return (float) $result;
     }
+    public function getSommeMontantByEtudiantTypeAnnee(
+        Etudiants $etudiant,
+        TypeDroits $type,
+        int $annee
+    ): float {
+        $result = $this->createQueryBuilder('p')
+            ->select('COALESCE(SUM(p.montant), 0)')
+            ->where('p.etudiant = :etudiant')
+            ->andWhere('p.type = :type')
+            ->andWhere('p.annee = :annee')
+            ->setParameter('etudiant', $etudiant)
+            ->setParameter('type', $type)
+            ->setParameter('annee', $annee)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (float) $result;
+    }
        
 }
+

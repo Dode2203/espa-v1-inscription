@@ -103,6 +103,9 @@ class NiveauEtudiantsService
         $valiny = $this->niveauEtudiantsRepository->getAllNiveauEtudiantAnnee($annee);
         return $valiny;
     }
-
+    public function getAllNiveauxParEtudiant(Etudiants $etudiant): array {
+        $valiny = $this->niveauEtudiantsRepository->getAllNiveauxParEtudiant($etudiant);
+        return $valiny;
+    }
     
 }
