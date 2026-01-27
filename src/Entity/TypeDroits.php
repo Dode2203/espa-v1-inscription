@@ -26,7 +26,6 @@ class TypeDroits
 
     public function __construct()
     {
-        $this->typedroits = new ArrayCollection();
         $this->payments = new ArrayCollection();
     }
 
@@ -50,6 +49,7 @@ class TypeDroits
     
 
 
+    
     /**
      * @return Collection<int, Payments>
      */
