@@ -2,16 +2,13 @@
 
 namespace App\Controller\Api;
 
-use App\Entity\Droits;
 use App\Entity\Etudiants;
-use App\Entity\PayementsEcolages;
+use App\Entity\Payments;
 use App\Service\inscription\InscriptionService;
 use App\Service\JwtTokenManager;
 use App\Service\proposEtudiant\EtudiantsService;
 use App\Service\proposEtudiant\FormationEtudiantsService;
 use App\Service\proposEtudiant\NiveauEtudiantsService;
-use App\Repository\DroitsRepository;
-use App\Repository\PayementsEcolagesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,9 +29,7 @@ class EtudiantsController extends AbstractController
     private FormationEtudiantsService $formationEtudiantsService;
     private InscriptionService $inscriptionService;
     private MentionsService $mentionsService;
-    private DroitsRepository $droitsRepository;
-    private PayementsEcolagesRepository $payementsEcolagesRepository;
-
+    
     // public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService,InscriptionService $inscriptionService, MentionsService $mentionsService)
     // {
 
@@ -47,8 +42,7 @@ class EtudiantsController extends AbstractController
         FormationEtudiantsService $formationEtudiantsService,
         InscriptionService $inscriptionService,
         MentionsService $mentionsService,
-        DroitsRepository $droitsRepository,
-        PayementsEcolagesRepository $payementsEcolagesRepository
+    
     ) {
         $this->em = $em;
         $this->etudiantsService = $etudiantsService;
@@ -58,8 +52,6 @@ class EtudiantsController extends AbstractController
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->inscriptionService = $inscriptionService;
         $this->mentionsService = $mentionsService;
-        $this->droitsRepository = $droitsRepository;
-        $this->payementsEcolagesRepository = $payementsEcolagesRepository;
     }
     
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
@@ -145,6 +137,7 @@ class EtudiantsController extends AbstractController
             }
 
     }
+    
     #[Route('', name: 'etudiant_show', methods: ['GET'])]
     // #[TokenRequired(['Admin'])]
     public function getEtudiantParId(Request $request): JsonResponse
@@ -217,6 +210,9 @@ class EtudiantsController extends AbstractController
                     ? $formationEtudiant->getFormation()
                         ->getTypeFormation()->getNom()
                     : null,
+                'idNiveau' => $niveauActuel
+                    ? $niveauActuel->getNiveau()->getId()
+                    : null,
                 'typeNiveau' => $niveauActuel
                     ? $niveauActuel->getNiveau()->getType()
                     : null,
@@ -251,11 +247,12 @@ class EtudiantsController extends AbstractController
 
             return new JsonResponse([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
             ], 400);
         }
     }
-
 
     #[Route('/{id}/ecolages', name: 'etudiant_ecolages', methods: ['GET'])]
     public function getEcolages(Etudiants $etudiant): JsonResponse
@@ -270,6 +267,7 @@ class EtudiantsController extends AbstractController
             ], 400);
         }
     }
+
     #[Route('/inscrire', name: 'etudiant_inscrire', methods: ['POST'])]
     #[TokenRequired(['Utilisateur'])]
     public function inscrire(Request $request): JsonResponse
@@ -279,7 +277,7 @@ class EtudiantsController extends AbstractController
 
             $requiredFields = ['idEtudiant','typeFormation','refAdmin', 'dateAdmin','montantAdmin','refPedag','datePedag','montantPedag','idNiveau','idFormation'];
             
-            if(isset($data['typeFormation']) && $data['typeFormation']=="Professionnel"){
+            if(isset($data['typeFormation']) && $data['typeFormation']=="Professionnelle"){
                 $requiredFields[]='montantEcolage';
                 $requiredFields[]='refEcolage';
                 $requiredFields[]='dateEcolage';
@@ -309,26 +307,26 @@ class EtudiantsController extends AbstractController
             
             $annee = date('Y');
             
-            $pedagogique = new Droits();
+            $pedagogique = new Payments();
             $montantPedag = $data['montantPedag'];
             $refPedag = $data['refPedag'];
             $datePedagString = $data['datePedag'];
             $datePedag = new \DateTime($datePedagString);
             $pedagogique->setAnatiny($annee,$montantPedag,$refPedag, $datePedag);
 
-            $administratif = new Droits();
+            $administratif = new Payments();
             $montantAdmin = $data['montantAdmin'];
             $refAdmin = $data['refAdmin'];
             $dateAdminString = $data['dateAdmin'];
             $dateAdmin= new \DateTime($dateAdminString);
             $administratif->setAnatiny($annee,$montantAdmin,$refAdmin, $dateAdmin);
 
-            $payementEcolage= new PayementsEcolages();
+            $payementEcolage= new Payments();
             $montantEcolage = (float) ($data['montantEcolage'] ?? 0);
             $refEcolage = $data['refEcolage'];
             $dateEcolageString = $data['dateEcolage'];
             $dateEcolage= new \DateTime($dateEcolageString);
-            $payementEcolage->setAnatiny($annee,1,$montantEcolage,$refEcolage, $dateEcolage);
+            $payementEcolage->setAnatiny($annee,$montantEcolage,$refEcolage, $dateEcolage);
             
 
             $inscription = $this->inscriptionService->inscrireEtudiantId($idEtudiant,$idUser,$pedagogique,$administratif,$payementEcolage,$idNiveau,$idFormation);
@@ -365,6 +363,7 @@ class EtudiantsController extends AbstractController
             }
 
     }
+
     #[Route('/niveaux', name: 'etudiant_niveaux', methods: ['GET'])]
     // #[TokenRequired(['Admin'])]
     public function getNiveaux(Request $request): JsonResponse
@@ -402,6 +401,7 @@ class EtudiantsController extends AbstractController
             }
 
     }
+
     #[Route('/formations', name: 'etudiant_formations', methods: ['GET'])]
     // #[TokenRequired(['Admin'])]
     public function getFormation(Request $request): JsonResponse
@@ -438,6 +438,7 @@ class EtudiantsController extends AbstractController
             }
 
     }
+    
     #[Route('/mentions', name:'get_mention', methods: ['GET'])]
     // #[TokenRequired(['Admin'])]
     public function getAllMentions(Request $request): JsonResponse{
@@ -473,6 +474,7 @@ class EtudiantsController extends AbstractController
             }        
     }
 
+    // Fonction de zo 
     #[Route('/inscrits-par-annee', name: 'etudiants_inscrits_par_annee', methods: ['GET'])]
     public function getEtudiantsInscritsParAnnee(Request $request): JsonResponse
     {
@@ -535,7 +537,7 @@ class EtudiantsController extends AbstractController
             }
 
             // Récupération des détails via le service
-            $details = $this->inscriptionService->getDetailsEtudiantParAnnee(
+            $details = $this->inscriptionService->getDetailsEtudiantParAnneeId(
                 (int) $idEtudiant,
                 $annee
             );
@@ -563,4 +565,24 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
+    #[Route('/statistiques', name: 'etudiant_statistiques', methods: ['GET'])]
+    public function getStatistiquesInscriptions(): JsonResponse
+    {
+        try {
+            $statistiques = $this->inscriptionService->getStatistiquesInscriptions();
+            
+            return new JsonResponse([
+                'status' => 'success',
+                'data' => $statistiques
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue lors de la récupération des statistiques',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Etudiants;
 use App\Entity\NiveauEtudiants;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -53,18 +54,27 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
     }
        public function getAllNiveauEtudiantAnnee(int $annee): array
        {
-            $dateDebut = new \DateTime("$annee-01-01 00:00:00");
-            $dateFin   = new \DateTime("$annee-12-31 23:59:59");
-
             return $this->createQueryBuilder('i')
-                ->andWhere('i.dateInsertion BETWEEN :debut AND :fin')
+                ->andWhere('i.annee  = :annee ')
                 ->andWhere('i.niveau IS NOT NULL')
-                ->setParameter('debut', $dateDebut)
-                ->setParameter('fin', $dateFin)
+                ->setParameter('annee', $annee)
                 ->orderBy('i.dateInsertion', 'ASC')
                 ->getQuery()
                 ->getResult()
             ;
+       }
+          /**
+        * @return NiveauEtudiants[] Returns an array of NiveauEtudiants objects
+        */
+       public function getAllNiveauParEtudiant(Etudiants $etudiant): array
+       {
+           return $this->createQueryBuilder('n')
+               ->andWhere('n.etudiant = :etudiant')
+               ->setParameter('etudiant', $etudiant)
+               ->orderBy('n.dateInsertion', 'DESC')
+               ->getQuery()
+               ->getResult()
+           ;
        }
     
     

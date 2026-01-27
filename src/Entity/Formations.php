@@ -28,16 +28,10 @@ class Formations
     #[ORM\OneToMany(targetEntity: FormationEtudiants::class, mappedBy: 'formation')]
     private Collection $formation;
 
-    /**
-     * @var Collection<int, Ecolages>
-     */
-    #[ORM\OneToMany(targetEntity: Ecolages::class, mappedBy: 'formations')]
-    private Collection $formations;
-
+   
     public function __construct()
     {
         $this->formation = new ArrayCollection();
-        $this->formations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -99,11 +93,4 @@ class Formations
         return $this;
     }
 
-    /**
-     * @return Collection<int, Ecolages>
-     */
-    public function getFormations(): Collection
-    {
-        return $this->formations;
-    }
 }

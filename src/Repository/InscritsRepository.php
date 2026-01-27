@@ -17,44 +17,53 @@ class InscritsRepository extends ServiceEntityRepository
         parent::__construct($registry, Inscrits::class);
     }
 
-    //    /**
-    //     * @return Inscrits[] Returns an array of Inscrits objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('i')
-    //            ->andWhere('i.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('i.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function getByEtudiantAnnee(Etudiants $etudiant, int $annee): ?Inscrits
+    {
+        $dateDebut = new \DateTime("$annee-01-01 00:00:00");
+        $dateFin   = new \DateTime("$annee-12-31 23:59:59");
 
-    //    public function findOneBySomeField($value): ?Inscrits
-    //    {
-    //        return $this->createQueryBuilder('i')
-    //            ->andWhere('i.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
-        public function getByEtudiantAnnee(Etudiants $etudiant, int $annee): ?Inscrits
-        {
-            $dateDebut = new \DateTime("$annee-01-01 00:00:00");
-            $dateFin   = new \DateTime("$annee-12-31 23:59:59");
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.etudiant = :etudiant')
+            ->andWhere('i.dateInscription BETWEEN :debut AND :fin')
+            ->setParameter('etudiant', $etudiant)
+            ->setParameter('debut', $dateDebut)
+            ->setParameter('fin', $dateFin)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 
-            return $this->createQueryBuilder('i')
-                ->andWhere('i.etudiant = :etudiant')
-                ->andWhere('i.dateInscription BETWEEN :debut AND :fin')
-                ->setParameter('etudiant', $etudiant)
-                ->setParameter('debut', $dateDebut)
-                ->setParameter('fin', $dateFin)
-                ->getQuery()
-                ->getOneOrNullResult();
-        }
+    public function countInscriptionsPeriode(
+    \DateTimeInterface $dateDebut,
+    ?\DateTimeInterface $dateFin = null
+    ): int {
+        // Si dateFin est null → aujourd’hui
+        $dateFin ??= new \DateTimeImmutable('today');
 
+        return (int) $this->createQueryBuilder('i')
+            ->select('COUNT(i.id)')
+            ->where('i.dateInscription >= :dateDebut')
+            ->andWhere('i.dateInscription <= :dateFin')
+            ->setParameter('dateDebut', $dateDebut)
+            ->setParameter('dateFin', $dateFin)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+    public function countInscriptionsAnnee(int $annee): int
+    {
+        $dateDebut = new \DateTime("$annee-01-01 00:00:00");
+        $dateFin   = new \DateTime("$annee-12-31 23:59:59");
+        return $this->countInscriptionsPeriode($dateDebut, $dateFin);
+    }
 
+    public function getListeEtudiantInsriptAnnee($annee): array
+    {
+        $dateDebut = new \DateTime("$annee-01-01 00:00:00");
+        $dateFin   = new \DateTime("$annee-12-31 23:59:59");
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.dateInscription BETWEEN :debut AND :fin')
+            ->setParameter('debut', $dateDebut)
+            ->setParameter('fin', $dateFin)
+            ->getQuery()
+            ->getResult();
+    }
 }

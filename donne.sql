@@ -1,6 +1,8 @@
 
 \c digitalisation
 
+\encoding UTF8
+
 INSERT INTO role (id, name) VALUES (1, 'Admin');
 INSERT INTO role (id, name) VALUES (2, 'Utilisateur');
 
@@ -15,13 +17,13 @@ INSERT INTO status_etudiants (id, name) VALUES (2, 'Redoublant');
 
 INSERT INTO utilisateur (id, email, mdp, prenom, nom, status_id, role_id)
 VALUES (
-    4,
-    'admin@gmail.com',
-    '$2y$10$Djns8FgsL.xk2GBACEtJh.Hs1civTyvdGQ9s6gqbSgDN81QkOHvTi',
-    'admin',
-    'admin',
     1,
-    1
+    'dode@gmail.com',
+    '$2y$10$Djns8FgsL.xk2GBACEtJh.Hs1civTyvdGQ9s6gqbSgDN81QkOHvTi',
+    'dode',
+    'dode',
+    1,
+    2
 );
 
 -- UPDATE utilisateur SET status_id = 2;
@@ -56,18 +58,19 @@ VALUES
 -- Insertion des types de formation avec id manuel
 INSERT INTO type_formations (id, nom)
 VALUES
-(1, 'Académique'),
-(2, 'Professionnel');
+(1, 'Academique'),
+(2, 'Professionnelle');
 
 
 -- Insertion des formations avec id manuel et lien vers le type de formation
 INSERT INTO formations (id, nom, type_formation_id)
 VALUES 
-(1, 'Académique', 1), -- Académique
-(2, 'Atelier Luban', 2),-- Professionnel
-(3, 'Electrique Industrielle', 2), -- Académique
-(4, 'Tecnologie Information', 2),-- Professionnel
-(5, 'Maintenance automobile', 2);-- Professionnel
+(1, 'ACADEMIQUE', 1),
+(2, 'PROFESSIONNELLE LUBAN', 2),
+(3, 'PROFESSIONNELLE', 2), 
+(4, 'MASTER RECHERCHE', 1),
+(5, 'INSCRIPTION ANNULEE', 1);
+
 
 -- Insertion des données avec id manuel
 INSERT INTO formation_etudiants (id, etudiant_id, formation_id, date_formation)
@@ -76,34 +79,88 @@ VALUES
 (2, 2, 2, '2025-02-15'); 
 
 -- Insertion des données d'écolage avec id manuel
-INSERT INTO ecolages (id, formations_id, montant, date_ecolage)
-VALUES
-(1, 1, 0.0, '2025-01-05'),  -- Académique
-(2, 2, 500.0, '2025-01-10'),  -- Atelier Luban
-(3, 3, 800.0, '2025-02-15'),  -- Electrique Industrielle
-(4, 4, 900.0, '2025-03-01'),  -- Tecnologie Information
-(5, 5, 1000.0, '2025-03-10'); -- Maintenance automobile
+INSERT INTO payments (
+    reference,
+    montant,
+    date_payment,
+    annee,
+    niveau_id,
+    etudiant_id,
+    type_id,
+    numero,
+    utilisateur_id
+)
+VALUES (
+    'PAY-2026-001',
+    150000.00,
+    NOW(),
+    2026,
+    3,      -- id du niveau
+    12,     -- id de l'étudiant
+    2,      -- id du type de droits
+    'REC-45987',
+    1       -- id de l'utilisateur
+);
 
-INSERT INTO niveaux (nom, type, grade) VALUES
-('Licence 1', 1, 1),
-('Licence 2', 1, 2),
-('Licence 3', 1, 3),
-('Master 1', 1, 4),
-('Master 2', 1, 5);
 
-INSERT INTO niveaux (nom, type, grade) VALUES
-('LP 1', 2, 1),
-('LP 2', 2, 2),
-('LP 3', 2, 3),
-('MP 1', 2, 4),
-('MP', 2, 5);
+INSERT INTO niveaux (id, nom, type, grade) VALUES
+(1,  'L1',   1, 1),
+(2,  'L2',   1, 2),
+(3,  'L3',   1, 3),
+(4,  'M1',   1, 4),
+(5,  'M2',   1, 5),
+(6,  'LP1',  2, 1),
+(7,  'LP2',  2, 2),
+(8,  'LP3',  2, 3),
+(9,  'MP1',  2, 4),
+(10, 'MP2',  2, 5),
+(11, 'LP1L', 1, 1),
+(12, 'LP2L', 1, 2),
+(13, 'LP3L', 1, 3),
+(14, 'MVR',  1, 4),
+(15, 'MRS',  1, 4);
 
-INSERT INTO mentions (id, nom,abr) VALUES
-(1, 'Telecommunications','TCO'),
-(2, 'Genie Logiciel','GLI'),
-(3, 'Electronique', 'ELEC'),
-(4, 'Reseaux et Systeme','RSY'),
-(5, 'Maintenance Industrielle','MI');
+
+-- INSERT INTO niveaux (nom, type, grade) VALUES
+-- ('Licence 1', 1, 1),
+-- ('Licence 2', 1, 2),
+-- ('Licence 3', 1, 3),
+-- ('Master 1', 1, 4),
+-- ('Master 2', 1, 5);
+
+-- INSERT INTO niveaux (nom, type, grade) VALUES
+-- ('LP 1', 2, 1),
+-- ('LP 2', 2, 2),
+-- ('LP 3', 2, 3),
+-- ('MP 1', 2, 4),
+-- ('MP', 2, 5);
+
+INSERT INTO public.mentions (id, nom, abr) VALUES
+    (1,  'BTP', 'BTP'),
+    (2,  'EN', 'EN'),
+    (3,  'GC', 'GC'),
+    (4,  'GE', 'GE'),
+    (5,  'GER', 'GER'),
+    (6,  'GGEO', 'GGEO'),
+    (7,  'GMI', 'GMI'),
+    (8,  'GPCI', 'GPCI'),
+    (9,  'GPI', 'GPI'),
+    (10, 'GST', 'GST'),
+    (11, 'GSTI', 'GSTI'),
+    (12, 'HYD', 'HYD'),
+    (13, 'IGAT', 'IGAT'),
+    (14, 'IMIN', 'IMIN'),
+    (15, 'INSCRIPTION ANNULEE', 'INSCRIPTION ANNULEE'),
+    (16, 'IPE', 'IPE'),
+    (17, 'ISA', 'ISA'),
+    (18, 'MTO', 'MTO'),
+    (19, 'RENVOYEE', 'RENVOYEE'),
+    (20, 'SIM', 'SIM'),
+    (21, 'STI', 'STI'),
+    (22, 'SUSPENDU', 'SUSPENDU'),
+    (23, 'TCO', 'TCO'),
+    (24, 'UAGC', 'UAGC');
+
 
 
 INSERT INTO niveau_etudiants (
@@ -124,4 +181,5 @@ INSERT INTO niveau_etudiants (
 
 INSERT INTO type_droits (id, nom) VALUES
 (1, 'Pédagogique'),
-(2, 'Administratif');
+(2, 'Administratif'),
+(3, 'Ecolage');

@@ -1,0 +1,8 @@
+git config --global user.name "Dode2203"
+git config --global user.email "randriadode@gmail.com"
+
+#Pour verifier le git
+git config --list
+#Pour cloner le projet
+
+git clone https://github.com/Dode2203/espa-v1-inscription.git
