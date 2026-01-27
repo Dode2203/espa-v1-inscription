@@ -5,7 +5,7 @@ namespace App\Repository;
 use App\Entity\NiveauEtudiants;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-
+use App\Entity\Etudiants;
 /**
  * @extends ServiceEntityRepository<NiveauEtudiants>
  */
@@ -61,6 +61,16 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult()
             ;
+       }
+       public function getAllNiveauxParEtudiant(Etudiants $etudiant): array
+       {
+           return $this->createQueryBuilder('f')
+               ->andWhere('f.etudiant = :val')
+               ->setParameter('val', $etudiant)
+               ->orderBy('f.annee', 'ASC')
+               ->getQuery()
+               ->getResult()
+           ;
        }
     
     

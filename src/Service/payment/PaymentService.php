@@ -8,6 +8,7 @@ use App\Entity\Etudiants;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\droit\TypeDroitService as AppTypeDroitService;
 use App\Entity\Utilisateur as UtilisateurEntity;
+use App\Entity\TypeDroits;
 use Exception;
 
 class PaymentService
@@ -60,6 +61,14 @@ class PaymentService
     {
         return $this->paymentsRepository->getTotalPaiementsParAnnee($annee);
     }   
+    public function getSommeMontantByEtudiantTypeAnnee(
+        Etudiants $etudiant,
+        TypeDroits $type,
+        int $annee
+    ): float {
+        $valiny= $this->paymentsRepository->getSommeMontantByEtudiantTypeAnnee($etudiant, $type, $annee);
+        return $valiny;
+    }
     
     
 }

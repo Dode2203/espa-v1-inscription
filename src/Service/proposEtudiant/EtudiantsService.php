@@ -14,17 +14,23 @@ class EtudiantsService
     private EntityManagerInterface $em;
     private FormationEtudiantsRepository $formationEtudiantRepository;
     private $niveauEtudiantsRepository;
+    private FormationEtudiantsService $formationEtudiantsService;
+    private NiveauEtudiantsService $niveauEtudiantsService;
     
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
         FormationEtudiantsRepository $formationEtudiantRepository,
         NiveauEtudiantsRepository $niveauEtudiantsRepository,
         EntityManagerInterface $em,
+        FormationEtudiantsService $formationEtudiantsService,
+        NiveauEtudiantsService $niveauEtudiantsService
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->formationEtudiantRepository = $formationEtudiantRepository;
         $this->niveauEtudiantsRepository = $niveauEtudiantsRepository;
         $this->em = $em;
+        $this->formationEtudiantsService = $formationEtudiantsService;
+        $this->niveauEtudiantsService = $niveauEtudiantsService;
     }
 
     public function toArray(?Etudiants $etudiant = null): array
@@ -122,6 +128,22 @@ class EtudiantsService
             //     ];
             // }, $paiements)
         ];
+    }
+    public function getAllFormationParEtudiantId(int $etudiantId): array
+    {
+        $etudiant = $this->etudiantsRepository->find($etudiantId);
+        if (!$etudiant) {
+            throw new Exception("Étudiant non trouvé pour l'ID: " . $etudiantId);
+        }
+        return $this->formationEtudiantsService->getAllFormationParEtudiant($etudiant);
+    }
+    public function getAllNiveauxParEtudiantId(int $etudiantId): array
+    {
+        $etudiant = $this->etudiantsRepository->find($etudiantId);
+        if (!$etudiant) {
+            throw new Exception("Étudiant non trouvé pour l'ID: " . $etudiantId);
+        }
+        return $this->niveauEtudiantsService->getAllNiveauxParEtudiant($etudiant);
     }
 
 }

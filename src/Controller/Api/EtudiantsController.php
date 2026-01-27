@@ -584,5 +584,47 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
+    #[Route('/niveauParEtudiant', name: 'etudiant_niveau_par_etudiant', methods: ['GET'])]
+    // #[TokenRequired(['Admin'])]
+    public function getAllNiveauxParEtudiant(Request $request): JsonResponse
+    {
+        try {
+            $idEtudiant = $request->query->get('idEtudiant');
+            if (!$idEtudiant) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Le paramètre idEtudiant est requis'
+                ], 400);
+            }
+            $niveauEtudiants = $this->etudiantsService->getAllNiveauxParEtudiantId($idEtudiant);
+            $resultats = [];
+            foreach ($niveauEtudiants as $niveauEtudiant) {
+                $resultats[] = [
+                    'id' => $niveauEtudiant->getId(),
+                    'annee' => $niveauEtudiant->getAnnee(),
+                ];
+            }
+            return new JsonResponse([
+                'status' => 'success',
+            
+                'data' => $resultats
+            ], 200);
+
+
+        } catch (\Exception $e) {
+                if ($e->getMessage() === 'Inactif') {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'message' => 'Utilisateur inactif'
+                    ], 401); // ← renvoie bien 401
+                }
+
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }
+
+    }
 
 }

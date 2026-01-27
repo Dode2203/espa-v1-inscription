@@ -50,7 +50,6 @@ class FormationEtudiantsService
         $this->em->flush();
         return $formationEtudiant;
     }
-    
     public function getDernierFormationParEtudiant(Etudiants $etudiant): ?FormationEtudiants
     {
         $formationEtudiant = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
@@ -84,6 +83,10 @@ class FormationEtudiantsService
     public function getAllFormations(): array
     {
         return $this->formationRepository->findAll();
+    }
+    public function getAllFormationParEtudiant(Etudiants $etudiant): array
+    {
+        return $this->formationEtudiantsRepository->getAllFormationParEtudiant($etudiant);
     }
     
 }
