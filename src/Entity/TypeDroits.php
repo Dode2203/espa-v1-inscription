@@ -18,7 +18,6 @@ class TypeDroits
     #[ORM\Column(length: 100)]
     private ?string $nom = null;
 
-
     /**
      * @var Collection<int, Payments>
      */
@@ -49,7 +48,6 @@ class TypeDroits
 
     
 
-    
 
     
     /**
