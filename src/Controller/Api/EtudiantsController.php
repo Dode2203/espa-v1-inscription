@@ -211,16 +211,16 @@ class EtudiantsController extends AbstractController
                         ->getTypeFormation()->getNom()
                     : null,
                 'idNiveau' => $niveauActuel
-                    ? $niveauActuel->getNiveau()->getId()
+                    ? $niveauActuel?->getNiveau()?->getId()
                     : null,
                 'typeNiveau' => $niveauActuel
-                    ? $niveauActuel->getNiveau()->getType()
+                    ? $niveauActuel?->getNiveau()?->getType()
                     : null,
                 'gradeNiveau' => $niveauActuel
-                    ? $niveauActuel->getNiveau()->getGrade()
+                    ? $niveauActuel?->getNiveau()?->getGrade()
                     : null,
                 'niveau' => $niveauActuel
-                    ? $niveauActuel->getNiveau()->getNom()
+                    ? $niveauActuel?->getNiveau()?->getNom()
                     : null,
                 'mention' => $niveauActuel
                     ? $niveauActuel->getMention()->getNom()

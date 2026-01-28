@@ -12,7 +12,6 @@ use App\Service\payment\PaymentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use App\Entity\Ecolages;
-
 class EtudiantsService
 {   
     private EtudiantsRepository $etudiantsRepository;

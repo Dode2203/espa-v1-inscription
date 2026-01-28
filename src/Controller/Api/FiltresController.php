@@ -25,6 +25,7 @@ class FiltresController extends AbstractController
         try {
             $date = new \DateTime();
             $annee = (int)$date->format('Y');
+            
 
             // 1. Récupération des critères de filtrage depuis l'URL
             $idMention = $request->query->get('idMention');
