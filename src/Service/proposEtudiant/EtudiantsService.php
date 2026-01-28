@@ -183,37 +183,119 @@ class EtudiantsService
 
             $etudiant->setSexe($sexe);
 
-            // Gestion du CIN
-            $cin = $etudiant->getCin();
-            if (!$cin) 
-            {    $cin = new Cin();    }
+            // Gestion du CIN avec logique 'Compare, Check and Split'
+            $currentCin = $etudiant->getCin();
+            $needNewCin = true;
             
-            $cin->setNumero($dto->getCinNumero());
-            $cin->setLieu($dto->getCinLieu());
-            $cin->setDateCin($dto->getDateCin());
-            $this->em->persist($cin);
-            $etudiant->setCin($cin);
+            if ($currentCin) {
+                // Vérifier si les données ont changé
+                    $cinDataChanged = $currentCin->getNumero() != $dto->getCinNumero() ||
+                               $currentCin->getLieu() != $dto->getCinLieu() ||
+                               $currentCin->getDateCin() != $dto->getDateCin();
+                
+                if ($cinDataChanged) {
+                    // Vérifier si le CIN est partagé
+                    $isShared = $currentCin && $currentCin->getEtudiants() && $currentCin->getEtudiants()->count() > 1;
+                    
+                    if ($isShared) {
+                        // Créer un nouveau CIN si partagé
+                        $currentCin = null;
+                    } else {
+                        // Mettre à jour l'existant si non partagé
+                        $currentCin->setNumero($dto->getCinNumero());
+                        $currentCin->setLieu($dto->getCinLieu());
+                        $currentCin->setDateCin($dto->getDateCin());
+                        $needNewCin = false;
+                    }
+                } else {
+                    // Aucun changement nécessaire
+                    $needNewCin = false;
+                }
+            }
+            
+            if ($needNewCin) {
+                $currentCin = new Cin();
+                $currentCin->setNumero($dto->getCinNumero());
+                $currentCin->setLieu($dto->getCinLieu());
+                $currentCin->setDateCin($dto->getDateCin());
+                $this->em->persist($currentCin);
+            }
+            $etudiant->setCin($currentCin);
 
-            // Gestion du Bacc
-            $bacc = $etudiant->getBacc();
-            if (!$bacc) 
-            {    $bacc = new Bacc();    }
+            // Gestion du Bacc avec logique 'Compare, Check and Split'
+            $currentBacc = $etudiant->getBacc();
+            $needNewBacc = true;
+            
+            if ($currentBacc) {
+                // Vérifier si les données ont changé
+                $baccDataChanged = $currentBacc->getNumero() != $dto->getBaccNumero() ||
+                                 $currentBacc->getAnnee() != $dto->getBaccAnnee() ||
+                                 $currentBacc->getSerie() != $dto->getBaccSerie();
+                
+                if ($baccDataChanged) {
+                    // Vérifier si le Bacc est partagé
+                    $isShared = $currentBacc && $currentBacc->getEtudiants() && $currentBacc->getEtudiants()->count() > 1;
+                    
+                    if ($isShared) {
+                        // Créer un nouveau Bacc si partagé
+                        $currentBacc = null;
+                    } else {
+                        // Mettre à jour l'existant si non partagé
+                        $currentBacc->setNumero($dto->getBaccNumero());
+                        $currentBacc->setAnnee($dto->getBaccAnnee());
+                        $currentBacc->setSerie($dto->getBaccSerie());
+                        $needNewBacc = false;
+                    }
+                } else {
+                    // Aucun changement nécessaire
+                    $needNewBacc = false;
+                }
+            }
+            
+            if ($needNewBacc) {
+                $currentBacc = new Bacc();
+                $currentBacc->setNumero($dto->getBaccNumero());
+                $currentBacc->setAnnee($dto->getBaccAnnee());
+                $currentBacc->setSerie($dto->getBaccSerie());
+                $this->em->persist($currentBacc);
+            }
+            $etudiant->setBacc($currentBacc);
 
-            $bacc->setNumero($dto->getBaccNumero());
-            $bacc->setAnnee($dto->getBaccAnnee());
-            $bacc->setSerie($dto->getBaccSerie());
-            $this->em->persist($bacc);
-            $etudiant->setBacc($bacc);
-
-            // Gestion du Propos
-            $propos = $etudiant->getPropos();
-            if (!$propos) 
-            {    $propos = new Propos();    }
-
-            $propos->setAdresse($dto->getProposAdresse());
-            $propos->setEmail($dto->getProposEmail());
-            $this->em->persist($propos);
-            $etudiant->setPropos($propos);
+            // Gestion du Propos avec logique 'Compare, Check and Split'
+            $currentPropos = $etudiant->getPropos();
+            $needNewPropos = true;
+            
+            if ($currentPropos) {
+                // Vérifier si les données ont changé
+                $proposDataChanged = $currentPropos->getAdresse() != $dto->getProposAdresse() ||
+                                   $currentPropos->getEmail() != $dto->getProposEmail();
+                
+                if ($proposDataChanged) {
+                    // Vérifier si le Propos est partagé (on utilise getEtudiants() qui est un alias de getPropos())
+                    $isShared = $currentPropos && $currentPropos->getEtudiants() && $currentPropos->getEtudiants()->count() > 1;
+                    
+                    if ($isShared) {
+                        // Créer un nouveau Propos si partagé
+                        $currentPropos = null;
+                    } else {
+                        // Mettre à jour l'existant si non partagé
+                        $currentPropos->setAdresse($dto->getProposAdresse());
+                        $currentPropos->setEmail($dto->getProposEmail());
+                        $needNewPropos = false;
+                    }
+                } else {
+                    // Aucun changement nécessaire
+                    $needNewPropos = false;
+                }
+            }
+            
+            if ($needNewPropos) {
+                $currentPropos = new Propos();
+                $currentPropos->setAdresse($dto->getProposAdresse());
+                $currentPropos->setEmail($dto->getProposEmail());
+                $this->em->persist($currentPropos);
+            }
+            $etudiant->setPropos($currentPropos);
 
             // Persister et sauvegarder l'étudiant
             $this->em->persist($etudiant);

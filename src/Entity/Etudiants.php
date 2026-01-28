@@ -93,7 +93,7 @@ class Etudiants
         return $this->prenom;
     }
 
-    public function setPrenom(string $prenom): static
+    public function setPrenom(?string $prenom): static
     {
         $this->prenom = $prenom;
 
@@ -105,7 +105,7 @@ class Etudiants
         return $this->dateNaissance;
     }
 
-    public function setDateNaissance(\DateTimeInterface $dateNaissance): static
+    public function setDateNaissance(?\DateTimeInterface $dateNaissance): static
     {
         $this->dateNaissance = $dateNaissance;
 
@@ -117,7 +117,7 @@ class Etudiants
         return $this->lieuNaissance;
     }
 
-    public function setLieuNaissance(string $lieuNaissance): static
+    public function setLieuNaissance(?string $lieuNaissance): static
     {
         $this->lieuNaissance = $lieuNaissance;
 

@@ -14,7 +14,7 @@ class EtudiantRequestDto
     #[Assert\NotBlank]
     public ?string $nom = null;
 
-    #[Assert\NotBlank]
+    // #[Assert\NotBlank]
     public ?string $prenom = null;
 
     #[Assert\NotBlank]
