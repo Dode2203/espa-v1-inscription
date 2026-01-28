@@ -201,6 +201,8 @@ class InscriptionService
         foreach ($listeInscription as $item) {
             $etudiant = $item->getEtudiant();
             $etudiantArray = $this->etudiantsService->toArray($etudiant);
+            $etudiantArray['dateInscription'] = $item->getDateInscription()->format('Y-m-d H:i:s');
+            $etudiantArray['matricule'] = $item->getMatricule();
             $etudiantsInscrits[] = $etudiantArray;
         }
 
