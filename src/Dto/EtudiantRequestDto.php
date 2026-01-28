@@ -48,6 +48,10 @@ class EtudiantRequestDto
     #[Assert\NotBlank]
     public ?string $baccSerie = null;
 
+    // Champs pour l'inscription
+    public ?int $formationId = null;
+    public ?int $mentionId = null;
+
     // Champs du Propos
     #[Assert\NotBlank]
     #[Assert\Email]

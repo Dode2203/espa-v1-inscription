@@ -6,6 +6,9 @@ use App\Repository\EtudiantsRepository;
 use App\Repository\FormationEtudiantsRepository;
 use App\Repository\NiveauEtudiantsRepository;
 use App\Repository\SexesRepository;
+use App\Repository\FormationsRepository;
+use App\Repository\MentionsRepository;
+use App\Repository\NiveauxRepository;
 use App\Entity\Etudiants;
 use App\Entity\Cin;
 use App\Entity\Bacc;
@@ -23,6 +26,9 @@ class EtudiantsService
     private FormationEtudiantsService $formationEtudiantsService;
     private NiveauEtudiantsService $niveauEtudiantsService;
     private SexesRepository $sexesRepository;
+    private FormationsRepository $formationsRepository;
+    private MentionsRepository $mentionsRepository;
+    private NiveauxRepository $niveauxRepository;
     
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
@@ -31,7 +37,10 @@ class EtudiantsService
         EntityManagerInterface $em,
         FormationEtudiantsService $formationEtudiantsService,
         NiveauEtudiantsService $niveauEtudiantsService,
-        SexesRepository $sexesRepository
+        SexesRepository $sexesRepository,
+        FormationsRepository $formationsRepository,
+        MentionsRepository $mentionsRepository,
+        NiveauxRepository $niveauxRepository
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->formationEtudiantRepository = $formationEtudiantRepository;
@@ -40,6 +49,9 @@ class EtudiantsService
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->niveauEtudiantsService = $niveauEtudiantsService;
         $this->sexesRepository = $sexesRepository;
+        $this->formationsRepository = $formationsRepository;
+        $this->mentionsRepository = $mentionsRepository;
+        $this->niveauxRepository = $niveauxRepository;
     }
 
     public function toArray(?Etudiants $etudiant = null): array
@@ -299,9 +311,57 @@ class EtudiantsService
 
             // Persister et sauvegarder l'étudiant
             $this->em->persist($etudiant);
-            $this->em->flush();
+            
+            // Inscription dans la table NiveauEtudiants si mentionId est fourni
+            if ($dto->mentionId !== null) {
+                $mention = $this->mentionsRepository->find($dto->mentionId);
+                if (!$mention) {
+                    throw new \Exception('Mention non trouvée');
+                }
+                
+                // Vérifier si une entrée existe déjà pour cet étudiant et cette année
+                $existingNiveau = $this->niveauEtudiantsRepository->findOneBy([
+                    'etudiant' => $etudiant,
+                    'annee' => (int)date('Y') // Année en cours (2026)
+                ]);
+                
+                if (!$existingNiveau) {
+                    $niveauEtudiant = new \App\Entity\NiveauEtudiants();
+                    $niveauEtudiant->setEtudiant($etudiant);
+                    $niveauEtudiant->setMention($mention);
+                    $niveauEtudiant->setAnnee((int)date('Y')); // Année en cours (2026)
+                    $niveauEtudiant->setDateInsertion(new \DateTime());
+                    
+                    // Définir le niveau par défaut (ID 1)
+                    $niveauDefault = $this->niveauxRepository->find(1);
+                    if ($niveauDefault) {
+                        $niveauEtudiant->setNiveau($niveauDefault);
+                    } else {
+                        // Log un avertissement si le niveau par défaut n'existe pas
+                        error_log('Avertissement : Le niveau par défaut (ID 1) n\'existe pas dans la base de données.');
+                    }
+                    
+                    $this->em->persist($niveauEtudiant);
+                }
+            }
+            
+            // Inscription dans la table FormationsEtudiants si formationId est fourni
+            if ($dto->formationId !== null) {
+                $formation = $this->formationsRepository->find($dto->formationId);
+                if (!$formation) {
+                    throw new \Exception('Formation non trouvée');
+                }
+                
+                $formationEtudiant = new \App\Entity\FormationEtudiants();
+                $formationEtudiant->setEtudiant($etudiant);
+                $formationEtudiant->setFormation($formation);
+                $formationEtudiant->setDateFormation(new \DateTime());
+                
+                $this->em->persist($formationEtudiant);
+            }
             
             // Valider la transaction
+            $this->em->flush();
             $this->em->commit();
             
             return $etudiant->getId();
