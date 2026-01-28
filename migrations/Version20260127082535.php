@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260126051818 extends AbstractMigration
+final class Version20260127082535 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -22,6 +22,8 @@ final class Version20260126051818 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE bacc (id SERIAL NOT NULL, numero VARCHAR(255) DEFAULT NULL, annee INT DEFAULT NULL, serie VARCHAR(50) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE cin (id SERIAL NOT NULL, numero VARCHAR(50) NOT NULL, date_cin TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, lieu VARCHAR(255) NOT NULL, ancien_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, nouveau_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE ecolages (id SERIAL NOT NULL, formations_id INT NOT NULL, montant DOUBLE PRECISION NOT NULL, date_ecolage TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE INDEX IDX_FD93F2AA3BF5B0C2 ON ecolages (formations_id)');
         $this->addSql('CREATE TABLE etudiants (id SERIAL NOT NULL, cin_id INT DEFAULT NULL, bacc_id INT NOT NULL, propos_id INT NOT NULL, sexe_id INT NOT NULL, nom VARCHAR(255) DEFAULT NULL, prenom VARCHAR(255) DEFAULT NULL, date_naissance TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, lieu_naissance VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_227C02EBE9795579 ON etudiants (cin_id)');
         $this->addSql('CREATE INDEX IDX_227C02EB2CEC171F ON etudiants (bacc_id)');
@@ -59,6 +61,7 @@ final class Version20260126051818 extends AbstractMigration
         $this->addSql('CREATE TABLE utilisateur (id SERIAL NOT NULL, role_id INT NOT NULL, status_id INT DEFAULT NULL, email VARCHAR(255) NOT NULL, mdp VARCHAR(255) NOT NULL, nom VARCHAR(255) NOT NULL, prenom VARCHAR(255) NOT NULL, date_creation TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_1D1C63B3D60322AC ON utilisateur (role_id)');
         $this->addSql('CREATE INDEX IDX_1D1C63B36BF700BD ON utilisateur (status_id)');
+        $this->addSql('ALTER TABLE ecolages ADD CONSTRAINT FK_FD93F2AA3BF5B0C2 FOREIGN KEY (formations_id) REFERENCES formations (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE etudiants ADD CONSTRAINT FK_227C02EBE9795579 FOREIGN KEY (cin_id) REFERENCES cin (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE etudiants ADD CONSTRAINT FK_227C02EB2CEC171F FOREIGN KEY (bacc_id) REFERENCES bacc (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE etudiants ADD CONSTRAINT FK_227C02EB75EB8397 FOREIGN KEY (propos_id) REFERENCES propos (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
@@ -85,6 +88,7 @@ final class Version20260126051818 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE SCHEMA public');
+        $this->addSql('ALTER TABLE ecolages DROP CONSTRAINT FK_FD93F2AA3BF5B0C2');
         $this->addSql('ALTER TABLE etudiants DROP CONSTRAINT FK_227C02EBE9795579');
         $this->addSql('ALTER TABLE etudiants DROP CONSTRAINT FK_227C02EB2CEC171F');
         $this->addSql('ALTER TABLE etudiants DROP CONSTRAINT FK_227C02EB75EB8397');
@@ -107,6 +111,7 @@ final class Version20260126051818 extends AbstractMigration
         $this->addSql('ALTER TABLE utilisateur DROP CONSTRAINT FK_1D1C63B36BF700BD');
         $this->addSql('DROP TABLE bacc');
         $this->addSql('DROP TABLE cin');
+        $this->addSql('DROP TABLE ecolages');
         $this->addSql('DROP TABLE etudiants');
         $this->addSql('DROP TABLE formation_etudiants');
         $this->addSql('DROP TABLE formations');
