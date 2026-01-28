@@ -72,6 +72,14 @@ VALUES
 (5, 'INSCRIPTION ANNULEE', 1);
 
 
+INSERT INTO ecolages (formations_id, montant, date_ecolage)
+VALUES
+-- Professionnelle
+(3, 700000, NOW()),
+
+-- Professionnelle Luban
+(2, 1200000, NOW());
+
 -- Insertion des données avec id manuel
 INSERT INTO formation_etudiants (id, etudiant_id, formation_id, date_formation)
 VALUES
