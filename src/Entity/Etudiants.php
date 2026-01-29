@@ -29,6 +29,7 @@ class Etudiants
     private ?string $lieuNaissance = null;
 
     #[ORM\ManyToOne(inversedBy: 'etudiants')]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Cin $cin = null;
 
 

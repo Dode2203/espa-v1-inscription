@@ -9,16 +9,16 @@ use App\Service\JwtTokenManager;
 use App\Service\proposEtudiant\EtudiantsService;
 use App\Service\proposEtudiant\FormationEtudiantsService;
 use App\Service\proposEtudiant\NiveauEtudiantsService;
+use App\Service\proposEtudiant\MentionsService;
+use App\Annotation\TokenRequired;
+use App\Dto\EtudiantRequestDto;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use App\Annotation\TokenRequired;
-use App\Service\proposEtudiant\MentionsService;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use App\Dto\EtudiantRequestDto;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -35,7 +35,7 @@ class EtudiantsController extends AbstractController
     private MentionsService $mentionsService;
     private SerializerInterface $serializer;
     private ValidatorInterface $validator;
-    
+
     public function __construct(
         EntityManagerInterface $em,
         EtudiantsService $etudiantsService,
@@ -217,16 +217,16 @@ class EtudiantsController extends AbstractController
                         ->getTypeFormation()->getNom()
                     : null,
                 'idNiveau' => $niveauActuel
-                    ? $niveauActuel->getNiveau()->getId()
+                    ? $niveauActuel?->getNiveau()?->getId()
                     : null,
                 'typeNiveau' => $niveauActuel
-                    ? $niveauActuel->getNiveau()->getType()
+                    ? $niveauActuel?->getNiveau()?->getType()
                     : null,
                 'gradeNiveau' => $niveauActuel
-                    ? $niveauActuel->getNiveau()->getGrade()
+                    ? $niveauActuel?->getNiveau()?->getGrade()
                     : null,
                 'niveau' => $niveauActuel
-                    ? $niveauActuel->getNiveau()->getNom()
+                    ? $niveauActuel?->getNiveau()?->getNom()
                     : null,
                 'mention' => $niveauActuel
                     ? $niveauActuel->getMention()->getNom()
@@ -671,6 +671,26 @@ class EtudiantsController extends AbstractController
                 'message' => 'Une erreur est survenue lors de la sauvegarde de l\'étudiant',
                 'error' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/{id}/documents', name: 'api_etudiants_get_documents', methods: ['GET'])]
+    public function getDocuments(Etudiants $etudiant): JsonResponse
+    {
+        try {
+            // 1. Appel du service pour transformer l'entité en EtudiantResponseDto
+            $dto = $this->etudiantsService->getDocumentsDto($etudiant);
+
+            // 2. Retourne le DTO en JSON
+            return $this->json([
+                'status' => 'success',
+                'data' => $dto
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'status' => 'error',
+                'message' => 'Erreur lors de la récupération des documents : ' . $e->getMessage()
+            ], 500);
         }
     }
 

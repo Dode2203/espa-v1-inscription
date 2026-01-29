@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Service\proposEtudiant;
+use App\Entity\TypeDroits;
 
 use App\Repository\EtudiantsRepository;
 use App\Repository\FormationEtudiantsRepository;
@@ -10,13 +11,17 @@ use App\Repository\FormationsRepository;
 use App\Repository\MentionsRepository;
 use App\Repository\NiveauxRepository;
 use App\Entity\Etudiants;
+use App\Service\droit\TypeDroitService;
+use App\Service\payment\EcolageService;
+use App\Service\payment\PaymentService;
 use App\Entity\Cin;
 use App\Entity\Bacc;
 use App\Entity\Propos;
 use App\Dto\EtudiantRequestDto;
+use App\Dto\EtudiantResponseDto;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-
+use App\Entity\Ecolages;
 class EtudiantsService
 {   
     private EtudiantsRepository $etudiantsRepository;
@@ -25,6 +30,10 @@ class EtudiantsService
     private $niveauEtudiantsRepository;
     private FormationEtudiantsService $formationEtudiantsService;
     private NiveauEtudiantsService $niveauEtudiantsService;
+    private PaymentService $paymentService;
+
+    private TypeDroitService $typeDroitService;
+    private EcolageService $ecolageService;
     private SexesRepository $sexesRepository;
     private FormationsRepository $formationsRepository;
     private MentionsRepository $mentionsRepository;
@@ -37,6 +46,9 @@ class EtudiantsService
         EntityManagerInterface $em,
         FormationEtudiantsService $formationEtudiantsService,
         NiveauEtudiantsService $niveauEtudiantsService,
+        PaymentService $paymentService,
+        TypeDroitService $typeDroitService,
+        EcolageService $ecolageService,
         SexesRepository $sexesRepository,
         FormationsRepository $formationsRepository,
         MentionsRepository $mentionsRepository,
@@ -48,6 +60,9 @@ class EtudiantsService
         $this->em = $em;
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->niveauEtudiantsService = $niveauEtudiantsService;
+        $this->paymentService = $paymentService;
+        $this->typeDroitService = $typeDroitService;
+        $this->ecolageService = $ecolageService;
         $this->sexesRepository = $sexesRepository;
         $this->formationsRepository = $formationsRepository;
         $this->mentionsRepository = $mentionsRepository;
@@ -166,6 +181,62 @@ class EtudiantsService
         }
         return $this->niveauEtudiantsService->getAllNiveauxParEtudiant($etudiant);
     }
+    public function getMontantResteParAnnee(Etudiants $etudiant,Ecolages $ecolage, int $annee): float
+    {
+        $valiny = 0.0;
+        $typeDroit = $this->typeDroitService->getById(3);
+        if (!$typeDroit) {
+            throw new Exception("Le type droit ecolage non trouvé");
+        }
+        $ecolageParAnnee = $ecolage ? (float) ($ecolage->getMontant() ?? 0) : 0.0;
+        $montantEcolagePayer = $this->paymentService->getSommeMontantByEtudiantTypeAnnee($etudiant, $typeDroit, $annee);
+        $valiny = $ecolageParAnnee - $montantEcolagePayer;
+        return $valiny;
+    }
+    public function isValideEcolage(Etudiants $etudiant): void
+    {
+        $formationEtudiantActuelle = $this->formationEtudiantsService->getDernierFormationParEtudiant($etudiant);
+        $idTypeFormationActuelle = $formationEtudiantActuelle
+            ->getFormation()?->getTypeFormation()?->getId() ?? 1;
+
+        if ($idTypeFormationActuelle == 1) {
+            return;
+        }
+
+        $niveauEtudiants = $this->niveauEtudiantsService->getAllNiveauxParEtudiant($etudiant);
+        $listeErreur = [];
+        $ecolage = $this->ecolageService->getEcolageParFormation($formationEtudiantActuelle->getFormation() );
+
+        foreach ($niveauEtudiants as $niveauEtudiant) {
+            if (!$niveauEtudiant->getNiveau()) {
+                continue;
+            }
+            
+            $montantReste = $this->getMontantResteParAnnee($etudiant, $ecolage, $niveauEtudiant->getAnnee());
+
+            if ($montantReste > 0) {
+                $listeErreur[] = [
+                    'annee'   => $niveauEtudiant->getAnnee(),
+                    'montant' => $montantReste,
+                ];
+            }
+        }
+
+        // Si des erreurs ont été détectées, on lance une seule exception
+        if (!empty($listeErreur)) {
+            $erreursTexte = [];
+            foreach ($listeErreur as $erreur) {
+                $erreursTexte[] = "Année {$erreur['annee']}, montant restant {$erreur['montant']}";
+            }
+
+            $message = "Écolages incomplets : " . implode("; ", $erreursTexte);
+
+            throw new Exception($message);
+        }
+
+    }
+
+
 
     public function saveEtudiant(EtudiantRequestDto $dto): int
     {
@@ -371,6 +442,30 @@ class EtudiantsService
             $this->em->rollback();
             throw $e;
         }
+    }
+
+    public function getDocumentsDto(Etudiants $etudiant): EtudiantResponseDto
+    {
+        $cin = $etudiant->getCin();
+        $bacc = $etudiant->getBacc();
+        $propos = $etudiant->getPropos();
+        
+        return new EtudiantResponseDto(
+            id: $etudiant->getId(),
+            nom: $etudiant->getNom(),
+            prenom: $etudiant->getPrenom(),
+            dateNaissance: $etudiant->getDateNaissance(),
+            lieuNaissance: $etudiant->getLieuNaissance(),
+            sexeId: $etudiant->getSexe() ? $etudiant->getSexe()->getId() : null,
+            cinNumero: $cin ? $cin->getNumero() : null,
+            cinLieu: $cin ? $cin->getLieu() : null,
+            dateCin: $cin ? $cin->getDateCin() : null,
+            baccNumero: $bacc ? $bacc->getNumero() : null,
+            baccAnnee: $bacc ? $bacc->getAnnee() : null,
+            baccSerie: $bacc ? $bacc->getSerie() : null,
+            proposEmail: $propos ? $propos->getEmail() : null,
+            proposAdresse: $propos ? $propos->getAdresse() : null
+        );
     }
 
 }
