@@ -25,6 +25,8 @@ use App\Entity\Ecolages;
 use App\Entity\FormationEtudiants;
 use App\Service\proposEtudiant\mapper\EtudiantMapper;
 use App\Entity\NiveauEtudiants;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\proposEtudiant\mapper\InscriptionMapper;
 
 class EtudiantsService
 {   
@@ -56,8 +58,9 @@ class EtudiantsService
         SexesRepository $sexesRepository,
         FormationsRepository $formationsRepository,
         MentionsRepository $mentionsRepository,
-        NiveauxRepository $niveauxRepository,
-        EtudiantMapper $etudiantMapper
+        EtudiantMapper $etudiantMapper,
+        ValidatorInterface $validator,
+        InscriptionMapper $inscriptionMapper
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->formationEtudiantRepository = $formationEtudiantRepository;
@@ -71,8 +74,9 @@ class EtudiantsService
         $this->sexesRepository = $sexesRepository;
         $this->formationsRepository = $formationsRepository;
         $this->mentionsRepository = $mentionsRepository;
-        $this->niveauxRepository = $niveauxRepository;
         $this->etudiantMapper = $etudiantMapper;
+        $this->validator = $validator;
+        $this->inscriptionMapper = $inscriptionMapper;
     }
 
     public function toArray(?Etudiants $etudiant = null): array
@@ -242,65 +246,56 @@ class EtudiantsService
 
     }
 
-
-
     public function saveEtudiant(EtudiantRequestDto $dto): int
     {
+        $this->validateData($dto);
+        
         $this->em->beginTransaction();
+        
         try {
-            // 1. Récupération ou création de l'étudiant
-            $etudiant = $dto->getId() 
-                ? $this->etudiantsRepository->find($dto->getId()) 
-                : new Etudiants();
-
-            if (!$etudiant) {
-                throw new Exception("Étudiant non trouvé");
-            }
-
-            // 2. Mapping des données via le nouveau service dédié
+            $etudiant = $this->etudiantMapper->getOrCreateEntity($dto);
+            $isNewEtudiant = !$dto->getId();
+            
             $this->etudiantMapper->mapDtoToEntity($dto, $etudiant);
-
+            
             $this->em->persist($etudiant);
-            $this->em->flush();
-
-            // 3. Gestion de l'inscription initiale (Formation/Mention)
-            // On ne le fait que si c'est une création (pas d'ID)
-            if (!$dto->getId() && $dto->getFormationId() && $dto->getMentionId()) {
-                $this->handleFirstInscription($etudiant, $dto);
+                
+            if ($isNewEtudiant) {
+                $this->inscriptionMapper->createInitialInscription($etudiant, $dto);
+                
             }
-
+            
+            $this->em->flush();
+            
+            // 6. Valider la transaction
             $this->em->commit();
+            
             return $etudiant->getId();
-
+            
         } catch (\Exception $e) {
-            $this->em->rollback();
-            throw $e;
+            if ($this->em->getConnection()->isTransactionActive()) {
+                $this->em->rollback();
+            }
+            
+            // Relancer l'exception avec les détails techniques
+            throw new \Exception("Détail technique : " . $e->getMessage() . 
+                              " dans " . $e->getFile() . 
+                              " à la ligne " . $e->getLine());
         }
     }
-
-    private function handleFirstInscription(Etudiants $etudiant, EtudiantRequestDto $dto): void
+    
+    private function validateData($data): void
     {
-        // 1. Création de FormationEtudiants
-        $formationEtudiant = new FormationEtudiants();
-        $formationEtudiant->setEtudiant($etudiant);
-        $formation = $this->formationsRepository->find($dto->getFormationId());
-        $formationEtudiant->setFormation($formation);
-        $formationEtudiant->setDateFormation(new \DateTime());
-        
-        $this->em->persist($formationEtudiant);
-        
-        // 2. Création de NiveauEtudiants
-        $niveauEtudiant = new NiveauEtudiants();
-        $niveauEtudiant->setEtudiant($etudiant);
-        $niveauEtudiant->setMention($this->mentionsRepository->find($dto->getMentionId()));
-        $niveauEtudiant->setNiveau($this->niveauxRepository->find(1)); // Valeur par défaut
-        $niveauEtudiant->setAnnee((int)date('Y'));
-        $niveauEtudiant->setDateInsertion(new \DateTime());
-        
-        $this->em->persist($niveauEtudiant);
-        // Pas de flush ici, il est déjà géré dans la méthode appelante
+        $errors = $this->validator->validate($data);
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+            }
+            throw new \Exception(json_encode(['errors' => $errorMessages]));
+        }
     }
-
+    
 
     public function getDocumentsDto(Etudiants $etudiant): EtudiantResponseDto
     {
