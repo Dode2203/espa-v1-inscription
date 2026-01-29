@@ -41,28 +41,28 @@ VALUES (
 -- Table Propos avec id manuel
 INSERT INTO Sexes (id, nom) VALUES (1, 'Masculin');
 INSERT INTO Sexes (id, nom) VALUES (2, 'Feminin');
--- INSERT INTO propos (id, adresse, email)
--- VALUES 
--- (1, '123 Rue Analakely, Antananarivo', 'exemple1@gmail.com'),
--- (2, '456 Rue Isoraka, Antananarivo', 'exemple2@gmail.com');
+INSERT INTO propos (id, adresse, email)
+VALUES 
+(1, '123 Rue Analakely, Antananarivo', 'exemple1@gmail.com'),
+(2, '456 Rue Isoraka, Antananarivo', 'exemple2@gmail.com');
 
--- -- Table Cin avec id manuel
--- INSERT INTO cin (id, numero, date_cin, lieu, ancien_date, nouveau_date)
--- VALUES
--- (1, 123456, '2020-01-15', 'Antananarivo', '2010-01-01', '2020-01-15'),
--- (2, 654321, '2019-06-20', 'Fianarantsoa', '2009-06-20', '2019-06-20');
+-- Table Cin avec id manuel
+INSERT INTO cin (id, numero, date_cin, lieu, ancien_date, nouveau_date)
+VALUES
+(1, 123456, '2020-01-15', 'Antananarivo', '2010-01-01', '2020-01-15'),
+(2, 654321, '2019-06-20', 'Fianarantsoa', '2009-06-20', '2019-06-20');
 
--- -- Table Bacc avec id manuel
--- INSERT INTO bacc (id, numero, annee, serie)
--- VALUES
--- (1, 'BAC-2021-123456', 2021, 'C'),
--- (2, 'BAC-2020-654321', 2020, 'D');
+-- Table Bacc avec id manuel
+INSERT INTO bacc (id, numero, annee, serie)
+VALUES
+(1, 'BAC-2021-123456', 2021, 'C'),
+(2, 'BAC-2020-654321', 2020, 'D');
 
--- -- Table Etudiants avec id manuel et relations
--- INSERT INTO etudiants (id, nom, prenom, date_naissance, lieu_naissance, cin_id, bacc_id, propos_id,sexe_id)
--- VALUES
--- (1, 'Rakoto', 'Jean', '2003-03-15', 'Antsirabe', 1, 1, 1,1),
--- (2, 'Rabe', 'Marie', '2002-07-22', 'Fianarantsoa', 2, 2, 2,2);
+-- Table Etudiants avec id manuel et relations
+INSERT INTO etudiants (id, nom, prenom, date_naissance, lieu_naissance, cin_id, bacc_id, propos_id,sexe_id)
+VALUES
+(1, 'Rakoto', 'Jean', '2003-03-15', 'Antsirabe', 1, 1, 1,1),
+(2, 'Rabe', 'Marie', '2002-07-22', 'Fianarantsoa', 2, 2, 2,2);
 
 
 -- Insertion des types de formation avec id manuel
@@ -91,34 +91,34 @@ VALUES
 (2, 1200000, NOW());
 
 -- Insertion des données avec id manuel
--- INSERT INTO formation_etudiants (id, etudiant_id, formation_id, date_formation)
--- VALUES
--- (1, 1, 1, '2025-01-10'), 
--- (2, 2, 2, '2025-02-15'); 
+INSERT INTO formation_etudiants (id, etudiant_id, formation_id, date_formation)
+VALUES
+(1, 1, 1, '2025-01-10'), 
+(2, 2, 2, '2025-02-15'); 
 
--- -- Insertion des données d'écolage avec id manuel
--- INSERT INTO payments (
---     reference,
---     montant,
---     date_payment,
---     annee,
---     niveau_id,
---     etudiant_id,
---     type_id,
---     numero,
---     utilisateur_id
--- )
--- VALUES (
---     'PAY-2026-001',
---     150000.00,
---     NOW(),
---     2026,
---     3,      -- id du niveau
---     12,     -- id de l'étudiant
---     2,      -- id du type de droits
---     'REC-45987',
---     1       -- id de l'utilisateur
--- );
+-- Insertion des données d'écolage avec id manuel
+INSERT INTO payments (
+    reference,
+    montant,
+    date_payment,
+    annee,
+    niveau_id,
+    etudiant_id,
+    type_id,
+    numero,
+    utilisateur_id
+)
+VALUES (
+    'PAY-2026-001',
+    150000.00,
+    NOW(),
+    2026,
+    3,      -- id du niveau
+    12,     -- id de l'étudiant
+    2,      -- id du type de droits
+    'REC-45987',
+    1       -- id de l'utilisateur
+);
 
 
 INSERT INTO niveaux (id, nom, type, grade) VALUES
@@ -181,21 +181,21 @@ INSERT INTO public.mentions (id, nom, abr) VALUES
 
 
 
--- INSERT INTO niveau_etudiants (
---     niveau_id,
---     mention_id,
---     etudiant_id,
---     annee,
---     date_insertion,
---     status_etudiant_id
--- ) VALUES (
---     1,
---     1,
---     1,
---     2024,
---     NOW(),
---     1
--- );
+INSERT INTO niveau_etudiants (
+    niveau_id,
+    mention_id,
+    etudiant_id,
+    annee,
+    date_insertion,
+    status_etudiant_id
+) VALUES (
+    1,
+    1,
+    1,
+    2024,
+    NOW(),
+    1
+);
 
 INSERT INTO type_droits (id, nom) VALUES
 (1, 'Pédagogique'),

@@ -42,13 +42,19 @@ class EtudiantsRepository extends ServiceEntityRepository
 //    }
     public function getEtudiantsByNomAndPrenom(string $nom, string $prenom): array
     {
-        return $this->createQueryBuilder('e')
-            ->where('e.nom LIKE :nom')
-            ->andWhere('e.prenom LIKE :prenom')
-            ->setParameter('nom', '%' . $nom . '%')
-            ->setParameter('prenom', '%' . $prenom . '%')
-            ->getQuery()
-            ->getResult(); // 🔹 retourne plusieurs résultats
+        $qb = $this->createQueryBuilder('e');
+
+        if (!empty($nom)) {
+            $qb->andWhere('e.nom LIKE :nom')
+            ->setParameter('nom', '%' . $nom . '%');
+        }
+
+        if (!empty($prenom)) {
+            $qb->andWhere('e.prenom LIKE :prenom')
+            ->setParameter('prenom', '%' . $prenom . '%');
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
 }
