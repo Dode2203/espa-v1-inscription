@@ -22,6 +22,10 @@ use App\Dto\EtudiantResponseDto;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use App\Entity\Ecolages;
+use App\Entity\FormationEtudiants;
+use App\Service\proposEtudiant\mapper\EtudiantMapper;
+use App\Entity\NiveauEtudiants;
+
 class EtudiantsService
 {   
     private EtudiantsRepository $etudiantsRepository;
@@ -52,7 +56,8 @@ class EtudiantsService
         SexesRepository $sexesRepository,
         FormationsRepository $formationsRepository,
         MentionsRepository $mentionsRepository,
-        NiveauxRepository $niveauxRepository
+        NiveauxRepository $niveauxRepository,
+        EtudiantMapper $etudiantMapper
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->formationEtudiantRepository = $formationEtudiantRepository;
@@ -67,6 +72,7 @@ class EtudiantsService
         $this->formationsRepository = $formationsRepository;
         $this->mentionsRepository = $mentionsRepository;
         $this->niveauxRepository = $niveauxRepository;
+        $this->etudiantMapper = $etudiantMapper;
     }
 
     public function toArray(?Etudiants $etudiant = null): array
@@ -240,209 +246,61 @@ class EtudiantsService
 
     public function saveEtudiant(EtudiantRequestDto $dto): int
     {
-        // Démarrer une transaction
         $this->em->beginTransaction();
-        
         try {
-            // Récupérer ou créer l'étudiant
-            if ($dto->getId()) {
-                $etudiant = $this->etudiantsRepository->find($dto->getId());
-                if (!$etudiant) 
-                {    throw new \Exception('Étudiant non trouvé');    }
-            } 
-            else 
-            {    $etudiant = new Etudiants();    }
+            // 1. Récupération ou création de l'étudiant
+            $etudiant = $dto->getId() 
+                ? $this->etudiantsRepository->find($dto->getId()) 
+                : new Etudiants();
 
-            // Mettre à jour les informations de base de l'étudiant
-            $etudiant->setNom($dto->getNom());
-            $etudiant->setPrenom($dto->getPrenom());
-            $etudiant->setDateNaissance($dto->getDateNaissance());
-            $etudiant->setLieuNaissance($dto->getLieuNaissance());
-            
-            // Définir le sexe
-            $sexe = $this->sexesRepository->find($dto->getSexeId());
-            if (!$sexe) 
-            {    throw new \Exception('Sexe non trouvé');    }
+            if (!$etudiant) {
+                throw new Exception("Étudiant non trouvé");
+            }
 
-            $etudiant->setSexe($sexe);
+            // 2. Mapping des données via le nouveau service dédié
+            $this->etudiantMapper->mapDtoToEntity($dto, $etudiant);
 
-            // Gestion du CIN avec logique 'Compare, Check and Split'
-            $currentCin = $etudiant->getCin();
-            $needNewCin = true;
-            
-            if ($currentCin) {
-                // Vérifier si les données ont changé
-                    $cinDataChanged = $currentCin->getNumero() != $dto->getCinNumero() ||
-                               $currentCin->getLieu() != $dto->getCinLieu() ||
-                               $currentCin->getDateCin() != $dto->getDateCin();
-                
-                if ($cinDataChanged) {
-                    // Vérifier si le CIN est partagé
-                    $isShared = $currentCin && $currentCin->getEtudiants() && $currentCin->getEtudiants()->count() > 1;
-                    
-                    if ($isShared) {
-                        // Créer un nouveau CIN si partagé
-                        $currentCin = null;
-                    } else {
-                        // Mettre à jour l'existant si non partagé
-                        $currentCin->setNumero($dto->getCinNumero());
-                        $currentCin->setLieu($dto->getCinLieu());
-                        $currentCin->setDateCin($dto->getDateCin());
-                        $needNewCin = false;
-                    }
-                } else {
-                    // Aucun changement nécessaire
-                    $needNewCin = false;
-                }
-            }
-            
-            if ($needNewCin) {
-                $currentCin = new Cin();
-                $currentCin->setNumero($dto->getCinNumero());
-                $currentCin->setLieu($dto->getCinLieu());
-                $currentCin->setDateCin($dto->getDateCin());
-                $this->em->persist($currentCin);
-            }
-            $etudiant->setCin($currentCin);
-
-            // Gestion du Bacc avec logique 'Compare, Check and Split'
-            $currentBacc = $etudiant->getBacc();
-            $needNewBacc = true;
-            
-            if ($currentBacc) {
-                // Vérifier si les données ont changé
-                $baccDataChanged = $currentBacc->getNumero() != $dto->getBaccNumero() ||
-                                 $currentBacc->getAnnee() != $dto->getBaccAnnee() ||
-                                 $currentBacc->getSerie() != $dto->getBaccSerie();
-                
-                if ($baccDataChanged) {
-                    // Vérifier si le Bacc est partagé
-                    $isShared = $currentBacc && $currentBacc->getEtudiants() && $currentBacc->getEtudiants()->count() > 1;
-                    
-                    if ($isShared) {
-                        // Créer un nouveau Bacc si partagé
-                        $currentBacc = null;
-                    } else {
-                        // Mettre à jour l'existant si non partagé
-                        $currentBacc->setNumero($dto->getBaccNumero());
-                        $currentBacc->setAnnee($dto->getBaccAnnee());
-                        $currentBacc->setSerie($dto->getBaccSerie());
-                        $needNewBacc = false;
-                    }
-                } else {
-                    // Aucun changement nécessaire
-                    $needNewBacc = false;
-                }
-            }
-            
-            if ($needNewBacc) {
-                $currentBacc = new Bacc();
-                $currentBacc->setNumero($dto->getBaccNumero());
-                $currentBacc->setAnnee($dto->getBaccAnnee());
-                $currentBacc->setSerie($dto->getBaccSerie());
-                $this->em->persist($currentBacc);
-            }
-            $etudiant->setBacc($currentBacc);
-
-            // Gestion du Propos avec logique 'Compare, Check and Split'
-            $currentPropos = $etudiant->getPropos();
-            $needNewPropos = true;
-            
-            if ($currentPropos) {
-                // Vérifier si les données ont changé
-                $proposDataChanged = $currentPropos->getAdresse() != $dto->getProposAdresse() ||
-                                   $currentPropos->getEmail() != $dto->getProposEmail();
-                
-                if ($proposDataChanged) {
-                    // Vérifier si le Propos est partagé (on utilise getEtudiants() qui est un alias de getPropos())
-                    $isShared = $currentPropos && $currentPropos->getEtudiants() && $currentPropos->getEtudiants()->count() > 1;
-                    
-                    if ($isShared) {
-                        // Créer un nouveau Propos si partagé
-                        $currentPropos = null;
-                    } else {
-                        // Mettre à jour l'existant si non partagé
-                        $currentPropos->setAdresse($dto->getProposAdresse());
-                        $currentPropos->setEmail($dto->getProposEmail());
-                        $needNewPropos = false;
-                    }
-                } else {
-                    // Aucun changement nécessaire
-                    $needNewPropos = false;
-                }
-            }
-            
-            if ($needNewPropos) {
-                $currentPropos = new Propos();
-                $currentPropos->setAdresse($dto->getProposAdresse());
-                $currentPropos->setEmail($dto->getProposEmail());
-                $this->em->persist($currentPropos);
-            }
-            $etudiant->setPropos($currentPropos);
-
-            // Persister et sauvegarder l'étudiant
             $this->em->persist($etudiant);
-            
-            // Inscription dans la table NiveauEtudiants si mentionId est fourni
-            if ($dto->mentionId !== null) {
-                $mention = $this->mentionsRepository->find($dto->mentionId);
-                if (!$mention) {
-                    throw new \Exception('Mention non trouvée');
-                }
-                
-                // Vérifier si une entrée existe déjà pour cet étudiant et cette année
-                $existingNiveau = $this->niveauEtudiantsRepository->findOneBy([
-                    'etudiant' => $etudiant,
-                    'annee' => (int)date('Y') // Année en cours (2026)
-                ]);
-                
-                if (!$existingNiveau) {
-                    $niveauEtudiant = new \App\Entity\NiveauEtudiants();
-                    $niveauEtudiant->setEtudiant($etudiant);
-                    $niveauEtudiant->setMention($mention);
-                    $niveauEtudiant->setAnnee((int)date('Y')); // Année en cours (2026)
-                    $niveauEtudiant->setDateInsertion(new \DateTime());
-                    
-                    // Définir le niveau par défaut (ID 1)
-                    $niveauDefault = $this->niveauxRepository->find(1);
-                    if ($niveauDefault) {
-                        $niveauEtudiant->setNiveau($niveauDefault);
-                    } else {
-                        // Log un avertissement si le niveau par défaut n'existe pas
-                        error_log('Avertissement : Le niveau par défaut (ID 1) n\'existe pas dans la base de données.');
-                    }
-                    
-                    $this->em->persist($niveauEtudiant);
-                }
-            }
-            
-            // Inscription dans la table FormationsEtudiants si formationId est fourni
-            if ($dto->formationId !== null) {
-                $formation = $this->formationsRepository->find($dto->formationId);
-                if (!$formation) {
-                    throw new \Exception('Formation non trouvée');
-                }
-                
-                $formationEtudiant = new \App\Entity\FormationEtudiants();
-                $formationEtudiant->setEtudiant($etudiant);
-                $formationEtudiant->setFormation($formation);
-                $formationEtudiant->setDateFormation(new \DateTime());
-                
-                $this->em->persist($formationEtudiant);
-            }
-            
-            // Valider la transaction
             $this->em->flush();
+
+            // 3. Gestion de l'inscription initiale (Formation/Mention)
+            // On ne le fait que si c'est une création (pas d'ID)
+            if (!$dto->getId() && $dto->getFormationId() && $dto->getMentionId()) {
+                $this->handleFirstInscription($etudiant, $dto);
+            }
+
             $this->em->commit();
-            
             return $etudiant->getId();
-            
+
         } catch (\Exception $e) {
-            // En cas d'erreur, annuler la transaction
             $this->em->rollback();
             throw $e;
         }
     }
+
+    private function handleFirstInscription(Etudiants $etudiant, EtudiantRequestDto $dto): void
+    {
+        // 1. Création de FormationEtudiants
+        $formationEtudiant = new FormationEtudiants();
+        $formationEtudiant->setEtudiant($etudiant);
+        $formation = $this->formationsRepository->find($dto->getFormationId());
+        $formationEtudiant->setFormation($formation);
+        $formationEtudiant->setDateFormation(new \DateTime());
+        
+        $this->em->persist($formationEtudiant);
+        
+        // 2. Création de NiveauEtudiants
+        $niveauEtudiant = new NiveauEtudiants();
+        $niveauEtudiant->setEtudiant($etudiant);
+        $niveauEtudiant->setMention($this->mentionsRepository->find($dto->getMentionId()));
+        $niveauEtudiant->setNiveau($this->niveauxRepository->find(1)); // Valeur par défaut
+        $niveauEtudiant->setAnnee((int)date('Y'));
+        $niveauEtudiant->setDateInsertion(new \DateTime());
+        
+        $this->em->persist($niveauEtudiant);
+        // Pas de flush ici, il est déjà géré dans la méthode appelante
+    }
+
 
     public function getDocumentsDto(Etudiants $etudiant): EtudiantResponseDto
     {

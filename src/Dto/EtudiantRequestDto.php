@@ -214,4 +214,26 @@ class EtudiantRequestDto
         $this->proposAdresse = $proposAdresse;
         return $this;
     }
+
+    public function getFormationId(): ?int
+    {
+        return $this->formationId;
+    }
+
+    public function setFormationId(?int $formationId): self
+    {
+        $this->formationId = $formationId;
+        return $this;
+    }
+
+    public function getMentionId(): ?int
+    {
+        return $this->mentionId;
+    }
+
+    public function setMentionId(?int $mentionId): self
+    {
+        $this->mentionId = $mentionId;
+        return $this;
+    }
 }
