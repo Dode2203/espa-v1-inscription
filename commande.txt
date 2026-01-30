@@ -46,3 +46,7 @@ composer require symfony/uid
 
 #blockage de cors
 composer require nelmio/cors-bundle
+
+#pour installer serializer
+composer require symfony/serializer
+

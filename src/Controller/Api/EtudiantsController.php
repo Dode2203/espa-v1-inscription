@@ -9,14 +9,18 @@ use App\Service\JwtTokenManager;
 use App\Service\proposEtudiant\EtudiantsService;
 use App\Service\proposEtudiant\FormationEtudiantsService;
 use App\Service\proposEtudiant\NiveauEtudiantsService;
+use App\Service\proposEtudiant\MentionsService;
+use App\Annotation\TokenRequired;
+use App\Dto\EtudiantRequestDto;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Annotation\TokenRequired;
-use App\Service\proposEtudiant\MentionsService;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/etudiants')]
 class EtudiantsController extends AbstractController
@@ -29,9 +33,8 @@ class EtudiantsController extends AbstractController
     private FormationEtudiantsService $formationEtudiantsService;
     private InscriptionService $inscriptionService;
     private MentionsService $mentionsService;
-    
-    // public function __construct(EntityManagerInterface $em, EtudiantsService $etudiantsService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params, NiveauEtudiantsService $niveauEtudiantsService, FormationEtudiantsService $formationEtudiantsService,InscriptionService $inscriptionService, MentionsService $mentionsService)
-    // {
+    private SerializerInterface $serializer;
+    private ValidatorInterface $validator;
 
     public function __construct(
         EntityManagerInterface $em,
@@ -42,7 +45,8 @@ class EtudiantsController extends AbstractController
         FormationEtudiantsService $formationEtudiantsService,
         InscriptionService $inscriptionService,
         MentionsService $mentionsService,
-    
+        SerializerInterface $serializer,
+        ValidatorInterface $validator
     ) {
         $this->em = $em;
         $this->etudiantsService = $etudiantsService;
@@ -52,8 +56,10 @@ class EtudiantsController extends AbstractController
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->inscriptionService = $inscriptionService;
         $this->mentionsService = $mentionsService;
+        $this->serializer = $serializer;
+        $this->validator = $validator;
     }
-    
+
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
     // #[TokenRequired(['Admin'])]
     public function getEtudiants(Request $request): JsonResponse
@@ -474,7 +480,6 @@ class EtudiantsController extends AbstractController
             }        
     }
 
-    // Fonction de zo 
     #[Route('/inscrits-par-annee', name: 'etudiants_inscrits_par_annee', methods: ['GET'])]
     public function getEtudiantsInscritsParAnnee(Request $request): JsonResponse
     {
@@ -625,6 +630,68 @@ class EtudiantsController extends AbstractController
                 ], 400);
             }
 
+    }
+    #[Route('/save', name: 'etudiant_save', methods: ['POST'])]
+    public function save(Request $request): JsonResponse
+    {
+        try {
+            // Désérialiser la requête en DTO
+            $dto = $this->serializer->deserialize(
+                $request->getContent(),
+                EtudiantRequestDto::class,
+                'json'
+            );
+
+            // Valider le DTO
+            $errors = $this->validator->validate($dto);
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                }
+                return $this->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $errorMessages
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Appeler le service pour sauvegarder l'étudiant
+            $etudiantId = $this->etudiantsService->saveEtudiant($dto);
+
+            return $this->json([
+                'status' => 'success',
+                'message' => $dto->getId() ? 'Étudiant mis à jour avec succès' : 'Étudiant créé avec succès',
+                'etudiantId' => $etudiantId
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue lors de la sauvegarde de l\'étudiant',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/{id}/documents', name: 'api_etudiants_get_documents', methods: ['GET'])]
+    public function getDocuments(Etudiants $etudiant): JsonResponse
+    {
+        try {
+            // 1. Appel du service pour transformer l'entité en EtudiantResponseDto
+            $dto = $this->etudiantsService->getDocumentsDto($etudiant);
+
+            // 2. Retourne le DTO en JSON
+            return $this->json([
+                'status' => 'success',
+                'data' => $dto
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'status' => 'error',
+                'message' => 'Erreur lors de la récupération des documents : ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 }
