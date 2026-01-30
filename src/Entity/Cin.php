@@ -103,5 +103,11 @@ class Cin
         return $this;
     }
 
-    
+    /**
+     * @return Collection<int, Etudiants>
+     */
+    public function getEtudiants(): Collection
+    {
+        return $this->etudiants;
+    }
 }

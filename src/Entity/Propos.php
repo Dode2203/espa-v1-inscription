@@ -94,4 +94,12 @@ class Propos
         return $this;
     }
 
+    /**
+     * Alias de getPropos() pour maintenir une interface cohérente
+     * @return Collection<int, Etudiants>
+     */
+    public function getEtudiants(): Collection
+    {
+        return $this->getPropos();
+    }
 }

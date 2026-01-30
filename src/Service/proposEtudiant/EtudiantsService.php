@@ -2,16 +2,32 @@
 
 namespace App\Service\proposEtudiant;
 use App\Entity\TypeDroits;
+
 use App\Repository\EtudiantsRepository;
 use App\Repository\FormationEtudiantsRepository;
 use App\Repository\NiveauEtudiantsRepository;
+use App\Repository\SexesRepository;
+use App\Repository\FormationsRepository;
+use App\Repository\MentionsRepository;
+use App\Repository\NiveauxRepository;
 use App\Entity\Etudiants;
 use App\Service\droit\TypeDroitService;
 use App\Service\payment\EcolageService;
 use App\Service\payment\PaymentService;
+use App\Entity\Cin;
+use App\Entity\Bacc;
+use App\Entity\Propos;
+use App\Dto\EtudiantRequestDto;
+use App\Dto\EtudiantResponseDto;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use App\Entity\Ecolages;
+use App\Entity\FormationEtudiants;
+use App\Service\proposEtudiant\mapper\EtudiantMapper;
+use App\Entity\NiveauEtudiants;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\proposEtudiant\mapper\InscriptionMapper;
+
 class EtudiantsService
 {   
     private EtudiantsRepository $etudiantsRepository;
@@ -24,6 +40,15 @@ class EtudiantsService
 
     private TypeDroitService $typeDroitService;
     private EcolageService $ecolageService;
+    private SexesRepository $sexesRepository;
+    private FormationsRepository $formationsRepository;
+    private MentionsRepository $mentionsRepository;
+    private NiveauxRepository $niveauxRepository;
+    private EtudiantMapper $etudiantMapper;
+
+    private ValidatorInterface $validator;
+
+    private InscriptionMapper $inscriptionMapper;
     
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
@@ -34,7 +59,13 @@ class EtudiantsService
         NiveauEtudiantsService $niveauEtudiantsService,
         PaymentService $paymentService,
         TypeDroitService $typeDroitService,
-        EcolageService $ecolageService  
+        EcolageService $ecolageService,
+        SexesRepository $sexesRepository,
+        FormationsRepository $formationsRepository,
+        MentionsRepository $mentionsRepository,
+        EtudiantMapper $etudiantMapper,
+        ValidatorInterface $validator,
+        InscriptionMapper $inscriptionMapper
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->formationEtudiantRepository = $formationEtudiantRepository;
@@ -45,6 +76,12 @@ class EtudiantsService
         $this->paymentService = $paymentService;
         $this->typeDroitService = $typeDroitService;
         $this->ecolageService = $ecolageService;
+        $this->sexesRepository = $sexesRepository;
+        $this->formationsRepository = $formationsRepository;
+        $this->mentionsRepository = $mentionsRepository;
+        $this->etudiantMapper = $etudiantMapper;
+        $this->validator = $validator;
+        $this->inscriptionMapper = $inscriptionMapper;
     }
 
     public function toArray(?Etudiants $etudiant = null): array
@@ -214,6 +251,79 @@ class EtudiantsService
 
     }
 
+    public function saveEtudiant(EtudiantRequestDto $dto): int
+    {
+        $this->validateData($dto);
+        
+        $this->em->beginTransaction();
+        
+        try {
+            $etudiant = $this->etudiantMapper->getOrCreateEntity($dto);
+            $isNewEtudiant = !$dto->getId();
+            
+            $this->etudiantMapper->mapDtoToEntity($dto, $etudiant);
+            
+            $this->em->persist($etudiant);
+                
+            if ($isNewEtudiant) {
+                $this->inscriptionMapper->createInitialInscription($etudiant, $dto);
+                
+            }
+            
+            $this->em->flush();
+            
+            // 6. Valider la transaction
+            $this->em->commit();
+            
+            return $etudiant->getId();
+            
+        } catch (\Exception $e) {
+            if ($this->em->getConnection()->isTransactionActive()) {
+                $this->em->rollback();
+            }
+            
+            // Relancer l'exception avec les détails techniques
+            throw new \Exception("Détail technique : " . $e->getMessage() . 
+                              " dans " . $e->getFile() . 
+                              " à la ligne " . $e->getLine());
+        }
+    }
+    
+    private function validateData($data): void
+    {
+        $errors = $this->validator->validate($data);
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+            }
+            throw new \Exception(json_encode(['errors' => $errorMessages]));
+        }
+    }
+    
 
+    public function getDocumentsDto(Etudiants $etudiant): EtudiantResponseDto
+    {
+        $cin = $etudiant->getCin();
+        $bacc = $etudiant->getBacc();
+        $propos = $etudiant->getPropos();
+        
+        return new EtudiantResponseDto(
+            id: $etudiant->getId(),
+            nom: $etudiant->getNom(),
+            prenom: $etudiant->getPrenom(),
+            dateNaissance: $etudiant->getDateNaissance(),
+            lieuNaissance: $etudiant->getLieuNaissance(),
+            sexeId: $etudiant->getSexe() ? $etudiant->getSexe()->getId() : null,
+            cinNumero: $cin ? $cin->getNumero() : null,
+            cinLieu: $cin ? $cin->getLieu() : null,
+            dateCin: $cin ? $cin->getDateCin() : null,
+            baccNumero: $bacc ? $bacc->getNumero() : null,
+            baccAnnee: $bacc ? $bacc->getAnnee() : null,
+            baccSerie: $bacc ? $bacc->getSerie() : null,
+            proposEmail: $propos ? $propos->getEmail() : null,
+            proposAdresse: $propos ? $propos->getAdresse() : null
+        );
+    }
 
 }

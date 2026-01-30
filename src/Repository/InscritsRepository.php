@@ -63,6 +63,7 @@ class InscritsRepository extends ServiceEntityRepository
             ->andWhere('i.dateInscription BETWEEN :debut AND :fin')
             ->setParameter('debut', $dateDebut)
             ->setParameter('fin', $dateFin)
+            ->orderBy('i.dateInscription', 'DESC')
             ->getQuery()
             ->getResult();
     }
