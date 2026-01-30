@@ -485,6 +485,8 @@ class EtudiantsController extends AbstractController
     {
         try {
             $anneeParam = $request->query->get('annee', (new \DateTime())->format('Y'));
+            $limit = $request->query->get('limit', null);       
+            $dateFin = $request->query->get('dateFin', null);
 
             // Validation de l'année via le service
             $annee = $this->inscriptionService->validerAnnee($anneeParam);
@@ -498,7 +500,7 @@ class EtudiantsController extends AbstractController
             }
 
             // Récupération de la liste via le service
-            $etudiants = $this->inscriptionService->getListeEtudiantsInscritsParAnnee($annee);
+            $etudiants = $this->inscriptionService->getListeEtudiantsInscritsParAnnee($annee, $limit, $dateFin);
 
             return new JsonResponse([
                 'status' => 'success',

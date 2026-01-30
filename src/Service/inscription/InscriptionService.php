@@ -194,9 +194,9 @@ class InscriptionService
         return $this->dejaInscritEtudiantAnnee($etudiant,$annee);
     }
 
-    public function getListeEtudiantsInscritsParAnnee(int $annee): array
+    public function getListeEtudiantsInscritsParAnnee(int $annee,$limit= null , $dateFin = null): array
     {
-        $listeInscription = $this->inscriptionRepository->getListeEtudiantInsriptAnnee($annee);
+        $listeInscription = $this->inscriptionRepository->getListeEtudiantInsriptAnnee($annee,$limit,$dateFin);
         $etudiantsInscrits = [];
         foreach ($listeInscription as $item) {
             $etudiant = $item->getEtudiant();
@@ -205,7 +205,6 @@ class InscriptionService
             $etudiantArray['matricule'] = $item->getMatricule();
             $etudiantsInscrits[] = $etudiantArray;
         }
-
         return $etudiantsInscrits;
     }
 

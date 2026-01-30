@@ -55,15 +55,17 @@ class InscritsRepository extends ServiceEntityRepository
         return $this->countInscriptionsPeriode($dateDebut, $dateFin);
     }
 
-    public function getListeEtudiantInsriptAnnee($annee): array
+    public function getListeEtudiantInsriptAnnee($annee , $limit = 10, $dateFin = null): array
     {
+
         $dateDebut = new \DateTime("$annee-01-01 00:00:00");
-        $dateFin   = new \DateTime("$annee-12-31 23:59:59");
+        $dateFin   = $dateFin ?? new \DateTime("$annee-12-31 23:59:59");
         return $this->createQueryBuilder('i')
             ->andWhere('i.dateInscription BETWEEN :debut AND :fin')
             ->setParameter('debut', $dateDebut)
             ->setParameter('fin', $dateFin)
             ->orderBy('i.dateInscription', 'DESC')
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }
