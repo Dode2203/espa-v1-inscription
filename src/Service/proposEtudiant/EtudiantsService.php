@@ -257,7 +257,6 @@ class EtudiantsService
             $isNewEtudiant = !$dto->getId();
             
             $this->etudiantMapper->mapDtoToEntity($dto, $etudiant);
-            
             $this->em->persist($etudiant);
                 
             if ($isNewEtudiant) {
@@ -266,8 +265,6 @@ class EtudiantsService
             }
             
             $this->em->flush();
-            
-            // 6. Valider la transaction
             $this->em->commit();
             
             return $etudiant->getId();

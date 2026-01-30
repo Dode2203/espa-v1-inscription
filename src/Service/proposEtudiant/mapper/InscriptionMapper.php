@@ -46,10 +46,7 @@ class InscriptionMapper
             throw new \Exception("La mention spécifiée est introuvable.");
         }
 
-        $niveau = $this->niveauxRepository->find(1); // L1 par défaut
-        if (!$niveau) {
-            throw new \Exception("Le niveau par défaut (L1) est introuvable dans la base de données.");
-        }
+        $niveau = null;
 
         // Création de la formation de l'étudiant
         $this->createFormationEtudiant($etudiant, $formation);
