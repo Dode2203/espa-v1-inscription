@@ -10,6 +10,9 @@ use App\Repository\FormationsRepository;
 use App\Repository\MentionsRepository;
 use App\Repository\NiveauxRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Formations;
+use App\Entity\Mentions;
+use App\Entity\Niveaux;
 
 class InscriptionMapper
 {
@@ -34,49 +37,67 @@ class InscriptionMapper
      * Crée l'inscription initiale d'un étudiant (Formation + Niveau)
      * @throws \Exception Si une erreur survient lors de la création de l'inscription
      */
-    public function createInitialInscription(Etudiants $etudiant, EtudiantRequestDto $dto): void
-    {
-        $formation = $this->formationsRepository->find($dto->getFormationId());
-        if (!$formation) {
-            throw new \Exception("La formation spécifiée est introuvable.");
-        }
+    public function createInitialInscription(
+        Etudiants $etudiant,
+        EtudiantRequestDto $dto
+    ): void {
+        $this->em->beginTransaction();
 
-        $mention = $this->mentionsRepository->find($dto->getMentionId());
-        if (!$mention) {
-            throw new \Exception("La mention spécifiée est introuvable.");
-        }
+        try {
+            $formation = $this->formationsRepository->find($dto->getFormationId());
+            if (!$formation) {
+                throw new \Exception("La formation spécifiée est introuvable.");
+            }
 
-        $niveau = $this->niveauxRepository->find(1); // L1 par défaut
-        if (!$niveau) {
-            throw new \Exception("Le niveau par défaut (L1) est introuvable dans la base de données.");
-        }
+            $mention = $this->mentionsRepository->find($dto->getMentionId());
+            if (!$mention) {
+                throw new \Exception("La mention spécifiée est introuvable.");
+            }
 
-        // Création de la formation de l'étudiant
-        $this->createFormationEtudiant($etudiant, $formation);
-        
-        // Création du niveau de l'étudiant
-        $this->createNiveauEtudiant($etudiant, $formation, $mention, $niveau);
+            // Création formation étudiant
+            $formationEtudiant = $this->createFormationEtudiant($etudiant, $formation);
+            $this->em->persist($formationEtudiant);
+
+            // Création niveau étudiant
+            $niveauEtudiant = $this->createNiveauEtudiant($etudiant, $mention);
+            $this->em->persist($niveauEtudiant);
+
+            // Flush global
+            $this->em->flush();
+
+            // Commit
+            $this->em->commit();
+        } catch (\Throwable $e) {
+            // Rollback si une erreur survient
+            $this->em->rollback();
+            throw $e; // important : relancer l’exception
+        }
     }
 
-    private function createFormationEtudiant(Etudiants $etudiant, $formation): void
-    {
+    private function createFormationEtudiant(
+        Etudiants $etudiant,
+        Formations $formation
+    ): FormationEtudiants {
         $fe = new FormationEtudiants();
         $fe->setEtudiant($etudiant);
         $fe->setFormation($formation);
         $fe->setDateFormation(new \DateTime());
-        
-        $this->em->persist($fe);
+
+        return $fe;
     }
 
-    private function createNiveauEtudiant(Etudiants $etudiant, $formation, $mention, $niveau): void
-    {
+    private function createNiveauEtudiant(
+        Etudiants $etudiant,
+        Mentions $mention,
+        ?Niveaux $niveau = null
+    ): NiveauEtudiants {
         $ne = new NiveauEtudiants();
         $ne->setEtudiant($etudiant);
         $ne->setMention($mention);
         $ne->setNiveau($niveau);
-        $ne->setAnnee((int)date('Y'));
+        $ne->setAnnee((int) date('Y'));
         $ne->setDateInsertion(new \DateTime());
-        
-        $this->em->persist($ne);
+
+        return $ne;
     }
 }
