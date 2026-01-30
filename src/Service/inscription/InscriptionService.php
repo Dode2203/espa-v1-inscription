@@ -82,6 +82,7 @@ class InscriptionService
         $this->em->beginTransaction();
 
         try {
+            $dateInsertion = new \DateTime();
             $this->etudiantsService->isValideEcolage($etudiant);
 
             $dernierFormationEtudiant = $this->formationEtudiantsService
@@ -91,18 +92,22 @@ class InscriptionService
 
             $isEgalFormation = $this->formationEtudiantsService
                 ->isEgalFormation($dernierFormationEtudiant->getFormation(), $formation);
+            
             if (!$isEgalFormation) {
                 $nouvelleFormationEtudiant = $this->formationEtudiantsService
                     ->affecterNouvelleFormationEtudiant($etudiant, $formation);
-                $nouvelleFormationEtudiant->setDateFormation(new \DateTime());
+                $nouvelleFormationEtudiant->setDateFormation($dateInsertion);
                 $this->formationEtudiantsService
                     ->insertFormationEtudiant($nouvelleFormationEtudiant);
             }
             
-
+            $pedagogique->setDatePayment($dateInsertion); 
+            $administratif->setDatePayment($dateInsertion);   
+            $payementsEcolages->setDatePayment($dateInsertion);
             // 1 = pédagogique, 2 = administratif
             $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $pedagogique, 1);
             $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $administratif, 2);
+            
 
             // Paiement écolage
             if ($typeFormationId === 2) {
@@ -114,27 +119,27 @@ class InscriptionService
                 ->getDernierNiveauParEtudiant($etudiant);
             // $id_passant = $niveauEtudiantActuel->getStatusEtudiant()->getId();
             // $passant = ($id_passant === 1); // 1 = passant
-
+            
+            $niveauActuel = $niveauEtudiantActuel->getNiveau();
             $this->niveauEtudiantsService->isValideNiveauVaovao(
                 $niveau,
-                $niveauEtudiantActuel->getNiveau()
+                $niveauActuel
             );
             // $niveauEtudiantActuel->setNiveau($niveau);
-            $anneeDate = new \DateTime();
-            $annee = (int)$anneeDate->format('Y');
+            $annee = (int)$dateInsertion->format('Y');
 
 
             $nouvelleNiveauEtudiant = $this->niveauEtudiantsService->affecterNouveauNiveauEtudiant(
                 $etudiant,
                 $niveau,
-                new \DateTime()
+                $dateInsertion
             );
             $nouvelleNiveauEtudiant->setMention($niveauEtudiantActuel->getMention());   
             $nouvelleNiveauEtudiant->setAnnee($annee);
             
             $this->niveauEtudiantsService->insertNiveauEtudiant($nouvelleNiveauEtudiant);
-
-            $description = "Inscription de l'étudiant en " .$niveau->getNom() . " - " .
+            $libelle = $niveauActuel ? 'Reinscription' : 'Inscription';
+            $description = $libelle . " de l'étudiant en " .$niveau->getNom() . " - " .
                 $etudiant->getNom() . " " . $etudiant->getPrenom() ;
             $mention = $niveauEtudiantActuel->getMention()->getAbr();
             //Nouvelle inscription
@@ -143,7 +148,8 @@ class InscriptionService
                 $etudiant,
                 $utilisateur,
                 $description,
-               $numeroInscription
+               $numeroInscription,
+               $dateInsertion
             );
             $this->em->persist($inscription);
 

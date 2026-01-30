@@ -490,6 +490,7 @@ class EtudiantsController extends AbstractController
 
             // Validation de l'année via le service
             $annee = $this->inscriptionService->validerAnnee($anneeParam);
+        
 
             if ($annee === null) {
                 return new JsonResponse([

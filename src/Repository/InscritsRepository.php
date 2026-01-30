@@ -67,6 +67,7 @@ class InscritsRepository extends ServiceEntityRepository
             ->orderBy('i.dateInscription', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
+            ->setMaxResults($limit)
             ->getResult();
     }
 }
