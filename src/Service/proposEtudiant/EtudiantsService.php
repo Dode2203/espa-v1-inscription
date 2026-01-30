@@ -44,6 +44,11 @@ class EtudiantsService
     private FormationsRepository $formationsRepository;
     private MentionsRepository $mentionsRepository;
     private NiveauxRepository $niveauxRepository;
+    private EtudiantMapper $etudiantMapper;
+
+    private ValidatorInterface $validator;
+
+    private InscriptionMapper $inscriptionMapper;
     
     public function __construct(
         EtudiantsRepository $etudiantsRepository,

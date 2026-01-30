@@ -67,10 +67,10 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
         */
        public function getAllNiveauParEtudiant(Etudiants $etudiant): array
        {
-           return $this->createQueryBuilder('n')
-               ->andWhere('n.etudiant = :etudiant')
-               ->setParameter('etudiant', $etudiant)
-               ->orderBy('n.dateInsertion', 'DESC')
+             return $this->createQueryBuilder('f')
+               ->andWhere('f.etudiant = :val')
+               ->setParameter('val', $etudiant)
+               ->orderBy('f.annee', 'ASC')
                ->getQuery()
                ->getResult()
            ;
