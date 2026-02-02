@@ -99,26 +99,8 @@ class EtudiantsController extends AbstractController
             $resultats = [];
 
             foreach ($etudiants as $etudiant) {
-                $propos = $etudiant->getPropos();
-                $resultats[] = [
-                    
-                        'id' => $etudiant->getId(),
-                        'nom' => $etudiant->getNom(),
-                        'prenom' => $etudiant->getPrenom(),
-                        'dateNaissance' => $etudiant->getDateNaissance()
-                            ? $etudiant->getDateNaissance()->format('Y-m-d')
-                            : null,
-                        'lieuNaissance' => $etudiant->getLieuNaissance(),
-                        'sexe' => $etudiant->getSexe()
-                            ? $etudiant->getSexe()->getNom()
-                            : null,
-                        'contact' => [
-                            'adresse' => $propos ? $propos->getAdresse() : null,
-                            'email' => $propos ? $propos->getEmail() : null,
-                        ],
-                    
-                    
-                ];
+                
+                $resultats[] = $this->etudiantsService->toArray($etudiant);
             }
 
             return new JsonResponse([
@@ -186,7 +168,6 @@ class EtudiantsController extends AbstractController
             $niveauActuel = $this->niveauEtudiantsService
                 ->getDernierNiveauParEtudiant($etudiant);
 
-            $propos = $etudiant->getPropos();
 
             $identite = $this->etudiantsService->toArray($etudiant);
             $formation = [

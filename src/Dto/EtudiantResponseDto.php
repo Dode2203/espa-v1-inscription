@@ -24,6 +24,8 @@ class EtudiantResponseDto
     // Propos
     public ?string $proposEmail = null;
     public ?string $proposAdresse = null;
+
+    public ?string $proposTelephone = null;
     
     public function __construct(
         ?int $id = null,
@@ -39,7 +41,8 @@ class EtudiantResponseDto
         ?int $baccAnnee = null,
         ?string $baccSerie = null,
         ?string $proposEmail = null,
-        ?string $proposAdresse = null
+        ?string $proposAdresse = null,
+        ?string $proposTelephone = null,
     ) {
         $this->id = $id;
         $this->nom = $nom;
@@ -55,5 +58,6 @@ class EtudiantResponseDto
         $this->baccSerie = $baccSerie;
         $this->proposEmail = $proposEmail;
         $this->proposAdresse = $proposAdresse;
+        $this->proposTelephone = $proposTelephone;
     }
 }

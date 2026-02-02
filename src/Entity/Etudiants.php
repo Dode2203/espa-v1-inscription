@@ -37,10 +37,6 @@ class Etudiants
     #[ORM\JoinColumn(nullable: false)]
     private ?Bacc $bacc = null;
 
-    #[ORM\ManyToOne(inversedBy: 'propos')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Propos $propos = null;
-
     #[ORM\OneToMany(mappedBy: 'etudiant', targetEntity: FormationEtudiants::class)]
     private Collection $formationEtudiants;
 
@@ -62,7 +58,14 @@ class Etudiants
     private Collection $payments;
 
     #[ORM\ManyToOne(inversedBy: 'etudiants')]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Nationalites $nationalite = null;
+
+    /**
+     * @var Collection<int, Propos>
+     */
+    #[ORM\OneToMany(targetEntity: Propos::class, mappedBy: 'etudiant')]
+    private Collection $propos;
 
     
 
@@ -71,6 +74,7 @@ class Etudiants
         $this->formationEtudiants = new ArrayCollection();
         $this->inscrits = new ArrayCollection();
         $this->payments = new ArrayCollection();
+        $this->propos = new ArrayCollection();
         
     }
 
@@ -148,18 +152,6 @@ class Etudiants
     public function setBacc(?Bacc $bacc): static
     {
         $this->bacc = $bacc;
-
-        return $this;
-    }
-
-    public function getPropos(): ?Propos
-    {
-        return $this->propos;
-    }
-
-    public function setPropos(?Propos $propos): static
-    {
-        $this->propos = $propos;
 
         return $this;
     }
@@ -244,6 +236,36 @@ class Etudiants
     public function setNationalite(?Nationalites $nationalite): static
     {
         $this->nationalite = $nationalite;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Propos>
+     */
+    public function getPropos(): Collection
+    {
+        return $this->propos;
+    }
+
+    public function addPropo(Propos $propo): static
+    {
+        if (!$this->propos->contains($propo)) {
+            $this->propos->add($propo);
+            $propo->setEtudiant($this);
+        }
+
+        return $this;
+    }
+
+    public function removePropo(Propos $propo): static
+    {
+        if ($this->propos->removeElement($propo)) {
+            // set the owning side to null (unless already changed)
+            if ($propo->getEtudiant() === $this) {
+                $propo->setEtudiant(null);
+            }
+        }
 
         return $this;
     }

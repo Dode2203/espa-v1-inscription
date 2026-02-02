@@ -54,11 +54,18 @@ class EtudiantRequestDto
 
     // Champs du Propos
     #[Assert\NotBlank]
+    public ?int $proposId = null;
+    #[Assert\NotBlank]
     #[Assert\Email]
     public ?string $proposEmail = null;
     
     #[Assert\NotBlank]
     public ?string $proposAdresse = null;
+    #[Assert\NotNull]
+    public ?string $proposTelephone = null;
+
+    #[Assert\NotBlank]
+    public ?int $nationaliteId = null;
 
     // Getters et Setters
     public function getId(): ?int
@@ -236,4 +243,27 @@ class EtudiantRequestDto
         $this->mentionId = $mentionId;
         return $this;
     }
+    public function getProposTelephone(): ?string
+    {
+        return $this->proposTelephone;
+    }
+
+    public function setProposTelephone(?string $proposTelephone): self
+    {
+        $this->proposTelephone = $proposTelephone;
+
+        return $this;
+    }
+    public function getNationaliteId(): ?int
+    {
+        return $this->nationaliteId;
+    }
+
+    public function setNationaliteId(?int $nationaliteId): self
+    {
+        $this->nationaliteId = $nationaliteId;
+
+        return $this;
+    }
+
 }
