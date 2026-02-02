@@ -49,3 +49,6 @@ composer require nelmio/cors-bundle
 #pour installer serializer
 composer require symfony/serializer
 
+##Commit samedi 31/01/2025
+
+
