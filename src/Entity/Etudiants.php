@@ -61,6 +61,9 @@ class Etudiants
     #[ORM\OneToMany(targetEntity: Payments::class, mappedBy: 'etudiant')]
     private Collection $payments;
 
+    #[ORM\ManyToOne(inversedBy: 'etudiants')]
+    private ?Nationalites $nationalite = null;
+
     
 
     public function __construct()
@@ -229,6 +232,18 @@ class Etudiants
                 $payment->setEtudiant(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getNationalite(): ?Nationalites
+    {
+        return $this->nationalite;
+    }
+
+    public function setNationalite(?Nationalites $nationalite): static
+    {
+        $this->nationalite = $nationalite;
 
         return $this;
     }

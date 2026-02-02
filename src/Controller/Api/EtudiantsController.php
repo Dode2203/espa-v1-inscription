@@ -188,23 +188,7 @@ class EtudiantsController extends AbstractController
 
             $propos = $etudiant->getPropos();
 
-            $identite = [
-                'id' => $etudiant->getId(),
-                'nom' => $etudiant->getNom(),
-                'prenom' => $etudiant->getPrenom(),
-                'dateNaissance' => $etudiant->getDateNaissance()
-                    ? $etudiant->getDateNaissance()->format('Y-m-d')
-                    : null,
-                'lieuNaissance' => $etudiant->getLieuNaissance(),
-                'sexe' => $etudiant->getSexe()
-                    ? $etudiant->getSexe()->getNom()
-                    : null,
-                'contact' => [
-                    'adresse' => $propos ? $propos->getAdresse() : null,
-                    'email' => $propos ? $propos->getEmail() : null,
-                ],
-            ];
-
+            $identite = $this->etudiantsService->toArray($etudiant);
             $formation = [
                 'idFormation' => $formationEtudiant
                     ? $formationEtudiant->getFormation()->getId()
@@ -485,9 +469,11 @@ class EtudiantsController extends AbstractController
     {
         try {
             $anneeParam = $request->query->get('annee', (new \DateTime())->format('Y'));
-
+            $limit = $request->query->get('limit', null );
+            $dateFin = $request->query->get('dateFin', null);
             // Validation de l'année via le service
             $annee = $this->inscriptionService->validerAnnee($anneeParam);
+        
 
             if ($annee === null) {
                 return new JsonResponse([
@@ -498,7 +484,7 @@ class EtudiantsController extends AbstractController
             }
 
             // Récupération de la liste via le service
-            $etudiants = $this->inscriptionService->getListeEtudiantsInscritsParAnnee($annee);
+            $etudiants = $this->inscriptionService->getListeEtudiantsInscritsParAnnee($annee, $limit, $dateFin);
 
             return new JsonResponse([
                 'status' => 'success',
