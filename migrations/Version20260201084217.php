@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260129081816 extends AbstractMigration
+final class Version20260201084217 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -24,11 +24,12 @@ final class Version20260129081816 extends AbstractMigration
         $this->addSql('CREATE TABLE cin (id SERIAL NOT NULL, numero VARCHAR(50) NOT NULL, date_cin TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, lieu VARCHAR(255) NOT NULL, ancien_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, nouveau_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE ecolages (id SERIAL NOT NULL, formations_id INT NOT NULL, montant DOUBLE PRECISION NOT NULL, date_ecolage TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_FD93F2AA3BF5B0C2 ON ecolages (formations_id)');
-        $this->addSql('CREATE TABLE etudiants (id SERIAL NOT NULL, cin_id INT DEFAULT NULL, bacc_id INT NOT NULL, propos_id INT NOT NULL, sexe_id INT NOT NULL, nom VARCHAR(255) DEFAULT NULL, prenom VARCHAR(255) DEFAULT NULL, date_naissance TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, lieu_naissance VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE etudiants (id SERIAL NOT NULL, cin_id INT DEFAULT NULL, bacc_id INT NOT NULL, propos_id INT NOT NULL, sexe_id INT NOT NULL, nationalite_id INT DEFAULT NULL, nom VARCHAR(255) DEFAULT NULL, prenom VARCHAR(255) DEFAULT NULL, date_naissance TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, lieu_naissance VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_227C02EBE9795579 ON etudiants (cin_id)');
         $this->addSql('CREATE INDEX IDX_227C02EB2CEC171F ON etudiants (bacc_id)');
         $this->addSql('CREATE INDEX IDX_227C02EB75EB8397 ON etudiants (propos_id)');
         $this->addSql('CREATE INDEX IDX_227C02EB448F3B3C ON etudiants (sexe_id)');
+        $this->addSql('CREATE INDEX IDX_227C02EB1B063272 ON etudiants (nationalite_id)');
         $this->addSql('CREATE TABLE formation_etudiants (id SERIAL NOT NULL, etudiant_id INT NOT NULL, formation_id INT NOT NULL, date_formation TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_E8015236DDEAB1A3 ON formation_etudiants (etudiant_id)');
         $this->addSql('CREATE INDEX IDX_E80152365200282E ON formation_etudiants (formation_id)');
@@ -38,6 +39,7 @@ final class Version20260129081816 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_2644257FFB88E14F ON inscrits (utilisateur_id)');
         $this->addSql('CREATE INDEX IDX_2644257FDDEAB1A3 ON inscrits (etudiant_id)');
         $this->addSql('CREATE TABLE mentions (id SERIAL NOT NULL, nom VARCHAR(100) NOT NULL, abr VARCHAR(20) DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE nationalites (id SERIAL NOT NULL, nom VARCHAR(100) NOT NULL, type INT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE niveau_etudiants (id SERIAL NOT NULL, niveau_id INT DEFAULT NULL, mention_id INT NOT NULL, etudiant_id INT NOT NULL, status_etudiant_id INT DEFAULT NULL, annee INT NOT NULL, date_insertion TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_70ADE61DB3E9C81 ON niveau_etudiants (niveau_id)');
         $this->addSql('CREATE INDEX IDX_70ADE61D7A4147F0 ON niveau_etudiants (mention_id)');
@@ -66,6 +68,7 @@ final class Version20260129081816 extends AbstractMigration
         $this->addSql('ALTER TABLE etudiants ADD CONSTRAINT FK_227C02EB2CEC171F FOREIGN KEY (bacc_id) REFERENCES bacc (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE etudiants ADD CONSTRAINT FK_227C02EB75EB8397 FOREIGN KEY (propos_id) REFERENCES propos (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE etudiants ADD CONSTRAINT FK_227C02EB448F3B3C FOREIGN KEY (sexe_id) REFERENCES sexes (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE etudiants ADD CONSTRAINT FK_227C02EB1B063272 FOREIGN KEY (nationalite_id) REFERENCES nationalites (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE formation_etudiants ADD CONSTRAINT FK_E8015236DDEAB1A3 FOREIGN KEY (etudiant_id) REFERENCES etudiants (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE formation_etudiants ADD CONSTRAINT FK_E80152365200282E FOREIGN KEY (formation_id) REFERENCES formations (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE formations ADD CONSTRAINT FK_40902137D543922B FOREIGN KEY (type_formation_id) REFERENCES type_formations (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
@@ -93,6 +96,7 @@ final class Version20260129081816 extends AbstractMigration
         $this->addSql('ALTER TABLE etudiants DROP CONSTRAINT FK_227C02EB2CEC171F');
         $this->addSql('ALTER TABLE etudiants DROP CONSTRAINT FK_227C02EB75EB8397');
         $this->addSql('ALTER TABLE etudiants DROP CONSTRAINT FK_227C02EB448F3B3C');
+        $this->addSql('ALTER TABLE etudiants DROP CONSTRAINT FK_227C02EB1B063272');
         $this->addSql('ALTER TABLE formation_etudiants DROP CONSTRAINT FK_E8015236DDEAB1A3');
         $this->addSql('ALTER TABLE formation_etudiants DROP CONSTRAINT FK_E80152365200282E');
         $this->addSql('ALTER TABLE formations DROP CONSTRAINT FK_40902137D543922B');
@@ -117,6 +121,7 @@ final class Version20260129081816 extends AbstractMigration
         $this->addSql('DROP TABLE formations');
         $this->addSql('DROP TABLE inscrits');
         $this->addSql('DROP TABLE mentions');
+        $this->addSql('DROP TABLE nationalites');
         $this->addSql('DROP TABLE niveau_etudiants');
         $this->addSql('DROP TABLE niveaux');
         $this->addSql('DROP TABLE parcours');
