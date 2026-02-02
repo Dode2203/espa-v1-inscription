@@ -188,23 +188,7 @@ class EtudiantsController extends AbstractController
 
             $propos = $etudiant->getPropos();
 
-            $identite = [
-                'id' => $etudiant->getId(),
-                'nom' => $etudiant->getNom(),
-                'prenom' => $etudiant->getPrenom(),
-                'dateNaissance' => $etudiant->getDateNaissance()
-                    ? $etudiant->getDateNaissance()->format('Y-m-d')
-                    : null,
-                'lieuNaissance' => $etudiant->getLieuNaissance(),
-                'sexe' => $etudiant->getSexe()
-                    ? $etudiant->getSexe()->getNom()
-                    : null,
-                'contact' => [
-                    'adresse' => $propos ? $propos->getAdresse() : null,
-                    'email' => $propos ? $propos->getEmail() : null,
-                ],
-            ];
-
+            $identite = $this->etudiantsService->toArray($etudiant);
             $formation = [
                 'idFormation' => $formationEtudiant
                     ? $formationEtudiant->getFormation()->getId()

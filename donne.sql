@@ -29,10 +29,10 @@ VALUES (
 INSERT INTO Utilisateur (id, email, mdp, prenom, nom, status_id, role_id)
 VALUES (
     2,
-    'dode@gmail.com',
+    'test@gmail.com',
     '$2y$10$Djns8FgsL.xk2GBACEtJh.Hs1civTyvdGQ9s6gqbSgDN81QkOHvTi',
-    'dode',
-    'dode',
+    'test',
+    'test',
     1,
     2
 );
@@ -85,10 +85,10 @@ VALUES
 INSERT INTO ecolages (formations_id, montant, date_ecolage)
 VALUES
 -- Professionnelle
-(3, 700000, NOW()),
+(2, 700000, NOW()),
 
 -- Professionnelle Luban
-(2, 1200000, NOW());
+(3, 1200000, NOW());
 
 -- Insertion des données avec id manuel
 -- INSERT INTO formation_etudiants (id, etudiant_id, formation_id, date_formation)
@@ -205,3 +205,21 @@ INSERT INTO type_droits (id, nom) VALUES
 (5, 'Pédagogique-Administratif'),
 (6, 'Sélection');
 
+
+INSERT INTO nationalites (id, nom, type) VALUES
+(1, 'MALAGASY', 1);
+
+-- Insertion des autres nationalités (type = 2)
+INSERT INTO nationalites (id, nom, type) VALUES
+(2,  'CAMEROUNAISE', 2),
+(3,  'CHINOISE', 2),
+(4,  'COMORIENNE', 2),
+(5,  'CONGOLAISE', 2),
+(6,  'DJIBOUTIENNE', 2),
+(7,  'FRANCAISE', 2),
+(8,  'GABONAISE', 2),
+(9,  'GHANEENNE', 2),
+(10, 'GUINEENNE', 2),
+(11, 'NIGERIENNE', 2),
+(12, 'SENEGALAISE', 2),
+(13, 'TCHADIENNE', 2);
