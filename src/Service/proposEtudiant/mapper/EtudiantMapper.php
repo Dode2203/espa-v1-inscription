@@ -8,23 +8,28 @@ use App\Entity\Propos;
 use App\Entity\Etudiants;
 use App\Dto\EtudiantRequestDto;
 use App\Repository\SexesRepository;
+use App\Entity\Nationalites;
 use App\Repository\EtudiantsRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\NationalitesRepository;
 
 class EtudiantMapper
 {
     private SexesRepository $sexesRepository;
     private EntityManagerInterface $em;
     private EtudiantsRepository $etudiantsRepository;
+    private NationalitesRepository $nationalitesRepository;
 
     public function __construct(
         SexesRepository $sexesRepository,
         EntityManagerInterface $em,
-        EtudiantsRepository $etudiantsRepository
+        EtudiantsRepository $etudiantsRepository,
+        NationalitesRepository $nationalitesRepository
     ) {
         $this->sexesRepository = $sexesRepository;
         $this->em = $em;
         $this->etudiantsRepository = $etudiantsRepository;
+        $this->nationalitesRepository = $nationalitesRepository;
     }
 
     public function mapDtoToEntity(EtudiantRequestDto $dto, Etudiants $etudiant): void
@@ -38,6 +43,11 @@ class EtudiantMapper
         $sexe = $this->sexesRepository->find($dto->getSexeId());
         if ($sexe) {
             $etudiant->setSexe($sexe);
+        }
+
+        $nationalite = $this->nationalitesRepository->find($dto->getNationaliteId());
+        if ($nationalite) {
+            $etudiant->setNationalite($nationalite);
         }
 
         // 2. Gestion du CIN
@@ -60,7 +70,13 @@ class EtudiantMapper
         $propos = $etudiant->getPropos() ?? new Propos();
         $propos->setEmail($dto->getProposEmail());
         $propos->setAdresse($dto->getProposAdresse());
-        $etudiant->setPropos($propos);
+        $propos->setTelephone($dto->getProposTelephone());
+        $propos->setEtudiant($etudiant);
+
+        $nationalite = $etudiant->getNationalite() ?? new Nationalites();
+
+        
+
         $this->em->persist($propos);
     }
 

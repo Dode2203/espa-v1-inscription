@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ProposRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProposRepository::class)]
@@ -21,17 +22,18 @@ class Propos
     #[ORM\Column(length: 255 , nullable: true)]
     private ?string $email = null;
 
+    #[ORM\ManyToOne(inversedBy: 'propos')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Etudiants $etudiant = null;
 
-    /**
-     * @var Collection<int, Etudiants>
-     */
-    #[ORM\OneToMany(targetEntity: Etudiants::class, mappedBy: 'propos')]
-    private Collection $propos;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $dateInsertion = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $telephone = null;
 
     public function __construct()
     {
-        $this->propos = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -63,43 +65,39 @@ class Propos
         return $this;
     }
 
-
-    /**
-     * @return Collection<int, Etudiants>
-     */
-    public function getPropos(): Collection
+    public function getEtudiant(): ?Etudiants
     {
-        return $this->propos;
+        return $this->etudiant;
     }
 
-    public function addPropo(Etudiants $propo): static
+    public function setEtudiant(?Etudiants $etudiant): static
     {
-        if (!$this->propos->contains($propo)) {
-            $this->propos->add($propo);
-            $propo->setPropos($this);
-        }
+        $this->etudiant = $etudiant;
 
         return $this;
     }
 
-    public function removePropo(Etudiants $propo): static
+    public function getDateInsertion(): ?\DateTimeInterface
     {
-        if ($this->propos->removeElement($propo)) {
-            // set the owning side to null (unless already changed)
-            if ($propo->getPropos() === $this) {
-                $propo->setPropos(null);
-            }
-        }
+        return $this->dateInsertion;
+    }
+
+    public function setDateInsertion(\DateTimeInterface $dateInsertion): static
+    {
+        $this->dateInsertion = $dateInsertion;
 
         return $this;
     }
 
-    /**
-     * Alias de getPropos() pour maintenir une interface cohérente
-     * @return Collection<int, Etudiants>
-     */
-    public function getEtudiants(): Collection
+    public function getTelephone(): ?string
     {
-        return $this->getPropos();
+        return $this->telephone;
+    }
+
+    public function setTelephone(?string $telephone): static
+    {
+        $this->telephone = $telephone;
+
+        return $this;
     }
 }
