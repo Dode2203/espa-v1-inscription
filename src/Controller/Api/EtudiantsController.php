@@ -99,26 +99,8 @@ class EtudiantsController extends AbstractController
             $resultats = [];
 
             foreach ($etudiants as $etudiant) {
-                $propos = $etudiant->getPropos();
-                $resultats[] = [
-                    
-                        'id' => $etudiant->getId(),
-                        'nom' => $etudiant->getNom(),
-                        'prenom' => $etudiant->getPrenom(),
-                        'dateNaissance' => $etudiant->getDateNaissance()
-                            ? $etudiant->getDateNaissance()->format('Y-m-d')
-                            : null,
-                        'lieuNaissance' => $etudiant->getLieuNaissance(),
-                        'sexe' => $etudiant->getSexe()
-                            ? $etudiant->getSexe()->getNom()
-                            : null,
-                        'contact' => [
-                            'adresse' => $propos ? $propos->getAdresse() : null,
-                            'email' => $propos ? $propos->getEmail() : null,
-                        ],
-                    
-                    
-                ];
+                
+                $resultats[] = $this->etudiantsService->toArray($etudiant);
             }
 
             return new JsonResponse([
@@ -186,7 +168,6 @@ class EtudiantsController extends AbstractController
             $niveauActuel = $this->niveauEtudiantsService
                 ->getDernierNiveauParEtudiant($etudiant);
 
-            $propos = $etudiant->getPropos();
 
             $identite = $this->etudiantsService->toArray($etudiant);
             $formation = [
@@ -630,18 +611,28 @@ class EtudiantsController extends AbstractController
 
             // Valider le DTO
             $errors = $this->validator->validate($dto);
+
             if (count($errors) > 0) {
                 $errorMessages = [];
+                $messages = [];
+
                 foreach ($errors as $error) {
-                    $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                    $property = $error->getPropertyPath();
+                    $message  = $error->getMessage();
+
+                    // erreurs par champ
+                    $errorMessages[$property][] = $message;
+
+                    // message global
+                    $messages[] = sprintf('%s : %s', $property, $message);
                 }
+
                 return $this->json([
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $errorMessages
+                    'status'  => 'error',
+                    'message' => 'Erreur de validation : ' . implode(' | ', $messages),
+                    'errors'  => $errorMessages
                 ], Response::HTTP_BAD_REQUEST);
             }
-
             // Appeler le service pour sauvegarder l'étudiant
             $etudiantId = $this->etudiantsService->saveEtudiant($dto);
 

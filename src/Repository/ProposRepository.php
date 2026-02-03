@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Propos;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\Etudiants;
 
 /**
  * @extends ServiceEntityRepository<Propos>
@@ -40,4 +41,14 @@ class ProposRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+    public function getDernierProposByEtudiant(Etudiants $etudiant): ?Propos
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.etudiant = :etudiant')
+            ->setParameter('etudiant', $etudiant)
+            ->orderBy('p.dateInsertion', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
