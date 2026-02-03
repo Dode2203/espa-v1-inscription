@@ -88,7 +88,7 @@ class InscriptionService
             $dernierFormationEtudiant = $this->formationEtudiantsService
                 ->getDernierFormationParEtudiant($etudiant);
 
-            $typeFormationId = $dernierFormationEtudiant->getFormation()->getTypeFormation()->getId() ?? 1;
+            $typeFormationId = $formation->getId() ?? 1;
 
             $isEgalFormation = $this->formationEtudiantsService
                 ->isEgalFormation($dernierFormationEtudiant->getFormation(), $formation);
@@ -110,7 +110,7 @@ class InscriptionService
             
 
             // Paiement écolage
-            if ($typeFormationId === 2) {
+            if ($typeFormationId !== 1) {
                 $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $payementsEcolages, 3);
             }
 
