@@ -611,18 +611,28 @@ class EtudiantsController extends AbstractController
 
             // Valider le DTO
             $errors = $this->validator->validate($dto);
+
             if (count($errors) > 0) {
                 $errorMessages = [];
+                $messages = [];
+
                 foreach ($errors as $error) {
-                    $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                    $property = $error->getPropertyPath();
+                    $message  = $error->getMessage();
+
+                    // erreurs par champ
+                    $errorMessages[$property][] = $message;
+
+                    // message global
+                    $messages[] = sprintf('%s : %s', $property, $message);
                 }
+
                 return $this->json([
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $errorMessages
+                    'status'  => 'error',
+                    'message' => 'Erreur de validation : ' . implode(' | ', $messages),
+                    'errors'  => $errorMessages
                 ], Response::HTTP_BAD_REQUEST);
             }
-
             // Appeler le service pour sauvegarder l'étudiant
             $etudiantId = $this->etudiantsService->saveEtudiant($dto);
 

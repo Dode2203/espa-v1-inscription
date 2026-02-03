@@ -6,7 +6,7 @@ use App\Entity\Propos;
 use App\Entity\Etudiants;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-
+use App\Dto\EtudiantRequestDto;
 class ProposService
 {   private $proposRepository;
     private EntityManagerInterface $em;
@@ -47,5 +47,26 @@ class ProposService
     {
         return $this->proposRepository->getDernierProposByEtudiant($etudiant);
     }
+    public function getOrCreateEntity(EtudiantRequestDto $dto): Propos
+    {
+        
+        $proposId = $dto->getProposId();
+        if($proposId !== null) {
+            $propos = $this->proposRepository->find($proposId);
+            if (!$propos) {
+                throw new Exception("Propos non trouvé pour l'id ="+$dto->getProposId());
+            }
+            return $propos;
+        }
+        
+        
+        return new Propos();
+    }
+    public function mapDtoToEntity(EtudiantRequestDto $dto, Propos $propos): void{
+        $propos->setEmail($dto->getProposEmail());
+        $propos->setAdresse($dto->getProposAdresse());
+        $propos->setTelephone($dto->getProposTelephone());
+    }
+
     
 }
