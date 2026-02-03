@@ -61,7 +61,7 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
-    // #[TokenRequired(['Admin'])]
+    #[TokenRequired]
     public function getEtudiants(Request $request): JsonResponse
     {
         try {
@@ -127,7 +127,7 @@ class EtudiantsController extends AbstractController
     }
     
     #[Route('', name: 'etudiant_show', methods: ['GET'])]
-    // #[TokenRequired(['Admin'])]
+    #[TokenRequired]
     public function getEtudiantParId(Request $request): JsonResponse
     {
         try {
@@ -240,7 +240,7 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/inscrire', name: 'etudiant_inscrire', methods: ['POST'])]
-    #[TokenRequired(['Utilisateur'])]
+    #[TokenRequired(['Utilisateur','Admin'])]
     public function inscrire(Request $request): JsonResponse
     {
         try {
@@ -446,6 +446,7 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/inscrits-par-annee', name: 'etudiants_inscrits_par_annee', methods: ['GET'])]
+    #[TokenRequired(['Admin','Utilisateur'])]  
     public function getEtudiantsInscritsParAnnee(Request $request): JsonResponse
     {
         try {
@@ -483,7 +484,7 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
-
+    #[TokenRequired(['Admin','Utilisateur'])]  
     #[Route('/details-par-annee', name: 'etudiant_details_par_annee', methods: ['GET'])]
     public function getDetailsEtudiantParAnnee(Request $request): JsonResponse
     {
@@ -538,6 +539,7 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
+    #[TokenRequired(['Admin','Utilisateur'])]  
     #[Route('/statistiques', name: 'etudiant_statistiques', methods: ['GET'])]
     public function getStatistiquesInscriptions(): JsonResponse
     {
@@ -599,6 +601,7 @@ class EtudiantsController extends AbstractController
             }
 
     }
+    #[TokenRequired(['Admin','Utilisateur'])]  
     #[Route('/save', name: 'etudiant_save', methods: ['POST'])]
     public function save(Request $request): JsonResponse
     {
@@ -653,6 +656,7 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/{id}/documents', name: 'api_etudiants_get_documents', methods: ['GET'])]
+    #[TokenRequired(['Admin','Utilisateur'])]  
     public function getDocuments(Etudiants $etudiant): JsonResponse
     {
         try {

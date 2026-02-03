@@ -83,8 +83,11 @@ class InscriptionService
 
         try {
             $dateInsertion = new \DateTime();
-            $this->etudiantsService->isValideEcolage($etudiant);
-
+            $isAdmin = $utilisateur->getRole()->getName() === 'Admin';
+            
+            if (!$isAdmin) {
+                $this->etudiantsService->isValideEcolage($etudiant);
+            }
             $dernierFormationEtudiant = $this->formationEtudiantsService
                 ->getDernierFormationParEtudiant($etudiant);
 
