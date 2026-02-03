@@ -91,6 +91,7 @@ class EtudiantsService
         }
 
         $propos = $etudiant->getPropos();
+        $nationalite = $etudiant->getNationalite();
 
         return [
             'id' => $etudiant->getId(),
@@ -107,6 +108,11 @@ class EtudiantsService
                 'adresse' => $propos?->getAdresse(),
                 'email'   => $propos?->getEmail(),
             ],
+            'nationalite' => $nationalite ? [
+                'nom' => $nationalite->getNom(),
+                'type' => $nationalite->getType(),
+                'typeNationaliteNom' => $nationalite->getTypeNationaliteNom(),
+            ] : null,
         ];
     }
 
