@@ -52,7 +52,7 @@ INSERT INTO Sexes (id, nom) VALUES (2, 'Feminin');
 -- (1, 123456, '2020-01-15', 'Antananarivo', '2010-01-01', '2020-01-15'),
 -- (2, 654321, '2019-06-20', 'Fianarantsoa', '2009-06-20', '2019-06-20');
 
--- -- Table Bacc avec id manuel
+-- Table Bacc avec id manuel
 -- INSERT INTO bacc (id, numero, annee, serie)
 -- VALUES
 -- (1, 'BAC-2021-123456', 2021, 'C'),
@@ -76,8 +76,8 @@ VALUES
 INSERT INTO formations (id, nom, type_formation_id)
 VALUES 
 (1, 'ACADEMIQUE', 1),
-(2, 'PROFESSIONNELLE LUBAN', 2),
-(3, 'PROFESSIONNELLE', 2), 
+(2, 'PROFESSIONNELLE', 2),
+(3, 'PROFESSIONNELLE LUBAN', 2), 
 (4, 'MASTER RECHERCHE', 1),
 (5, 'INSCRIPTION ANNULEE', 1);
 
@@ -132,11 +132,11 @@ INSERT INTO niveaux (id, nom, type, grade) VALUES
 (8,  'LP3',  2, 3),
 (9,  'MP1',  2, 4),
 (10, 'MP2',  2, 5),
-(11, 'LP1L', 1, 1),
-(12, 'LP2L', 1, 2),
-(13, 'LP3L', 1, 3),
-(14, 'MVR',  1, 4),
-(15, 'MRS',  1, 4);
+(11, 'LP1L', 3, 1),
+(12, 'LP2L', 3, 2),
+(13, 'LP3L', 3, 3),
+(14, 'MVR',  4, 4),
+(15, 'MRS',  5, 1);
 
 
 -- INSERT INTO niveaux (nom, type, grade) VALUES
@@ -197,8 +197,11 @@ INSERT INTO public.mentions (id, nom, abr) VALUES
 --     1
 -- );
 
-INSERT INTO type_droits (id, nom) VALUES
+INSERT INTO type_droits (id, nom) VALUES 
 (1, 'Pédagogique'),
 (2, 'Administratif'),
 (3, 'Ecolage'),
-(4, 'Agence Comptable');
+(4, 'Agence Comptable'),
+(5, 'Pédagogique-Administratif'),
+(6, 'Sélection');
+
