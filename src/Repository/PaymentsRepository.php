@@ -71,6 +71,18 @@ class PaymentsRepository extends ServiceEntityRepository
 
         return (float) $result;
     }
-       
-}
 
+    public function findByEtudiantJoined(int $idEtudiant): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p', 'e', 't', 'n')
+            ->join('p.etudiant', 'e')
+            ->join('p.type', 't')
+            ->leftJoin('p.niveau', 'n')
+            ->where('e.id = :idEtudiant')
+            ->setParameter('idEtudiant', $idEtudiant)
+            ->orderBy('p.datePayment', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+}

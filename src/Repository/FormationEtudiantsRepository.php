@@ -52,18 +52,30 @@ class FormationEtudiantsRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
-           /**
-        * @return FormationEtudiants[] Returns an array of FormationEtudiants objects
-        */
-       public function getAllFormationParEtudiant(Etudiants $etudiant): array
-       {
-           return $this->createQueryBuilder('f')
-               ->andWhere('f.etudiant = :val')
-               ->setParameter('val', $etudiant)
-               ->orderBy('f.dateFormation', 'ASC')
-               ->getQuery()
-               ->getResult()
-           ;
-       }
+    /**
+     * @return FormationEtudiants[] Returns an array of FormationEtudiants objects
+     */
+    public function getAllFormationParEtudiant(Etudiants $etudiant): array
+    {
+        return $this->createQueryBuilder('f')
+            ->andWhere('f.etudiant = :val')
+            ->setParameter('val', $etudiant)
+            ->orderBy('f.dateFormation', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 
+    public function findActiveFormationAtDate(Etudiants $etudiant, \DateTimeInterface $date): ?FormationEtudiants
+    {
+        return $this->createQueryBuilder('fe')
+            ->where('fe.etudiant = :etudiant')
+            ->andWhere('fe.dateFormation <= :date')
+            ->setParameter('etudiant', $etudiant)
+            ->setParameter('date', $date)
+            ->orderBy('fe.dateFormation', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
