@@ -65,19 +65,11 @@ class EtudiantMapper
         $bacc->setSerie($dto->getBaccSerie());
         $etudiant->setBacc($bacc);
         $this->em->persist($bacc);
-
-        // 4. Informations de contact (Propos)
-        $propos = $etudiant->getPropos() ?? new Propos();
-        $propos->setEmail($dto->getProposEmail());
-        $propos->setAdresse($dto->getProposAdresse());
-        $propos->setTelephone($dto->getProposTelephone());
-        $propos->setEtudiant($etudiant);
-
-        $nationalite = $etudiant->getNationalite() ?? new Nationalites();
-
+        $this->em->flush();
         
+        
+        // 4. Informations de contact (Propos)
 
-        $this->em->persist($propos);
     }
 
     public function getOrCreateEntity(EtudiantRequestDto $dto): Etudiants

@@ -52,8 +52,6 @@ class EtudiantRequestDto
     public ?int $formationId = null;
     public ?int $mentionId = null;
 
-    // Champs du Propos
-    #[Assert\NotBlank]
     public ?int $proposId = null;
     #[Assert\NotBlank]
     #[Assert\Email]
@@ -241,6 +239,15 @@ class EtudiantRequestDto
     public function setMentionId(?int $mentionId): self
     {
         $this->mentionId = $mentionId;
+        return $this;
+    }
+    public function getProposId(): ?int
+    {
+        return $this->proposId;
+    }
+    public function setProposId(?int $proposId): self
+    {
+        $this->proposId = $proposId;
         return $this;
     }
     public function getProposTelephone(): ?string

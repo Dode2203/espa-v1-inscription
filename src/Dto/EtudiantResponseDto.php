@@ -20,6 +20,8 @@ class EtudiantResponseDto
     public ?string $baccNumero = null;
     public ?int $baccAnnee = null;
     public ?string $baccSerie = null;
+
+    public ?int $proposId = null;
     
     // Propos
     public ?string $proposEmail = null;
@@ -40,6 +42,7 @@ class EtudiantResponseDto
         ?string $baccNumero = null,
         ?int $baccAnnee = null,
         ?string $baccSerie = null,
+        ?int $proposId = null,
         ?string $proposEmail = null,
         ?string $proposAdresse = null,
         ?string $proposTelephone = null,
@@ -56,6 +59,7 @@ class EtudiantResponseDto
         $this->baccNumero = $baccNumero;
         $this->baccAnnee = $baccAnnee;
         $this->baccSerie = $baccSerie;
+        $this->proposId = $proposId;
         $this->proposEmail = $proposEmail;
         $this->proposAdresse = $proposAdresse;
         $this->proposTelephone = $proposTelephone;

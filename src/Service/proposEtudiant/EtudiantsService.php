@@ -19,6 +19,7 @@ use App\Entity\Bacc;
 use App\Entity\Propos;
 use App\Dto\EtudiantRequestDto;
 use App\Dto\EtudiantResponseDto;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use App\Entity\Ecolages;
@@ -266,11 +267,22 @@ class EtudiantsService
         
         try {
             $etudiant = $this->etudiantMapper->getOrCreateEntity($dto);
+            
             $isNewEtudiant = !$dto->getId();
             
             $this->etudiantMapper->mapDtoToEntity($dto, $etudiant);
-            
+
             $this->em->persist($etudiant);
+            
+            $propos = $this->proposService->getOrCreateEntity($dto);
+            $this->proposService->mapDtoToEntity($dto, $propos);
+            $propos->setDateInsertion(new DateTime());
+            $propos->setEtudiant($etudiant);
+            $this->em->persist($propos);
+            $this->em->flush();
+
+            
+            
                 
             if ($isNewEtudiant) {
                 $this->inscriptionMapper->createInitialInscription($etudiant, $dto);
@@ -328,6 +340,7 @@ class EtudiantsService
             baccNumero: $bacc ? $bacc->getNumero() : null,
             baccAnnee: $bacc ? $bacc->getAnnee() : null,
             baccSerie: $bacc ? $bacc->getSerie() : null,
+            proposId: $propos ? $propos->getId() : null,
             proposEmail: $propos ? $propos->getEmail() : null,
             proposAdresse: $propos ? $propos->getAdresse() : null,
             proposTelephone: $propos ? $propos->getTelephone() : null,
