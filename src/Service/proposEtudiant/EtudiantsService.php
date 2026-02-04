@@ -19,6 +19,7 @@ use App\Entity\Bacc;
 use App\Entity\Propos;
 use App\Dto\EtudiantRequestDto;
 use App\Dto\EtudiantResponseDto;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use App\Entity\Ecolages;
@@ -27,6 +28,7 @@ use App\Service\proposEtudiant\mapper\EtudiantMapper;
 use App\Entity\NiveauEtudiants;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\proposEtudiant\mapper\InscriptionMapper;
+use App\Service\proposEtudiant\ProposService;
 
 class EtudiantsService
 {   
@@ -49,6 +51,7 @@ class EtudiantsService
     private ValidatorInterface $validator;
 
     private InscriptionMapper $inscriptionMapper;
+    private ProposService $proposService;
     
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
@@ -65,7 +68,8 @@ class EtudiantsService
         MentionsRepository $mentionsRepository,
         EtudiantMapper $etudiantMapper,
         ValidatorInterface $validator,
-        InscriptionMapper $inscriptionMapper
+        InscriptionMapper $inscriptionMapper,
+        ProposService $proposService
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->formationEtudiantRepository = $formationEtudiantRepository;
@@ -82,6 +86,7 @@ class EtudiantsService
         $this->etudiantMapper = $etudiantMapper;
         $this->validator = $validator;
         $this->inscriptionMapper = $inscriptionMapper;
+        $this->proposService = $proposService;
     }
 
     public function toArray(?Etudiants $etudiant = null): array
@@ -90,7 +95,7 @@ class EtudiantsService
             return [];
         }
 
-        $propos = $etudiant->getPropos();
+        $propos = $this->proposService->getDernierProposByEtudiant($etudiant);
         $nationalite = $etudiant->getNationalite();
 
         return [
@@ -104,10 +109,7 @@ class EtudiantsService
             'sexe' => $etudiant->getSexe()
                 ? $etudiant->getSexe()->getNom()
                 : null,
-            'contact' => [
-                'adresse' => $propos?->getAdresse(),
-                'email'   => $propos?->getEmail(),
-            ],
+            'contact' => $this->proposService->toArray($propos),
             'nationalite' => $nationalite ? [
                 'nom' => $nationalite->getNom(),
                 'type' => $nationalite->getType(),
@@ -265,10 +267,22 @@ class EtudiantsService
         
         try {
             $etudiant = $this->etudiantMapper->getOrCreateEntity($dto);
+            
             $isNewEtudiant = !$dto->getId();
             
             $this->etudiantMapper->mapDtoToEntity($dto, $etudiant);
+
             $this->em->persist($etudiant);
+            
+            $propos = $this->proposService->getOrCreateEntity($dto);
+            $this->proposService->mapDtoToEntity($dto, $propos);
+            $propos->setDateInsertion(new DateTime());
+            $propos->setEtudiant($etudiant);
+            $this->em->persist($propos);
+            $this->em->flush();
+
+            
+            
                 
             if ($isNewEtudiant) {
                 $this->inscriptionMapper->createInitialInscription($etudiant, $dto);
@@ -280,13 +294,13 @@ class EtudiantsService
             
             return $etudiant->getId();
             
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($this->em->getConnection()->isTransactionActive()) {
                 $this->em->rollback();
             }
             
             // Relancer l'exception avec les détails techniques
-            throw new \Exception("Détail technique : " . $e->getMessage() . 
+            throw new Exception("Détail technique : " . $e->getMessage() . 
                               " dans " . $e->getFile() . 
                               " à la ligne " . $e->getLine());
         }
@@ -300,7 +314,7 @@ class EtudiantsService
             foreach ($errors as $error) {
                 $errorMessages[$error->getPropertyPath()] = $error->getMessage();
             }
-            throw new \Exception(json_encode(['errors' => $errorMessages]));
+            throw new Exception(json_encode(['errors' => $errorMessages]));
         }
     }
     
@@ -309,7 +323,7 @@ class EtudiantsService
     {
         $cin = $etudiant->getCin();
         $bacc = $etudiant->getBacc();
-        $propos = $etudiant->getPropos();
+        $propos = $this->proposService->getDernierProposByEtudiant($etudiant);
         
         return new EtudiantResponseDto(
             id: $etudiant->getId(),
@@ -324,8 +338,10 @@ class EtudiantsService
             baccNumero: $bacc ? $bacc->getNumero() : null,
             baccAnnee: $bacc ? $bacc->getAnnee() : null,
             baccSerie: $bacc ? $bacc->getSerie() : null,
+            proposId: $propos ? $propos->getId() : null,
             proposEmail: $propos ? $propos->getEmail() : null,
-            proposAdresse: $propos ? $propos->getAdresse() : null
+            proposAdresse: $propos ? $propos->getAdresse() : null,
+            proposTelephone: $propos ? $propos->getTelephone() : null,
         );
     }
 
