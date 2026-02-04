@@ -61,7 +61,7 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/recherche', name: 'etudiant_recherche', methods: ['POST'])]
-    // #[TokenRequired(['Admin'])]
+    #[TokenRequired]
     public function getEtudiants(Request $request): JsonResponse
     {
         try {
@@ -99,26 +99,8 @@ class EtudiantsController extends AbstractController
             $resultats = [];
 
             foreach ($etudiants as $etudiant) {
-                $propos = $etudiant->getPropos();
-                $resultats[] = [
-                    
-                        'id' => $etudiant->getId(),
-                        'nom' => $etudiant->getNom(),
-                        'prenom' => $etudiant->getPrenom(),
-                        'dateNaissance' => $etudiant->getDateNaissance()
-                            ? $etudiant->getDateNaissance()->format('Y-m-d')
-                            : null,
-                        'lieuNaissance' => $etudiant->getLieuNaissance(),
-                        'sexe' => $etudiant->getSexe()
-                            ? $etudiant->getSexe()->getNom()
-                            : null,
-                        'contact' => [
-                            'adresse' => $propos ? $propos->getAdresse() : null,
-                            'email' => $propos ? $propos->getEmail() : null,
-                        ],
-                    
-                    
-                ];
+                
+                $resultats[] = $this->etudiantsService->toArray($etudiant);
             }
 
             return new JsonResponse([
@@ -145,7 +127,7 @@ class EtudiantsController extends AbstractController
     }
     
     #[Route('', name: 'etudiant_show', methods: ['GET'])]
-    // #[TokenRequired(['Admin'])]
+    #[TokenRequired]
     public function getEtudiantParId(Request $request): JsonResponse
     {
         try {
@@ -186,7 +168,6 @@ class EtudiantsController extends AbstractController
             $niveauActuel = $this->niveauEtudiantsService
                 ->getDernierNiveauParEtudiant($etudiant);
 
-            $propos = $etudiant->getPropos();
 
             $identite = $this->etudiantsService->toArray($etudiant);
             $formation = [
@@ -259,7 +240,7 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/inscrire', name: 'etudiant_inscrire', methods: ['POST'])]
-    #[TokenRequired(['Utilisateur'])]
+    #[TokenRequired(['Utilisateur','Admin'])]
     public function inscrire(Request $request): JsonResponse
     {
         try {
@@ -465,12 +446,14 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/inscrits-par-annee', name: 'etudiants_inscrits_par_annee', methods: ['GET'])]
+    #[TokenRequired(['Admin','Utilisateur'])]  
     public function getEtudiantsInscritsParAnnee(Request $request): JsonResponse
     {
         try {
             $anneeParam = $request->query->get('annee', (new \DateTime())->format('Y'));
-            $limit = $request->query->get('limit', null );
+            $limit = $request->query->get('limit', null);       
             $dateFin = $request->query->get('dateFin', null);
+
             // Validation de l'année via le service
             $annee = $this->inscriptionService->validerAnnee($anneeParam);
         
@@ -501,7 +484,7 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
-
+    #[TokenRequired(['Admin','Utilisateur'])]  
     #[Route('/details-par-annee', name: 'etudiant_details_par_annee', methods: ['GET'])]
     public function getDetailsEtudiantParAnnee(Request $request): JsonResponse
     {
@@ -556,6 +539,7 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
+    #[TokenRequired(['Admin','Utilisateur'])]  
     #[Route('/statistiques', name: 'etudiant_statistiques', methods: ['GET'])]
     public function getStatistiquesInscriptions(): JsonResponse
     {
@@ -617,6 +601,7 @@ class EtudiantsController extends AbstractController
             }
 
     }
+    #[TokenRequired(['Admin','Utilisateur'])]  
     #[Route('/save', name: 'etudiant_save', methods: ['POST'])]
     public function save(Request $request): JsonResponse
     {
@@ -630,18 +615,28 @@ class EtudiantsController extends AbstractController
 
             // Valider le DTO
             $errors = $this->validator->validate($dto);
+
             if (count($errors) > 0) {
                 $errorMessages = [];
+                $messages = [];
+
                 foreach ($errors as $error) {
-                    $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                    $property = $error->getPropertyPath();
+                    $message  = $error->getMessage();
+
+                    // erreurs par champ
+                    $errorMessages[$property][] = $message;
+
+                    // message global
+                    $messages[] = sprintf('%s : %s', $property, $message);
                 }
+
                 return $this->json([
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $errorMessages
+                    'status'  => 'error',
+                    'message' => 'Erreur de validation : ' . implode(' | ', $messages),
+                    'errors'  => $errorMessages
                 ], Response::HTTP_BAD_REQUEST);
             }
-
             // Appeler le service pour sauvegarder l'étudiant
             $etudiantId = $this->etudiantsService->saveEtudiant($dto);
 
@@ -661,6 +656,7 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/{id}/documents', name: 'api_etudiants_get_documents', methods: ['GET'])]
+    #[TokenRequired(['Admin','Utilisateur'])]  
     public function getDocuments(Etudiants $etudiant): JsonResponse
     {
         try {

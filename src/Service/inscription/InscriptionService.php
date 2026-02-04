@@ -83,12 +83,15 @@ class InscriptionService
 
         try {
             $dateInsertion = new \DateTime();
-            $this->etudiantsService->isValideEcolage($etudiant);
-
+            $isAdmin = $utilisateur->getRole()->getName() === 'Admin';
+            
+            if (!$isAdmin) {
+                $this->etudiantsService->isValideEcolage($etudiant);
+            }
             $dernierFormationEtudiant = $this->formationEtudiantsService
                 ->getDernierFormationParEtudiant($etudiant);
 
-            $typeFormationId = $dernierFormationEtudiant->getFormation()->getTypeFormation()->getId() ?? 1;
+            $typeFormationId = $formation->getId() ?? 1;
 
             $isEgalFormation = $this->formationEtudiantsService
                 ->isEgalFormation($dernierFormationEtudiant->getFormation(), $formation);
@@ -110,7 +113,7 @@ class InscriptionService
             
 
             // Paiement écolage
-            if ($typeFormationId === 2) {
+            if ($typeFormationId !== 1) {
                 $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $payementsEcolages, 3);
             }
 
@@ -200,9 +203,9 @@ class InscriptionService
         return $this->dejaInscritEtudiantAnnee($etudiant,$annee);
     }
 
-    public function getListeEtudiantsInscritsParAnnee(int $annee,$limit=null , $dateFin = null): array
+    public function getListeEtudiantsInscritsParAnnee(int $annee,$limit= null , $dateFin = null): array
     {
-        $listeInscription = $this->inscriptionRepository->getListeEtudiantInsriptAnnee($annee , $limit,$dateFin);
+        $listeInscription = $this->inscriptionRepository->getListeEtudiantInsriptAnnee($annee,$limit,$dateFin);
         $etudiantsInscrits = [];
         foreach ($listeInscription as $item) {
             $etudiant = $item->getEtudiant();
@@ -211,7 +214,6 @@ class InscriptionService
             $etudiantArray['matricule'] = $item->getMatricule();
             $etudiantsInscrits[] = $etudiantArray;
         }
-
         return $etudiantsInscrits;
     }
 

@@ -41,7 +41,7 @@ class InscriptionMapper
         Etudiants $etudiant,
         EtudiantRequestDto $dto
     ): void {
-        $this->em->beginTransaction();
+        
 
         try {
             $formation = $this->formationsRepository->find($dto->getFormationId());
@@ -65,12 +65,9 @@ class InscriptionMapper
             // Flush global
             $this->em->flush();
 
-            // Commit
-            $this->em->commit();
+
         } catch (\Throwable $e) {
-            // Rollback si une erreur survient
-            $this->em->rollback();
-            throw $e; // important : relancer l’exception
+            throw $e;
         }
     }
 
