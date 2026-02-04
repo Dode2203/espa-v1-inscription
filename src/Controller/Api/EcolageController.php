@@ -8,15 +8,20 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
+use App\Service\JwtTokenManager;
+use App\Service\payment\PaymentService;
+use App\Entity\Utilisateur as UtilisateurEntity;
+use App\Repository\UtilisateurRepository;
 
 #[Route('/ecolage')]
 class EcolageController extends AbstractController
 {
-    private EcolageService $ecolageService;
-
-    public function __construct(EcolageService $ecolageService)
-    {
-        $this->ecolageService = $ecolageService;
+    public function __construct(
+        private EcolageService $ecolageService,
+        private PaymentService $paymentService,
+        private UtilisateurRepository $utilisateurRepository,
+        private JwtTokenManager $jwtTokenManager
+    ) {
     }
 
     #[Route('/etudiant/{id}/details', name: 'api_ecolage_etudiant_details', methods: ['GET'])]
@@ -48,6 +53,50 @@ class EcolageController extends AbstractController
                 'status' => 'success',
                 'data' => $data->toArray()
             ], 200);
+
+        } catch (Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    #[Route('/payment/save', name: 'api_ecolage_payment_save', methods: ['POST'])]
+    public function savePayment(Request $request): JsonResponse
+    {
+        try {
+            // 1. Extraction du Token JWT depuis le Header Authorization
+            $token = $this->jwtTokenManager->extractTokenFromRequest($request);
+            if (!$token) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Token manquant (Authorization header requis)'], 401);
+            }
+
+            // 2. Décodage des claims pour obtenir l'ID de l'utilisateur
+            $claims = $this->jwtTokenManager->extractClaimsFromToken($token);
+            if (!$claims || !isset($claims['id'])) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Token invalide ou expiré'], 401);
+            }
+
+            // 3. Recherche de l'entité Utilisateur (l'agent)
+            $agent = $this->utilisateurRepository->find($claims['id']);
+            if (!$agent instanceof UtilisateurEntity) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Agent non identifié ou introuvable'], 401);
+            }
+
+            // 4. Délégation au Service de paiement
+            $data = json_decode($request->getContent(), true);
+            $payment = $this->paymentService->processEcolagePayment($data, $agent);
+
+            return new JsonResponse([
+                'status' => 'success',
+                'data' => [
+                    'id_paiement' => $payment->getId(),
+                    'reference' => $payment->getReference(),
+                    'montant' => $payment->getMontant()
+                ],
+                'message' => 'Paiement enregistré'
+            ], 201);
 
         } catch (Exception $e) {
             return new JsonResponse([

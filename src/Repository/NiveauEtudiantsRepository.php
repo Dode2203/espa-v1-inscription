@@ -51,30 +51,39 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
-       public function getAllNiveauEtudiantAnnee(int $annee): array
-       {
-            return $this->createQueryBuilder('i')
-                ->andWhere('i.annee  = :annee ')
-                ->andWhere('i.niveau IS NOT NULL')
-                ->setParameter('annee', $annee)
-                ->orderBy('i.dateInsertion', 'ASC')
-                ->getQuery()
-                ->getResult()
-            ;
-       }
-          /**
-        * @return NiveauEtudiants[] Returns an array of NiveauEtudiants objects
-        */
-       public function getAllNiveauParEtudiant(Etudiants $etudiant): array
-       {
-             return $this->createQueryBuilder('f')
-               ->andWhere('f.etudiant = :val')
-               ->setParameter('val', $etudiant)
-               ->orderBy('f.annee', 'ASC')
-               ->getQuery()
-               ->getResult()
-           ;
-       }
-    
-    
+    public function getAllNiveauEtudiantAnnee(int $annee): array
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.annee  = :annee ')
+            ->andWhere('i.niveau IS NOT NULL')
+            ->setParameter('annee', $annee)
+            ->orderBy('i.dateInsertion', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    /**
+     * @return NiveauEtudiants[] Returns an array of NiveauEtudiants objects
+     */
+    public function getAllNiveauParEtudiant(Etudiants $etudiant): array
+    {
+        return $this->createQueryBuilder('f')
+            ->andWhere('f.etudiant = :val')
+            ->setParameter('val', $etudiant)
+            ->orderBy('f.annee', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    public function findByNomAndEtudiant(string $nomNiveau, Etudiants $etudiant): ?NiveauEtudiants
+    {
+        return $this->createQueryBuilder('ne')
+            ->innerJoin('ne.niveau', 'n')
+            ->where('n.nom = :nom')
+            ->andWhere('ne.etudiant = :etudiant')
+            ->setParameter('nom', $nomNiveau)
+            ->setParameter('etudiant', $etudiant)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
