@@ -81,6 +81,8 @@ class EcolageMapper
             'date' => $payment->getDatePayment() ? $payment->getDatePayment()->format('Y-m-d H:i') : null,
             'montant' => $payment->getMontant(),
             'niveau' => $payment->getNiveau() ? $payment->getNiveau()->getNom() : 'N/A',
+            'reference' => $payment->getReference(),
+            'annee' => $payment->getAnnee(),
             'reste_global' => $resteGlobal
         ];
     }
