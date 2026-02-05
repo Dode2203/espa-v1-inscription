@@ -215,6 +215,14 @@ INSERT INTO type_droits (id, nom) VALUES
 (4, 'Agence Comptable'),
 (5, 'Pédagogique-Administratif'),
 (6, 'Sélection');
+INSERT INTO type_droits (id, nom) VALUES 
+(7, 'Sélection dossier'),
+(8, 'Droit'),
+(9, 'Droit selection'),
+(10, 'LT'),
+(11, 'RAT'),
+(12, 'Rattrapage');
+
 
 
 INSERT INTO nationalites (id, nom, type) VALUES
@@ -234,3 +242,24 @@ INSERT INTO nationalites (id, nom, type) VALUES
 (11, 'NIGERIENNE', 2),
 (12, 'SENEGALAISE', 2),
 (13, 'TCHADIENNE', 2);
+
+
+AC
+ADMIN
+ADMIN / PEDAG
+ADMIN-PEDAG
+DROIT
+DROIT SELECTION
+ECOLAGE
+LT
+PDAG
+PEDAG
+PEDAG 
+PEDAG ADMIN
+PEDAGA
+PEDAG-ADMIN
+PEDG
+RAT
+RATRAPAGE
+SELECTION
+SELECTION DOSSIER

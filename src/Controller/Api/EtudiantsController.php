@@ -138,22 +138,30 @@ class EtudiantsController extends AbstractController
                 return new JsonResponse([
                     'status' => 'error',
                     'message' => 'Paramètre idEtudiant requis'
+             
                 ], 400);
             }
-
+            $token = $this->jwtTokenManager->extractTokenFromRequest($request);
+            $arrayToken = $this->jwtTokenManager->extractClaimsFromToken($token);
+            $role = $arrayToken['role'];
             $idEtudiant = (int) $idEtudiant;
             $date = new \DateTime(); // ou une autre date
             $annee = (int)$date->format('Y');
-            // 🔹 Recherche par ID
-            $dejaInscrit = $this->inscriptionService->dejaInscritEtudiantAnneeId($idEtudiant,$annee);
-            if($dejaInscrit){
-                return new JsonResponse([
-                    'status' => 'error',
-                    'message' => 'Étudiant deja inscrit',
-                    'error' => 'Étudiant deja inscrit'
-                ], 400);
-                
+            $recherche = ["Admin", "Utilisateur"];
+            
+            if (in_array($role, $recherche)) {
+                $dejaInscrit = $this->inscriptionService->dejaInscritEtudiantAnneeId($idEtudiant,$annee);
+                if($dejaInscrit){
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'message' => 'Étudiant deja inscrit',
+                        'error' => 'Étudiant deja inscrit'
+                    ], 400);
+                    
+                }    
             }
+                
+            
             $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
 
             if (!$etudiant) {
