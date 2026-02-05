@@ -5,6 +5,7 @@
 
 INSERT INTO role (id, name) VALUES (1, 'Admin');
 INSERT INTO role (id, name) VALUES (2, 'Utilisateur');
+INSERT INTO role (id, name) VALUES (3, 'Ecolage');
 
 
 INSERT INTO Status (id, name) VALUES (1, 'Actif');
@@ -35,6 +36,16 @@ VALUES (
     'test',
     1,
     2
+);
+INSERT INTO Utilisateur (id, email, mdp, prenom, nom, status_id, role_id)
+VALUES (
+    3,
+    'ecolage@gmail.com',
+    '$2y$10$Djns8FgsL.xk2GBACEtJh.Hs1civTyvdGQ9s6gqbSgDN81QkOHvTi',
+    'ecolage',
+    'ecolage',
+    1,
+    3
 );
 -- UPDATE utilisateur SET status_id = 2;
 

@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260202074211 extends AbstractMigration
+final class Version20260205054959 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -52,7 +52,7 @@ final class Version20260202074211 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_65D29B32DDEAB1A3 ON payments (etudiant_id)');
         $this->addSql('CREATE INDEX IDX_65D29B32C54C8C93 ON payments (type_id)');
         $this->addSql('CREATE INDEX IDX_65D29B32FB88E14F ON payments (utilisateur_id)');
-        $this->addSql('CREATE TABLE propos (id SERIAL NOT NULL, etudiant_id INT NOT NULL, adresse VARCHAR(255) DEFAULT NULL, email VARCHAR(255) DEFAULT NULL, date_insertion TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE propos (id SERIAL NOT NULL, etudiant_id INT NOT NULL, adresse VARCHAR(255) DEFAULT NULL, email VARCHAR(255) DEFAULT NULL, date_insertion TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, telephone VARCHAR(100) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_252FC726DDEAB1A3 ON propos (etudiant_id)');
         $this->addSql('CREATE TABLE role (id SERIAL NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE sexes (id SERIAL NOT NULL, nom VARCHAR(50) NOT NULL, PRIMARY KEY(id))');

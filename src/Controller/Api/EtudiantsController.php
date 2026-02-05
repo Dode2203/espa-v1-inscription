@@ -92,7 +92,8 @@ class EtudiantsController extends AbstractController
             if (empty($etudiants)) {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => 'Étudiant non trouvé'
+                    'message' => 'Étudiant non trouvé',
+                    'data' => []
                 ], 404);
             }
 
