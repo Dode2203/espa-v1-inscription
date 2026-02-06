@@ -3,7 +3,9 @@ delete from payments;
 -- delete from ecolages;
 delete from niveau_etudiants;
 delete from formation_etudiants;
+delete from propos;
 delete from etudiants;
+delete from cins;
 -- INSERT INTO niveau_etudiants (
 --     niveau_id,
 --     mention_id,

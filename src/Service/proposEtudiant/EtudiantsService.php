@@ -119,7 +119,7 @@ class EtudiantsService
             'cin' => $cin ? [
                 'id' => $cin->getId(),
                 'numero' => $cin->getNumero(),
-                'dateDelivrance' => $cin->getDateCin()->format('Y-m-d'),
+                'dateDelivrance' => $cin->getDateCin() ? $cin->getDateCin()->format('Y-m-d') : null,
                 'lieuDelivrance' => $cin->getLieu(),
             ] : null,
         ];
