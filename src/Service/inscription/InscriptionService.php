@@ -18,7 +18,8 @@ use App\Service\proposEtudiant\NiveauEtudiantsService;
 use Exception;
 
 class InscriptionService
-{   private $inscriptionRepository;
+{
+    private $inscriptionRepository;
     private $paymentService;
     private $niveauEtudiantsService;
     private $etudiantsService;
@@ -34,24 +35,23 @@ class InscriptionService
         NiveauEtudiantsService $niveauEtudiantsService,
         EtudiantsService $etudiantsService,
         UtilisateurService $utilisateurService,
-        EntityManagerInterface $em, 
+        EntityManagerInterface $em,
         FormationEtudiantsService $formationEtudiantsService,
         MentionsService $metionsService
-        
-    )
-    {
+
+    ) {
         $this->inscriptionRepository = $inscriptionsRepository;
         $this->paymentService = $paymentService;
         $this->niveauEtudiantsService = $niveauEtudiantsService;
         $this->etudiantsService = $etudiantsService;
-        $this->utilisateursService= $utilisateurService;
+        $this->utilisateursService = $utilisateurService;
         $this->em = $em;
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->mentionsService = $metionsService;
-        
+
     }
 
-    public function affecterNouveauInscrit(Etudiants $etudiant,Utilisateur $utilisateur,$description,$numeroInscription,?\DateTimeInterface $dateInscription = null) : Inscrits
+    public function affecterNouveauInscrit(Etudiants $etudiant, Utilisateur $utilisateur, $description, $numeroInscription, ?\DateTimeInterface $dateInscription = null): Inscrits
     {
         $inscription = new Inscrits();
         $inscription->setDateInscription($dateInscription ?? new \DateTime());
@@ -77,14 +77,13 @@ class InscriptionService
         Payments $payementsEcolages,
         Niveaux $niveau,
         Formations $formation
-    ): Inscrits
-    {
+    ): Inscrits {
         $this->em->beginTransaction();
 
         try {
             $dateInsertion = new \DateTime();
             $isAdmin = $utilisateur->getRole()->getName() === 'Admin';
-            
+
             if (!$isAdmin) {
                 $this->etudiantsService->isValideEcolage($etudiant);
             }
@@ -95,7 +94,7 @@ class InscriptionService
 
             $isEgalFormation = $this->formationEtudiantsService
                 ->isEgalFormation($dernierFormationEtudiant->getFormation(), $formation);
-            
+
             if (!$isEgalFormation) {
                 $nouvelleFormationEtudiant = $this->formationEtudiantsService
                     ->affecterNouvelleFormationEtudiant($etudiant, $formation);
@@ -103,14 +102,14 @@ class InscriptionService
                 $this->formationEtudiantsService
                     ->insertFormationEtudiant($nouvelleFormationEtudiant);
             }
-            
-            $pedagogique->setDatePayment($dateInsertion); 
-            $administratif->setDatePayment($dateInsertion);   
+
+            $pedagogique->setDatePayment($dateInsertion);
+            $administratif->setDatePayment($dateInsertion);
             $payementsEcolages->setDatePayment($dateInsertion);
             // 1 = pédagogique, 2 = administratif
             $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $pedagogique, 1);
             $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $administratif, 2);
-            
+
 
             // Paiement écolage
             if ($typeFormationId !== 1) {
@@ -122,14 +121,14 @@ class InscriptionService
                 ->getDernierNiveauParEtudiant($etudiant);
             // $id_passant = $niveauEtudiantActuel->getStatusEtudiant()->getId();
             // $passant = ($id_passant === 1); // 1 = passant
-            
+
             $niveauActuel = $niveauEtudiantActuel->getNiveau();
             $this->niveauEtudiantsService->isValideNiveauVaovao(
                 $niveau,
                 $niveauActuel
             );
             // $niveauEtudiantActuel->setNiveau($niveau);
-            $annee = (int)$dateInsertion->format('Y');
+            $annee = (int) $dateInsertion->format('Y');
 
 
             $nouvelleNiveauEtudiant = $this->niveauEtudiantsService->affecterNouveauNiveauEtudiant(
@@ -137,22 +136,25 @@ class InscriptionService
                 $niveau,
                 $dateInsertion
             );
-            $nouvelleNiveauEtudiant->setMention($niveauEtudiantActuel->getMention());   
+            $nouvelleNiveauEtudiant->setMention($niveauEtudiantActuel->getMention());
             $nouvelleNiveauEtudiant->setAnnee($annee);
-            
+
             $this->niveauEtudiantsService->insertNiveauEtudiant($nouvelleNiveauEtudiant);
             $libelle = $niveauActuel ? 'Reinscription' : 'Inscription';
-            $description = $libelle . " de l'étudiant en " .$niveau->getNom() . " - " .
-                $etudiant->getNom() . " " . $etudiant->getPrenom() ;
+            $description = $libelle . " de l'étudiant en " . $niveau->getNom() . " - " .
+                $etudiant->getNom() . " " . $etudiant->getPrenom();
             $mention = $niveauEtudiantActuel->getMention()->getAbr();
             //Nouvelle inscription
-            $numeroInscription = "".$etudiant->getId()."/".$annee."/".$mention;
+            $numeroInscription = "" . $etudiant->getId() . "/" . $annee . "/" . $mention;
+            $nouvelleNiveauEtudiant->setMatricule($numeroInscription);
+            $this->em->persist($nouvelleNiveauEtudiant);
+
             $inscription = $this->affecterNouveauInscrit(
                 $etudiant,
                 $utilisateur,
                 $description,
-               $numeroInscription,
-               $dateInsertion
+                $numeroInscription,
+                $dateInsertion
             );
             $this->em->persist($inscription);
 
@@ -175,37 +177,36 @@ class InscriptionService
         Payments $payementsEcolages,
         $idNiveau,
         $idFormation
-    ): Inscrits
-    {
-        $etudiant= $this->etudiantsService->getEtudiantById($idEtudiant);
-        $utilisateur= $this->utilisateursService->getUserById($idUtilisateur);
+    ): Inscrits {
+        $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
+        $utilisateur = $this->utilisateursService->getUserById($idUtilisateur);
         $niveau = $this->niveauEtudiantsService->getNiveauxById($idNiveau);
         $formation = $this->formationEtudiantsService->getFormationById($idFormation);
-        $inscription= $this->inscrireEtudiant($etudiant,$utilisateur,$pedagogique,$administratif,$payementsEcolages, $niveau,$formation);
+        $inscription = $this->inscrireEtudiant($etudiant, $utilisateur, $pedagogique, $administratif, $payementsEcolages, $niveau, $formation);
         return $inscription;
 
 
     }
-    public function dejaInscritEtudiantAnnee(Etudiants $etudiant,int $annee): bool 
+    public function dejaInscritEtudiantAnnee(Etudiants $etudiant, int $annee): bool
     {
-        $valiny= false;
-        $inscript= $this->inscriptionRepository->getByEtudiantAnnee($etudiant,$annee);
+        $valiny = false;
+        $inscript = $this->inscriptionRepository->getByEtudiantAnnee($etudiant, $annee);
         if ($inscript) {
-            $valiny= true;
-        }    
+            $valiny = true;
+        }
         return $valiny;
     }
 
-    
-    public function dejaInscritEtudiantAnneeId($idEtudiant,int $annee): bool 
+
+    public function dejaInscritEtudiantAnneeId($idEtudiant, int $annee): bool
     {
-        $etudiant= $this->etudiantsService->getEtudiantById($idEtudiant);
-        return $this->dejaInscritEtudiantAnnee($etudiant,$annee);
+        $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
+        return $this->dejaInscritEtudiantAnnee($etudiant, $annee);
     }
 
-    public function getListeEtudiantsInscritsParAnnee(int $annee,$limit= null , $dateFin = null): array
+    public function getListeEtudiantsInscritsParAnnee(int $annee, $limit = null, $dateFin = null): array
     {
-        $listeInscription = $this->inscriptionRepository->getListeEtudiantInsriptAnnee($annee,$limit,$dateFin);
+        $listeInscription = $this->inscriptionRepository->getListeEtudiantInsriptAnnee($annee, $limit, $dateFin);
         $etudiantsInscrits = [];
         foreach ($listeInscription as $item) {
             $etudiant = $item->getEtudiant();
@@ -220,24 +221,24 @@ class InscriptionService
 
     public function getDetailsEtudiantParAnnee(Etudiants $etudiant, int $annee): ?array
     {
-        $formationEtudiant = $this->formationEtudiantsService->getDernierFormationParEtudiant($etudiant);   
+        $formationEtudiant = $this->formationEtudiantsService->getDernierFormationParEtudiant($etudiant);
         $niveauEtudiant = $this->niveauEtudiantsService->getDernierNiveauParEtudiant($etudiant);
         $niveau = $niveauEtudiant->getNiveau();
         $mention = $niveauEtudiant->getMention();
-        
+
         $details = $this->etudiantsService->toArray($etudiant);
-        $details['formation'] =  $this->formationEtudiantsService->toArray($formationEtudiant);
-        $details['niveau'] =  $this->niveauEtudiantsService->toArrayNiveau($niveau);
+        $details['formation'] = $this->formationEtudiantsService->toArray($formationEtudiant);
+        $details['niveau'] = $this->niveauEtudiantsService->toArrayNiveau($niveau);
         $details['mention'] = $this->mentionsService->toArray($mention);
-        
+
 
         //Payments pour cette année
         $details['payments'] = $this->paymentService->getPaymentParAnnee($etudiant, $annee);
 
-        
+
         return $details;
     }
-    public function getDetailsEtudiantParAnneeId($idEtudiant,int $annee): ?array
+    public function getDetailsEtudiantParAnneeId($idEtudiant, int $annee): ?array
     {
         $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
         if ($etudiant === null) {
@@ -247,36 +248,37 @@ class InscriptionService
     }
     public function validerAnnee($annee): ?int
     {
-        if ($annee === null) 
-        {    return (int)(new \DateTime())->format('Y');    }
+        if ($annee === null) {
+            return (int) (new \DateTime())->format('Y');
+        }
 
-        $anneeInt = is_numeric($annee) ? (int)$annee : null;
+        $anneeInt = is_numeric($annee) ? (int) $annee : null;
 
         if ($anneeInt === null || $anneeInt < 2000 || $anneeInt > 2100) 
         {    return null;    }
 
         return $anneeInt;
     }
-    
+
     public function getStatistiquesInscriptions(int $nbJours = 7): array
     {
         $dateActuelle = new \DateTime();
-        $anneeEnCours = (int)$dateActuelle->format('Y');
-        
+        $anneeEnCours = (int) $dateActuelle->format('Y');
+
         // Date d'il y a $nbJours jours
         $dateDebutNouvellesInscriptions = (clone $dateActuelle)->modify('-' . $nbJours . ' days');
-        
+
         // Utilisation des méthodes des repositories
         $totalInscrits = $this->inscriptionRepository->countInscriptionsAnnee($anneeEnCours);
-        
+
         $totalPaiements = $this->paymentService->getTotalPaiementsParAnnee($anneeEnCours);
-        
+
         $nouvellesInscriptions = $this->inscriptionRepository->countInscriptionsPeriode(
             $dateDebutNouvellesInscriptions,
             $dateActuelle
 
         );
-        
+
         return [
             'total_etudiants' => $totalInscrits,
             'total_paiements' => $totalPaiements,

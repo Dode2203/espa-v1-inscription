@@ -35,6 +35,9 @@ class NiveauEtudiants
     #[ORM\ManyToOne(inversedBy: 'niveauEtudiants')]
     private ?StatusEtudiants $statusEtudiant = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $matricule = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -108,6 +111,18 @@ class NiveauEtudiants
     public function setStatusEtudiant(?StatusEtudiants $statusEtudiant): static
     {
         $this->statusEtudiant = $statusEtudiant;
+
+        return $this;
+    }
+
+    public function getMatricule(): ?string
+    {
+        return $this->matricule;
+    }
+
+    public function setMatricule(?string $matricule): static
+    {
+        $this->matricule = $matricule;
 
         return $this;
     }
