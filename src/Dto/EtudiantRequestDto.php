@@ -65,6 +65,13 @@ class EtudiantRequestDto
     #[Assert\NotBlank]
     public ?int $nationaliteId = null;
 
+
+    // #[Assert\NotBlank]
+    public ?string $nomPere = null;
+
+    // #[Assert\NotBlank]
+    public ?string $nomMere = null;
+
     // Getters et Setters
     public function getId(): ?int
     {
@@ -270,6 +277,28 @@ class EtudiantRequestDto
     {
         $this->nationaliteId = $nationaliteId;
 
+        return $this;
+    }
+
+    public function getNomPere(): ?string
+    {
+        return $this->nomPere;
+    }
+
+    public function setNomPere(?string $nomPere): self
+    {
+        $this->nomPere = $nomPere;
+        return $this;
+    }
+
+    public function getNomMere(): ?string
+    {
+        return $this->nomMere;
+    }
+
+    public function setNomMere(?string $nomMere): self
+    {
+        $this->nomMere = $nomMere;
         return $this;
     }
 

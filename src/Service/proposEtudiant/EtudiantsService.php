@@ -31,7 +31,7 @@ use App\Service\proposEtudiant\mapper\InscriptionMapper;
 use App\Service\proposEtudiant\ProposService;
 
 class EtudiantsService
-{   
+{
     private EtudiantsRepository $etudiantsRepository;
     private EntityManagerInterface $em;
     private FormationEtudiantsRepository $formationEtudiantRepository;
@@ -52,7 +52,7 @@ class EtudiantsService
 
     private InscriptionMapper $inscriptionMapper;
     private ProposService $proposService;
-    
+
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
         FormationEtudiantsRepository $formationEtudiantRepository,
@@ -125,12 +125,11 @@ class EtudiantsService
         ];
     }
 
-    public function rechercheEtudiant ($nom,$prenom): ?array
-
+    public function rechercheEtudiant($nom, $prenom): ?array
     {
-        return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nom,$prenom);  
+        return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nom, $prenom);
     }
-    
+
     public function insertEtudiant(Etudiants $etudiant): Etudiants
     {
         $this->em->persist($etudiant);
@@ -142,12 +141,14 @@ class EtudiantsService
     {
         return $this->etudiantsRepository->find($id);
     }
-    
+
     public function getEcolagesParNiveau(string $etudiantId): array
     {
         // 1. Récupérer l'étudiant
         $etudiant = $this->etudiantsRepository->find($etudiantId);
-        if (!$etudiant) {    throw new Exception("Étudiant non trouvé");    }
+        if (!$etudiant) {
+            throw new Exception("Étudiant non trouvé");
+        }
 
         // 2. Récupérer la dernière formation de l'étudiant
         $formationEtudiant = $this->formationEtudiantRepository->getDernierFormationEtudiant($etudiant);
@@ -160,7 +161,7 @@ class EtudiantsService
 
         // 3. Récupérer le niveau actuel de l'étudiant
         $niveauEtudiant = $this->niveauEtudiantsRepository->findOneBy(
-            ['etudiant' => $etudiant], 
+            ['etudiant' => $etudiant],
             ['annee' => 'DESC']
         );
 
@@ -211,7 +212,7 @@ class EtudiantsService
         }
         return $this->niveauEtudiantsService->getAllNiveauxParEtudiant($etudiant);
     }
-    public function getMontantResteParAnnee(Etudiants $etudiant,Ecolages $ecolage, int $annee): float
+    public function getMontantResteParAnnee(Etudiants $etudiant, Ecolages $ecolage, int $annee): float
     {
         $valiny = 0.0;
         $typeDroit = $this->typeDroitService->getById(3);
@@ -235,18 +236,18 @@ class EtudiantsService
 
         $niveauEtudiants = $this->niveauEtudiantsService->getAllNiveauxParEtudiant($etudiant);
         $listeErreur = [];
-        $ecolage = $this->ecolageService->getEcolageParFormation($formationEtudiantActuelle->getFormation() );
+        $ecolage = $this->ecolageService->getEcolageParFormation($formationEtudiantActuelle->getFormation());
 
         foreach ($niveauEtudiants as $niveauEtudiant) {
             if (!$niveauEtudiant->getNiveau()) {
                 continue;
             }
-            
+
             $montantReste = $this->getMontantResteParAnnee($etudiant, $ecolage, $niveauEtudiant->getAnnee());
 
             if ($montantReste > 0) {
                 $listeErreur[] = [
-                    'annee'   => $niveauEtudiant->getAnnee(),
+                    'annee' => $niveauEtudiant->getAnnee(),
                     'montant' => $montantReste,
                 ];
             }
@@ -269,18 +270,18 @@ class EtudiantsService
     public function saveEtudiant(EtudiantRequestDto $dto): int
     {
         $this->validateData($dto);
-        
+
         $this->em->beginTransaction();
-        
+
         try {
             $etudiant = $this->etudiantMapper->getOrCreateEntity($dto);
-            
+
             $isNewEtudiant = !$dto->getId();
-            
+
             $this->etudiantMapper->mapDtoToEntity($dto, $etudiant);
 
             $this->em->persist($etudiant);
-            
+
             $propos = $this->proposService->getOrCreateEntity($dto);
             $this->proposService->mapDtoToEntity($dto, $propos);
             $propos->setDateInsertion(new DateTime());
@@ -288,31 +289,31 @@ class EtudiantsService
             $this->em->persist($propos);
             $this->em->flush();
 
-            
-            
-                
+
+
+
             if ($isNewEtudiant) {
                 $this->inscriptionMapper->createInitialInscription($etudiant, $dto);
-                
+
             }
-            
+
             $this->em->flush();
             $this->em->commit();
-            
+
             return $etudiant->getId();
-            
+
         } catch (Exception $e) {
             if ($this->em->getConnection()->isTransactionActive()) {
                 $this->em->rollback();
             }
-            
+
             // Relancer l'exception avec les détails techniques
-            throw new Exception("Détail technique : " . $e->getMessage() . 
-                              " dans " . $e->getFile() . 
-                              " à la ligne " . $e->getLine());
+            throw new Exception("Détail technique : " . $e->getMessage() .
+                " dans " . $e->getFile() .
+                " à la ligne " . $e->getLine());
         }
     }
-    
+
     private function validateData($data): void
     {
         $errors = $this->validator->validate($data);
@@ -324,14 +325,14 @@ class EtudiantsService
             throw new Exception(json_encode(['errors' => $errorMessages]));
         }
     }
-    
+
 
     public function getDocumentsDto(Etudiants $etudiant): EtudiantResponseDto
     {
         $cin = $etudiant->getCin();
         $bacc = $etudiant->getBacc();
         $propos = $this->proposService->getDernierProposByEtudiant($etudiant);
-        
+
         return new EtudiantResponseDto(
             id: $etudiant->getId(),
             nom: $etudiant->getNom(),
@@ -349,6 +350,8 @@ class EtudiantsService
             proposEmail: $propos ? $propos->getEmail() : null,
             proposAdresse: $propos ? $propos->getAdresse() : null,
             proposTelephone: $propos ? $propos->getTelephone() : null,
+            nomPere: $propos ? $propos->getNomPere() : null,
+            nomMere: $propos ? $propos->getNomMere() : null,
         );
     }
 

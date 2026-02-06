@@ -68,6 +68,8 @@ class ProposService
         $propos->setEmail($dto->getProposEmail());
         $propos->setAdresse($dto->getProposAdresse());
         $propos->setTelephone($dto->getProposTelephone());
+        $propos->setNomPere($dto->getNomPere());
+        $propos->setNomMere($dto->getNomMere());
     }
 
     
