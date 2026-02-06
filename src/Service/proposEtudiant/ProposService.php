@@ -40,7 +40,9 @@ class ProposService
             'id'    => $propos->getId(),
             'adresse'   => $propos->getAdresse(),
             'email'  => $propos->getEmail(),    
-            'telephone' => $propos->getTelephone()
+            'telephone' => $propos->getTelephone(),
+            'nomPere' => $propos->getNomPere(),
+            'nomMere' => $propos->getNomMere(),
         ];
     }
     public function getDernierProposByEtudiant(Etudiants $etudiant): ?Propos

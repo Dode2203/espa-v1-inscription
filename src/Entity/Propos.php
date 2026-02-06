@@ -32,6 +32,12 @@ class Propos
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $telephone = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $nomPere = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $nomMere = null;
+
     public function __construct()
     {
     }
@@ -97,6 +103,30 @@ class Propos
     public function setTelephone(?string $telephone): static
     {
         $this->telephone = $telephone;
+
+        return $this;
+    }
+
+    public function getNomPere(): ?string
+    {
+        return $this->nomPere;
+    }
+
+    public function setNomPere(?string $nomPere): static
+    {
+        $this->nomPere = $nomPere;
+
+        return $this;
+    }
+
+    public function getNomMere(): ?string
+    {
+        return $this->nomMere;
+    }
+
+    public function setNomMere(?string $nomMere): static
+    {
+        $this->nomMere = $nomMere;
 
         return $this;
     }
