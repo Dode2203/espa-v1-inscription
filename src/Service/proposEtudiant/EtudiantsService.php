@@ -97,6 +97,7 @@ class EtudiantsService
 
         $propos = $this->proposService->getDernierProposByEtudiant($etudiant);
         $nationalite = $etudiant->getNationalite();
+        $cin = $etudiant->getCin();
 
         return [
             'id' => $etudiant->getId(),
@@ -114,6 +115,12 @@ class EtudiantsService
                 'nom' => $nationalite->getNom(),
                 'type' => $nationalite->getType(),
                 'typeNationaliteNom' => $nationalite->getTypeNationaliteNom(),
+            ] : null,
+            'cin' => $cin ? [
+                'id' => $cin->getId(),
+                'numero' => $cin->getNumero(),
+                'dateDelivrance' => $cin->getDateCin()->format('Y-m-d'),
+                'lieuDelivrance' => $cin->getLieu(),
             ] : null,
         ];
     }

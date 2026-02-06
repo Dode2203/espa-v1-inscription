@@ -80,6 +80,7 @@ class PaymentsRepository extends ServiceEntityRepository
             ->join('p.type', 't')
             ->leftJoin('p.niveau', 'n')
             ->where('e.id = :idEtudiant')
+            ->andWhere('p.type = 3')
             ->setParameter('idEtudiant', $idEtudiant)
             ->orderBy('p.datePayment', 'DESC')
             ->getQuery()
