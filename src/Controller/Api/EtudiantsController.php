@@ -151,14 +151,14 @@ class EtudiantsController extends AbstractController
             
             if (in_array($role, $recherche)) {
                 $dejaInscrit = $this->inscriptionService->dejaInscritEtudiantAnneeId($idEtudiant,$annee);
-                // if($dejaInscrit){
-                //     return new JsonResponse([
-                //         'status' => 'error',
-                //         'message' => 'Étudiant deja inscrit',
-                //         'error' => 'Étudiant deja inscrit'
-                //     ], 400);
+                if($dejaInscrit){
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'message' => 'Étudiant deja inscrit',
+                        'error' => 'Étudiant deja inscrit'
+                    ], 400);
                     
-                // }    
+                }    
             }
                 
             

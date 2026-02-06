@@ -47,10 +47,7 @@ class EcolageService
             throw new Exception("Étudiant non trouvé");
         }
 
-        $niveaux = $this->niveauEtudiantsRepository->findBy(
-            ['etudiant' => $etudiant],
-            ['annee' => 'DESC']
-        );
+        $niveaux = $this->niveauEtudiantsRepository->getAllNiveauParEtudiant($etudiant);
 
         return $this->mapper->mapToSelectionDto($niveaux, $etudiant, $this);
     }
@@ -91,7 +88,9 @@ class EcolageService
             return $default;
         }
 
-        $fe = $this->formationEtudiantsRepository->findActiveFormationAtDate($etudiant, $ne->getDateInsertion());
+        // $fe = $this->formationEtudiantsRepository->findActiveFormationAtDate($etudiant, $ne->getDateInsertion());
+        $fe = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
+        
         if (!$fe) {
             return $default;
         }
