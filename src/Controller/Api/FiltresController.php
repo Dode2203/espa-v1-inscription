@@ -15,17 +15,18 @@ class FiltresController extends AbstractController
 {
     private $niveauEtudiantsService;
 
-    public function __construct(NiveauEtudiantsService $niveauEtudiantsService) {
+    public function __construct(NiveauEtudiantsService $niveauEtudiantsService)
+    {
         $this->niveauEtudiantsService = $niveauEtudiantsService;
     }
-    
+
     #[Route('/etudiant', name: 'filtre_etudiant', methods: ['GET'])]
     public function getUtilisateur(Request $request): JsonResponse
     {
         try {
             $date = new \DateTime();
-            $annee = (int)$date->format('Y');
-            
+            $annee = (int) $date->format('Y');
+
 
             // 1. Récupération des critères de filtrage depuis l'URL
             $idMention = $request->query->get('idMention');
@@ -36,13 +37,13 @@ class FiltresController extends AbstractController
 
             // 3. Filtrage manuel du tableau selon les critères reçus
             if ($idMention) {
-                $niveauEtudiants = array_filter($niveauEtudiants, function($e) use ($idMention) {
+                $niveauEtudiants = array_filter($niveauEtudiants, function ($e) use ($idMention) {
                     return $e->getMention()->getId() == $idMention;
                 });
             }
 
             if ($idNiveau) {
-                $niveauEtudiants = array_filter($niveauEtudiants, function($e) use ($idNiveau) {
+                $niveauEtudiants = array_filter($niveauEtudiants, function ($e) use ($idNiveau) {
                     return $e->getNiveau()->getId() == $idNiveau;
                 });
             }
@@ -61,6 +62,7 @@ class FiltresController extends AbstractController
                     'idMention' => $mention->getId(),
                     'niveau' => $niveau->getNom(),
                     'idNiveau' => $niveau->getId(),
+                    'matricule' => $e->getMatricule() ?? '',
                 ];
             }, array_values($niveauEtudiants));
 
