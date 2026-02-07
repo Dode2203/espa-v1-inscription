@@ -355,4 +355,27 @@ class EtudiantsService
         );
     }
 
+    public function updateProposParents(int $idEtudiant, ?string $nomPere, ?string $nomMere): void
+    {
+        $etudiant = $this->getEtudiantById($idEtudiant);
+
+        if (!$etudiant) {
+            throw new Exception("Etudiant non trouve");
+        }
+
+        $proposCollection = $etudiant->getPropos();
+        $propos = $proposCollection->first() ?: null;
+
+        if (!$propos) {
+            $propos = new Propos();
+            $propos->setEtudiant($etudiant);
+            $propos->setDateInsertion(new DateTime());
+        }
+
+        $propos->setNomPere($nomPere);
+        $propos->setNomMere($nomMere);
+
+        $this->em->persist($propos);
+    }
+
 }
