@@ -28,7 +28,10 @@ class EtudiantResponseDto
     public ?string $proposAdresse = null;
 
     public ?string $proposTelephone = null;
-    
+
+    public ?string $nomPere = null;
+    public ?string $nomMere = null;
+
     public function __construct(
         ?int $id = null,
         ?string $nom = null,
@@ -46,6 +49,8 @@ class EtudiantResponseDto
         ?string $proposEmail = null,
         ?string $proposAdresse = null,
         ?string $proposTelephone = null,
+        ?string $nomPere = null,
+        ?string $nomMere = null,
     ) {
         $this->id = $id;
         $this->nom = $nom;
@@ -63,5 +68,7 @@ class EtudiantResponseDto
         $this->proposEmail = $proposEmail;
         $this->proposAdresse = $proposAdresse;
         $this->proposTelephone = $proposTelephone;
+        $this->nomPere = $nomPere;
+        $this->nomMere = $nomMere;
     }
 }

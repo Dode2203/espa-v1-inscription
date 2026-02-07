@@ -38,6 +38,10 @@ class NiveauEtudiants
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $matricule = null;
 
+
+    #[ORM\Column(nullable: true)]
+    private ?int $isBoursier = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -123,6 +127,18 @@ class NiveauEtudiants
     public function setMatricule(?string $matricule): static
     {
         $this->matricule = $matricule;
+
+        return $this;
+    }
+
+    public function getIsBoursier(): ?int
+    {
+        return $this->isBoursier;
+    }
+
+    public function setIsBoursier(?int $isBoursier): static
+    {
+        $this->isBoursier = $isBoursier;
 
         return $this;
     }

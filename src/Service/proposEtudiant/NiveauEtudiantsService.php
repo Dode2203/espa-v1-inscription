@@ -62,7 +62,8 @@ class NiveauEtudiantsService
     public function affecterNouveauNiveauEtudiant(
         Etudiants $etudiant,
         Niveaux $niveau,
-        ?\DateTimeInterface $dateInsertion = null
+        ?\DateTimeInterface $dateInsertion = null,
+        int $isBoursier
     ): NiveauEtudiants
     {
         $niveauEtudiant = new NiveauEtudiants();
@@ -73,6 +74,9 @@ class NiveauEtudiantsService
         $niveauEtudiant->setDateInsertion(
             $dateInsertion ?? new \DateTime()
         );
+
+        $niveauEtudiant->setIsBoursier($isBoursier);
+
         return $niveauEtudiant;
     }
     public function isValideNiveauVaovao(

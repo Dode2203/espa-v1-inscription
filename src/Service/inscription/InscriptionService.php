@@ -76,7 +76,8 @@ class InscriptionService
         Payments $administratif,
         Payments $payementsEcolages,
         Niveaux $niveau,
-        Formations $formation
+        Formations $formation,
+        int $isBoursier
     ): Inscrits {
         $this->em->beginTransaction();
 
@@ -134,8 +135,12 @@ class InscriptionService
             $nouvelleNiveauEtudiant = $this->niveauEtudiantsService->affecterNouveauNiveauEtudiant(
                 $etudiant,
                 $niveau,
-                $dateInsertion
+                $dateInsertion,
+                $isBoursier
             );
+
+            // throw new Exception("isBoursier = " . $nouvelleNiveauEtudiant->getIsBoursier());
+
             $nouvelleNiveauEtudiant->setMention($niveauEtudiantActuel->getMention());
             $nouvelleNiveauEtudiant->setAnnee($annee);
 
@@ -176,13 +181,14 @@ class InscriptionService
         Payments $administratif,
         Payments $payementsEcolages,
         $idNiveau,
-        $idFormation
+        $idFormation,
+        $isBoursier
     ): Inscrits {
         $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
         $utilisateur = $this->utilisateursService->getUserById($idUtilisateur);
         $niveau = $this->niveauEtudiantsService->getNiveauxById($idNiveau);
         $formation = $this->formationEtudiantsService->getFormationById($idFormation);
-        $inscription = $this->inscrireEtudiant($etudiant, $utilisateur, $pedagogique, $administratif, $payementsEcolages, $niveau, $formation);
+        $inscription = $this->inscrireEtudiant($etudiant, $utilisateur, $pedagogique, $administratif, $payementsEcolages, $niveau, $formation , $isBoursier);
         return $inscription;
 
 

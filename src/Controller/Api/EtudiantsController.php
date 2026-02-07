@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Etudiants;
 use App\Entity\Payments;
+use App\Entity\Propos;
 use App\Service\inscription\InscriptionService;
 use App\Service\JwtTokenManager;
 use App\Service\proposEtudiant\EtudiantsService;
@@ -79,7 +80,7 @@ class EtudiantsController extends AbstractController
             if (!empty($missingFields)) {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => 'Champs requis manquants '. implode(', ', $missingFields),
+                    'message' => 'Champs requis manquants ' . implode(', ', $missingFields),
                     'missingFields' => $missingFields
                 ], 400);
             }
@@ -100,7 +101,7 @@ class EtudiantsController extends AbstractController
             $resultats = [];
 
             foreach ($etudiants as $etudiant) {
-                
+
                 $resultats[] = $this->etudiantsService->toArray($etudiant);
             }
 
@@ -112,21 +113,21 @@ class EtudiantsController extends AbstractController
 
 
         } catch (\Exception $e) {
-                if ($e->getMessage() === 'Inactif') {
-                    return new JsonResponse([
-                        'status' => 'error',
-                        'message' => 'Etudiants inactif'
-                    ], 401); // ← renvoie bien 401
-                }
-
+            if ($e->getMessage() === 'Inactif') {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => $e->getMessage()
-                ], 400);
+                    'message' => 'Etudiants inactif'
+                ], 401); // ← renvoie bien 401
             }
 
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+
     }
-    
+
     #[Route('', name: 'etudiant_show', methods: ['GET'])]
     #[TokenRequired]
     public function getEtudiantParId(Request $request): JsonResponse
@@ -138,7 +139,7 @@ class EtudiantsController extends AbstractController
                 return new JsonResponse([
                     'status' => 'error',
                     'message' => 'Paramètre idEtudiant requis'
-             
+
                 ], 400);
             }
             $token = $this->jwtTokenManager->extractTokenFromRequest($request);
@@ -146,22 +147,22 @@ class EtudiantsController extends AbstractController
             $role = $arrayToken['role'];
             $idEtudiant = (int) $idEtudiant;
             $date = new \DateTime(); // ou une autre date
-            $annee = (int)$date->format('Y');
+            $annee = (int) $date->format('Y');
             $recherche = ["Admin", "Utilisateur"];
-            
+
             if (in_array($role, $recherche)) {
-                $dejaInscrit = $this->inscriptionService->dejaInscritEtudiantAnneeId($idEtudiant,$annee);
-                if($dejaInscrit){
+                $dejaInscrit = $this->inscriptionService->dejaInscritEtudiantAnneeId($idEtudiant, $annee);
+                if ($dejaInscrit) {
                     return new JsonResponse([
                         'status' => 'error',
                         'message' => 'Étudiant deja inscrit',
                         'error' => 'Étudiant deja inscrit'
                     ], 400);
-                    
-                }    
+
+                }
             }
-                
-            
+
+
             $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
 
             if (!$etudiant) {
@@ -228,8 +229,8 @@ class EtudiantsController extends AbstractController
             return new JsonResponse([
                 'status' => 'error',
                 'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ], 400);
         }
     }
@@ -249,18 +250,18 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/inscrire', name: 'etudiant_inscrire', methods: ['POST'])]
-    #[TokenRequired(['Utilisateur','Admin'])]
+    #[TokenRequired(['Utilisateur', 'Admin'])]
     public function inscrire(Request $request): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true);
 
-            $requiredFields = ['idEtudiant','typeFormation','refAdmin', 'dateAdmin','montantAdmin','refPedag','datePedag','montantPedag','idNiveau','idFormation'];
-            
-            if(isset($data['typeFormation']) && $data['typeFormation']=="Professionnelle"){
-                $requiredFields[]='montantEcolage';
-                $requiredFields[]='refEcolage';
-                $requiredFields[]='dateEcolage';
+            $requiredFields = ['idEtudiant', 'typeFormation', 'refAdmin', 'dateAdmin', 'montantAdmin', 'refPedag', 'datePedag', 'montantPedag', 'idNiveau', 'idFormation', 'estBoursier'];
+
+            if (isset($data['typeFormation']) && $data['typeFormation'] == "Professionnelle") {
+                $requiredFields[] = 'montantEcolage';
+                $requiredFields[] = 'refEcolage';
+                $requiredFields[] = 'dateEcolage';
 
             }
             $missingFields = [];
@@ -274,7 +275,7 @@ class EtudiantsController extends AbstractController
             if (!empty($missingFields)) {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => 'Champs requis manquants '. implode(', ', $missingFields),
+                    'message' => 'Champs requis manquants ' . implode(', ', $missingFields),
                     'missingFields' => $missingFields
                 ], 400);
             }
@@ -283,64 +284,66 @@ class EtudiantsController extends AbstractController
             $token = $this->jwtTokenManager->extractTokenFromRequest($request);
             $arrayToken = $this->jwtTokenManager->extractClaimsFromToken($token);
             $idUser = $arrayToken['id']; // Récupérer l'id de l'utilisateur à partir du token
-            $idEtudiant= $data['idEtudiant'];
-            
+            $idEtudiant = $data['idEtudiant'];
+
             $annee = date('Y');
-            
+
             $pedagogique = new Payments();
             $montantPedag = $data['montantPedag'];
             $refPedag = $data['refPedag'];
             $datePedagString = $data['datePedag'];
             $datePedag = new \DateTime($datePedagString);
-            $pedagogique->setAnatiny($annee,$montantPedag,$refPedag, $datePedag);
+            $pedagogique->setAnatiny($annee, $montantPedag, $refPedag, $datePedag);
 
             $administratif = new Payments();
             $montantAdmin = $data['montantAdmin'];
             $refAdmin = $data['refAdmin'];
             $dateAdminString = $data['dateAdmin'];
-            $dateAdmin= new \DateTime($dateAdminString);
-            $administratif->setAnatiny($annee,$montantAdmin,$refAdmin, $dateAdmin);
+            $dateAdmin = new \DateTime($dateAdminString);
+            $administratif->setAnatiny($annee, $montantAdmin, $refAdmin, $dateAdmin);
 
-            $payementEcolage= new Payments();
+            $payementEcolage = new Payments();
             $montantEcolage = (float) ($data['montantEcolage'] ?? 0);
             $refEcolage = $data['refEcolage'];
             $dateEcolageString = $data['dateEcolage'];
-            $dateEcolage= new \DateTime($dateEcolageString);
-            $payementEcolage->setAnatiny($annee,$montantEcolage,$refEcolage, $dateEcolage);
-            
+            $dateEcolage = new \DateTime($dateEcolageString);
+            $payementEcolage->setAnatiny($annee, $montantEcolage, $refEcolage, $dateEcolage);
 
-            $inscription = $this->inscriptionService->inscrireEtudiantId($idEtudiant,$idUser,$pedagogique,$administratif,$payementEcolage,$idNiveau,$idFormation);
+            // Boursier
+            $isBoursier = $data['estBoursier'] ?? null;
+
+            $inscription = $this->inscriptionService->inscrireEtudiantId($idEtudiant, $idUser, $pedagogique, $administratif, $payementEcolage, $idNiveau, $idFormation, $isBoursier);
 
             return new JsonResponse([
                 'status' => 'success',
                 'data' => [
-                    
-                        'id' => $inscription->getId(),
-                        'matricule' => $inscription->getMatricule(),
-                        'dateInscription' => $inscription->getDateInscription()->format('Y-m-d'),
-                        'description' => $inscription->getDescription(),
-                        // 'nom' => $etudiant->getNom(),
-                        // 'prenom' => $etudiant->getPrenom()
-                    
+
+                    'id' => $inscription->getId(),
+                    'matricule' => $inscription->getMatricule(),
+                    'dateInscription' => $inscription->getDateInscription()->format('Y-m-d'),
+                    'description' => $inscription->getDescription(),
+                    // 'nom' => $etudiant->getNom(),
+                    // 'prenom' => $etudiant->getPrenom()
+
                     // 'ecolages' => $ecolages
                 ]
             ], 200);
 
-    
+
 
         } catch (\Exception $e) {
-                if ($e->getMessage() === 'Inactif') {
-                    return new JsonResponse([
-                        'status' => 'error',
-                        'message' => 'Etudiants inactif'
-                    ], 401); 
-                }
-
+            if ($e->getMessage() === 'Inactif') {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => $e->getMessage()
-                ], 400);
+                    'message' => 'Etudiants inactif'
+                ], 401);
             }
+
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
 
     }
 
@@ -361,24 +364,24 @@ class EtudiantsController extends AbstractController
             }
             return new JsonResponse([
                 'status' => 'success',
-            
+
                 'data' => $resultats
             ], 200);
 
 
         } catch (\Exception $e) {
-                if ($e->getMessage() === 'Inactif') {
-                    return new JsonResponse([
-                        'status' => 'error',
-                        'message' => 'Utilsateur inactif'
-                    ], 401); // ← renvoie bien 401
-                }
-
+            if ($e->getMessage() === 'Inactif') {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => $e->getMessage()
-                ], 400);
+                    'message' => 'Utilsateur inactif'
+                ], 401); // ← renvoie bien 401
             }
+
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
 
     }
 
@@ -398,30 +401,31 @@ class EtudiantsController extends AbstractController
             }
             return new JsonResponse([
                 'status' => 'success',
-            
+
                 'data' => $resultats
             ], 200);
 
 
         } catch (\Exception $e) {
-                if ($e->getMessage() === 'Inactif') {
-                    return new JsonResponse([
-                        'status' => 'error',
-                        'message' => 'Utilisateur inactif'
-                    ], 401); // ← renvoie bien 401
-                }
-
+            if ($e->getMessage() === 'Inactif') {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => $e->getMessage()
-                ], 400);
+                    'message' => 'Utilisateur inactif'
+                ], 401); // ← renvoie bien 401
             }
 
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+
     }
-    
-    #[Route('/mentions', name:'get_mention', methods: ['GET'])]
+
+    #[Route('/mentions', name: 'get_mention', methods: ['GET'])]
     // #[TokenRequired(['Admin'])]
-    public function getAllMentions(Request $request): JsonResponse{
+    public function getAllMentions(Request $request): JsonResponse
+    {
         try {
             $mentionClass = $this->mentionsService->getAllMentions();
             $resultats = [];
@@ -434,38 +438,38 @@ class EtudiantsController extends AbstractController
             }
             return new JsonResponse([
                 'status' => 'success',
-            
+
                 'data' => $resultats
             ], 200);
 
 
         } catch (\Exception $e) {
-                if ($e->getMessage() === 'Inactif') {
-                    return new JsonResponse([
-                        'status' => 'error',
-                        'message' => 'Utilisateur inactif'
-                    ], 401); // ← renvoie bien 401
-                }
-
+            if ($e->getMessage() === 'Inactif') {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => $e->getMessage()
-                ], 400);
-            }        
+                    'message' => 'Utilisateur inactif'
+                ], 401); // ← renvoie bien 401
+            }
+
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     #[Route('/inscrits-par-annee', name: 'etudiants_inscrits_par_annee', methods: ['GET'])]
-    #[TokenRequired(['Admin','Utilisateur'])]  
+    #[TokenRequired(['Admin', 'Utilisateur'])]
     public function getEtudiantsInscritsParAnnee(Request $request): JsonResponse
     {
         try {
             $anneeParam = $request->query->get('annee', (new \DateTime())->format('Y'));
-            $limit = $request->query->get('limit', null);       
+            $limit = $request->query->get('limit', null);
             $dateFin = $request->query->get('dateFin', null);
 
             // Validation de l'année via le service
             $annee = $this->inscriptionService->validerAnnee($anneeParam);
-        
+
 
             if ($annee === null) {
                 return new JsonResponse([
@@ -493,7 +497,7 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
-    #[TokenRequired(['Admin','Utilisateur'])]  
+    #[TokenRequired(['Admin', 'Utilisateur'])]
     #[Route('/details-par-annee', name: 'etudiant_details_par_annee', methods: ['GET'])]
     public function getDetailsEtudiantParAnnee(Request $request): JsonResponse
     {
@@ -548,18 +552,18 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
-    #[TokenRequired(['Admin','Utilisateur'])]  
+    #[TokenRequired(['Admin', 'Utilisateur'])]
     #[Route('/statistiques', name: 'etudiant_statistiques', methods: ['GET'])]
     public function getStatistiquesInscriptions(): JsonResponse
     {
         try {
             $statistiques = $this->inscriptionService->getStatistiquesInscriptions();
-            
+
             return new JsonResponse([
                 'status' => 'success',
                 'data' => $statistiques
             ], 200);
-            
+
         } catch (\Exception $e) {
             return new JsonResponse([
                 'status' => 'error',
@@ -590,27 +594,27 @@ class EtudiantsController extends AbstractController
             }
             return new JsonResponse([
                 'status' => 'success',
-            
+
                 'data' => $resultats
             ], 200);
 
 
         } catch (\Exception $e) {
-                if ($e->getMessage() === 'Inactif') {
-                    return new JsonResponse([
-                        'status' => 'error',
-                        'message' => 'Utilisateur inactif'
-                    ], 401); // ← renvoie bien 401
-                }
-
+            if ($e->getMessage() === 'Inactif') {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => $e->getMessage()
-                ], 400);
+                    'message' => 'Utilisateur inactif'
+                ], 401); // ← renvoie bien 401
             }
 
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+
     }
-    #[TokenRequired(['Admin','Utilisateur'])]  
+    #[TokenRequired(['Admin', 'Utilisateur'])]
     #[Route('/save', name: 'etudiant_save', methods: ['POST'])]
     public function save(Request $request): JsonResponse
     {
@@ -631,7 +635,7 @@ class EtudiantsController extends AbstractController
 
                 foreach ($errors as $error) {
                     $property = $error->getPropertyPath();
-                    $message  = $error->getMessage();
+                    $message = $error->getMessage();
 
                     // erreurs par champ
                     $errorMessages[$property][] = $message;
@@ -641,9 +645,9 @@ class EtudiantsController extends AbstractController
                 }
 
                 return $this->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Erreur de validation : ' . implode(' | ', $messages),
-                    'errors'  => $errorMessages
+                    'errors' => $errorMessages
                 ], Response::HTTP_BAD_REQUEST);
             }
             // Appeler le service pour sauvegarder l'étudiant
@@ -665,7 +669,7 @@ class EtudiantsController extends AbstractController
     }
 
     #[Route('/{id}/documents', name: 'api_etudiants_get_documents', methods: ['GET'])]
-    #[TokenRequired(['Admin','Utilisateur'])]  
+    #[TokenRequired(['Admin', 'Utilisateur'])]
     public function getDocuments(Etudiants $etudiant): JsonResponse
     {
         try {
@@ -680,7 +684,41 @@ class EtudiantsController extends AbstractController
         } catch (\Exception $e) {
             return $this->json([
                 'status' => 'error',
-                'message' => 'Erreur lors de la récupération des documents : ' . $e->getMessage()
+                'message' => 'Erreur lors de la recuperation des documents : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/inscription/update-propos-parents', name: 'etudiant_update_propos_parents', methods: ['POST'])]
+    #[TokenRequired(['Admin', 'Utilisateur'])]
+    public function updateProposParents(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $idEtudiant = $data['idEtudiant'] ?? null;
+            $nomPere = $data['nomPere'] ?? null;
+            $nomMere = $data['nomMere'] ?? null;
+
+            if (!$idEtudiant) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Le parametre idEtudiant est requis'
+                ], 400);
+            }
+
+            $this->etudiantsService->updateProposParents((int) $idEtudiant, $nomPere, $nomMere);
+            $this->em->flush();
+
+            return new JsonResponse([
+                'status' => 'success',
+                'message' => 'Filiation mise a jour avec succes'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue lors de la mise a jour de la filiation',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
