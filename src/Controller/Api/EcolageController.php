@@ -12,6 +12,7 @@ use App\Service\JwtTokenManager;
 use App\Service\payment\PaymentService;
 use App\Entity\Utilisateur as UtilisateurEntity;
 use App\Repository\UtilisateurRepository;
+use App\Annotation\TokenRequired;
 
 #[Route('/ecolage')]
 class EcolageController extends AbstractController
@@ -63,20 +64,14 @@ class EcolageController extends AbstractController
     }
 
     #[Route('/payment/save', name: 'api_ecolage_payment_save', methods: ['POST'])]
+    #[TokenRequired]
     public function savePayment(Request $request): JsonResponse
     {
         try {
             // 1. Extraction du Token JWT depuis le Header Authorization
             $token = $this->jwtTokenManager->extractTokenFromRequest($request);
-            if (!$token) {
-                return new JsonResponse(['status' => 'error', 'message' => 'Token manquant (Authorization header requis)'], 401);
-            }
-
-            // 2. Décodage des claims pour obtenir l'ID de l'utilisateur
             $claims = $this->jwtTokenManager->extractClaimsFromToken($token);
-            if (!$claims || !isset($claims['id'])) {
-                return new JsonResponse(['status' => 'error', 'message' => 'Token invalide ou expiré'], 401);
-            }
+            
 
             // 3. Recherche de l'entité Utilisateur (l'agent)
             $agent = $this->utilisateurRepository->find($claims['id']);

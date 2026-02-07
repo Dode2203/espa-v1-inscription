@@ -42,12 +42,14 @@ class PaymentService
     public function processEcolagePayment(array $data, UtilisateurEntity $agent): Payments
     {
         $etudiantId = $data['etudiant_id'] ?? null;
-        $nomNiveau = $data['nom_niveau'] ?? null;
+        $anneeScolaire = $data['annee_scolaire'] ?? null;
         $montant = $data['montant'] ?? null;
         $datePaiement = $data['date_paiement'] ?? null;
         $refBordereau = $data['ref_bordereau'] ?? null;
 
-        if (!$etudiantId || !$nomNiveau || !$montant || !$datePaiement || !$refBordereau) {
+
+
+        if (!$etudiantId || !$anneeScolaire || !$montant || !$datePaiement || !$refBordereau) {
             throw new Exception("Données JSON incomplètes");
         }
 
@@ -56,9 +58,9 @@ class PaymentService
             throw new Exception("Étudiant introuvable");
         }
 
-        $niveauEtudiant = $this->niveauEtudiantsRepository->findByNomAndEtudiant($nomNiveau, $etudiant);
+        $niveauEtudiant = $this->niveauEtudiantsRepository->findByAnneeAndEtudiant($anneeScolaire, $etudiant);
         if (!$niveauEtudiant) {
-            throw new Exception("Niveau $nomNiveau introuvable pour cet étudiant");
+            throw new Exception("Niveau $anneeScolaire introuvable pour cet étudiant");
         }
 
         $dateObj = new DateTimeImmutable($datePaiement);

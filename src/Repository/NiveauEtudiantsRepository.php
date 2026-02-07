@@ -83,7 +83,22 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
             ->andWhere('ne.etudiant = :etudiant')
             ->setParameter('nom', $nomNiveau)
             ->setParameter('etudiant', $etudiant)
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }
+    public function findByAnneeAndEtudiant(string $anneeScolaire, Etudiants $etudiant): ?NiveauEtudiants
+    {
+        return $this->createQueryBuilder('ne')
+            ->andWhere('ne.etudiant = :etudiant')
+            ->andWhere('ne.annee = :annee')
+            ->setParameter('annee', $anneeScolaire)
+            ->setParameter('etudiant', $etudiant)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
+    
 }
