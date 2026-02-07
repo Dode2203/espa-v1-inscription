@@ -71,6 +71,7 @@ class PaymentService
         $payment->setReference($refBordereau);
         $payment->setAnnee($niveauEtudiant->getAnnee());
 
+        // throw new Exception("dfefe".$niveauEtudiant->getNiveau());
         return $this->insertPayment(
             $agent,
             $etudiant,

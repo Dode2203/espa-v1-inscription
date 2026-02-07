@@ -233,6 +233,8 @@ class InscriptionService
         $mention = $niveauEtudiant->getMention();
 
         $details = $this->etudiantsService->toArray($etudiant);
+        $details['matricule'] = $niveauEtudiant->getMatricule();
+        $details['estBoursier'] = $niveauEtudiant->getIsBoursier();
         $details['formation'] = $this->formationEtudiantsService->toArray($formationEtudiant);
         $details['niveau'] = $this->niveauEtudiantsService->toArrayNiveau($niveau);
         $details['mention'] = $this->mentionsService->toArray($mention);
