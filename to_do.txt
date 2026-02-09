@@ -52,5 +52,23 @@ rechercheEtudiant
         rechercheParMentionNiveaux(mention,niveau)
         
                   
-                
+     
+- Expiration Session (Apres modif) --ok
+- Capital ho azy ny recherche eo @ Nom --ok
+- Modification (Cin an'ilay olona apres modification)
+    - Raha misu valeur hafa de ampina fotsiny
+- Par defaut : montant ecolage (pour éviter l'erreur de saisie)
+    - 50 000 Ar droits pédagogique ohatra (par défaut)
+    - Voir exonérer condition :
+    
+- Champ bordereau
+
+Ajout IdentityForm : 
+
+Nom Pere ⇒ , Tel , adresse mail , contact , adresse 
+
+Fonction mamadika ny 50k lasa 4999k Ar @ droits
+
+MAMIARISOA NASAINA Tendrin'Ny Avo Elia (cas fiche d'inscription mbola tsy azo) 
+
 

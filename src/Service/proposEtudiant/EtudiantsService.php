@@ -127,7 +127,10 @@ class EtudiantsService
 
     public function rechercheEtudiant($nom, $prenom): ?array
     {
-        return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nom, $prenom);
+        $nomMajuscule = mb_strtoupper($nom, 'UTF-8');
+        $prenom = mb_convert_case($prenom, MB_CASE_TITLE, "UTF-8");
+
+        return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nomMajuscule, $prenom);
     }
 
     public function insertEtudiant(Etudiants $etudiant): Etudiants
@@ -289,9 +292,7 @@ class EtudiantsService
             $this->em->persist($propos);
             $this->em->flush();
 
-
-
-
+            
             if ($isNewEtudiant) {
                 $this->inscriptionMapper->createInitialInscription($etudiant, $dto);
 

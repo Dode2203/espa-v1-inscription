@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Formations;
 use App\Entity\Mentions;
 use App\Entity\Niveaux;
+use Exception;
 
 class InscriptionMapper
 {
@@ -46,12 +47,12 @@ class InscriptionMapper
         try {
             $formation = $this->formationsRepository->find($dto->getFormationId());
             if (!$formation) {
-                throw new \Exception("La formation spécifiée est introuvable.");
+                throw new Exception("La formation spécifiée est introuvable.");
             }
 
             $mention = $this->mentionsRepository->find($dto->getMentionId());
             if (!$mention) {
-                throw new \Exception("La mention spécifiée est introuvable.");
+                throw new Exception("La mention spécifiée est introuvable.");
             }
 
             // Création formation étudiant
@@ -59,6 +60,11 @@ class InscriptionMapper
             $this->em->persist($formationEtudiant);
 
             // Création niveau étudiant
+            $niveau = null;
+            $isEtudiantMvr = $dto->getIsEtudiantMvr();
+            $dateInsertion = new \DateTime();
+            
+
             $niveauEtudiant = $this->createNiveauEtudiant($etudiant, $mention);
             $this->em->persist($niveauEtudiant);
 
@@ -66,19 +72,24 @@ class InscriptionMapper
             $this->em->flush();
 
 
-        } catch (\Throwable $e) {
+        } catch (Exception $e) {
             throw $e;
         }
     }
 
     private function createFormationEtudiant(
         Etudiants $etudiant,
-        Formations $formation
+        Formations $formation,
+        $dateInsertion = null
     ): FormationEtudiants {
+        if (!$dateInsertion) {
+            $dateInsertion = new \DateTime();
+        }
+
         $fe = new FormationEtudiants();
         $fe->setEtudiant($etudiant);
         $fe->setFormation($formation);
-        $fe->setDateFormation(new \DateTime());
+        $fe->setDateFormation($dateInsertion);
 
         return $fe;
     }
@@ -86,14 +97,19 @@ class InscriptionMapper
     private function createNiveauEtudiant(
         Etudiants $etudiant,
         Mentions $mention,
-        ?Niveaux $niveau = null
+        ?Niveaux $niveau = null,
+        ?\DateTimeInterface $dateInsertion = null
     ): NiveauEtudiants {
+        if (!$dateInsertion) {
+            $dateInsertion = new \DateTime();
+        }
+        $annee = $dateInsertion->format("Y");
         $ne = new NiveauEtudiants();
         $ne->setEtudiant($etudiant);
         $ne->setMention($mention);
         $ne->setNiveau($niveau);
-        $ne->setAnnee((int) date('Y'));
-        $ne->setDateInsertion(new \DateTime());
+        $ne->setAnnee((int) $annee);
+        $ne->setDateInsertion($dateInsertion);
 
         return $ne;
     }

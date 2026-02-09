@@ -51,7 +51,8 @@ class EtudiantMapper
         }
 
         // 2. Gestion du CIN
-        $cin = $etudiant->getCin() ?? new Cin();
+        // $cin = $etudiant->getCin() ?? new Cin();
+        $cin = new Cin();
         $cin->setNumero($dto->getCinNumero());
         $cin->setLieu($dto->getCinLieu());
         $cin->setDateCin($dto->getDateCin());
@@ -59,7 +60,8 @@ class EtudiantMapper
         $this->em->persist($cin);
 
         // 3. Gestion du BACC
-        $bacc = $etudiant->getBacc() ?? new Bacc();
+        // $bacc = $etudiant->getBacc() ?? new Bacc();
+        $bacc = new Bacc();
         $bacc->setNumero($dto->getBaccNumero());
         $bacc->setAnnee((int)$dto->getBaccAnnee());
         $bacc->setSerie($dto->getBaccSerie());
