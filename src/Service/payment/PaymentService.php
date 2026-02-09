@@ -26,8 +26,11 @@ class PaymentService
     }
     public function insertPayment(UtilisateurEntity $utilisateur, Etudiants $etudiant, Niveaux $niveau, Payments $payment, $typeDroit): Payments
     {
-        if ($payment->getMontant() <= 0) {
-            throw new Exception('Le montant ne doit pas être inférieur ou égal à 0 ' . $payment->getMontant());
+        if ($payment->getMontant()==0) {
+            return $payment;
+        }
+        if ($payment->getMontant() < 0) {
+            throw new Exception('Le montant ne doit pas être inférieur à 0 ' . $payment->getMontant());
         }
         $payment->setUtilisateur($utilisateur);
         $typeDroitEntity = $this->typeDroitsService->getById($typeDroit);
