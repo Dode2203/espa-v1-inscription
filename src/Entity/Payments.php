@@ -43,6 +43,9 @@ class Payments
     #[ORM\ManyToOne(inversedBy: 'payments')]
     private ?Utilisateur $utilisateur = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deletedAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -155,12 +158,25 @@ class Payments
 
         return $this;
     }
-    public function setAnatiny(int $annee,float $montant, string $reference, \DateTimeInterface $datePayment): static
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
+    public function setAnatiny(int $annee, float $montant, string $reference, \DateTimeInterface $datePayment): static
     {
         $this->annee = $annee;
         $this->montant = $montant;
         $this->reference = $reference;
-        $this->datePayment= $datePayment;
+        $this->datePayment = $datePayment;
 
         return $this;
     }

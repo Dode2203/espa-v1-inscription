@@ -71,7 +71,7 @@ class EcolageController extends AbstractController
             // 1. Extraction du Token JWT depuis le Header Authorization
             $token = $this->jwtTokenManager->extractTokenFromRequest($request);
             $claims = $this->jwtTokenManager->extractClaimsFromToken($token);
-            
+
 
             // 3. Recherche de l'entité Utilisateur (l'agent)
             $agent = $this->utilisateurRepository->find($claims['id']);
@@ -92,6 +92,25 @@ class EcolageController extends AbstractController
                 ],
                 'message' => 'Paiement enregistré'
             ], 201);
+
+        } catch (Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    #[Route('/payment/annuler/{id}', name: 'api_paiements_annuler', methods: ['POST'])]
+    public function annuler(int $id): JsonResponse
+    {
+        try {
+            $this->paymentService->annulerPaiement($id);
+
+            return new JsonResponse([
+                'status' => 'success',
+                'message' => 'Paiement annulé avec succès'
+            ], 200);
 
         } catch (Exception $e) {
             return new JsonResponse([
