@@ -80,12 +80,17 @@ class NiveauEtudiantsService
         return $niveauEtudiant;
     }
     public function isValideNiveauVaovao(
-        ?Niveaux $niveauxSuivant,
+        Niveaux $niveauxSuivant,
         ?Niveaux $niveauxPrecedent
     ): void
     {
         $gradeAcien = $niveauxPrecedent?->getGrade() ?? 0;
         $gradeVaovao = $niveauxSuivant?->getGrade() ?? 0;
+
+        // type mvr if ($niveauxSuivant->getNom()=="MVR") {
+        if ($niveauxSuivant->getId()==14) {
+            $gradeAcien = 4;
+        }
 
         $elanelana = $gradeVaovao - $gradeAcien;
 

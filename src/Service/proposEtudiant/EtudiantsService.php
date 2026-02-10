@@ -127,7 +127,10 @@ class EtudiantsService
 
     public function rechercheEtudiant($nom, $prenom): ?array
     {
-        return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nom, $prenom);
+        $nomMajuscule = mb_strtoupper($nom, 'UTF-8');
+        $prenom = mb_convert_case($prenom, MB_CASE_TITLE, "UTF-8");
+
+        return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nomMajuscule, $prenom);
     }
 
     public function insertEtudiant(Etudiants $etudiant): Etudiants
@@ -289,9 +292,7 @@ class EtudiantsService
             $this->em->persist($propos);
             $this->em->flush();
 
-
-
-
+            
             if ($isNewEtudiant) {
                 $this->inscriptionMapper->createInitialInscription($etudiant, $dto);
 
@@ -363,9 +364,7 @@ class EtudiantsService
             throw new Exception("Etudiant non trouve");
         }
 
-        $proposCollection = $etudiant->getPropos();
-        $propos = $proposCollection->first() ?: null;
-
+        $propos = $this->proposService->getDernierProposByEtudiant($etudiant);
         if (!$propos) {
             $propos = new Propos();
             $propos->setEtudiant($etudiant);
@@ -376,6 +375,63 @@ class EtudiantsService
         $propos->setNomMere($nomMere);
 
         $this->em->persist($propos);
+        $this->em->flush();
+    }
+    public function getInformationJson(Etudiants $etudiant = null) : array
+    {
+        $formationEtudiant = $this->formationEtudiantsService
+                ->getDernierFormationParEtudiant($etudiant);
+
+            $niveauActuel = $this->niveauEtudiantsService
+                ->getDernierNiveauParEtudiant($etudiant);
+
+
+            $identite = $this->toArray($etudiant);
+            $formation = [
+                'idFormation' => $formationEtudiant
+                    ? $formationEtudiant->getFormation()->getId()
+                    : null,
+                'formation' => $formationEtudiant
+                    ? $formationEtudiant->getFormation()->getNom()
+                    : null,
+                'formationType' => $formationEtudiant
+                    ? $formationEtudiant->getFormation()
+                        ->getTypeFormation()->getNom()
+                    : null,
+                'idNiveau' => $niveauActuel
+                    ? $niveauActuel?->getNiveau()?->getId()
+                    : null,
+                'typeNiveau' => $niveauActuel
+                    ? $niveauActuel?->getNiveau()?->getType()
+                    : null,
+                'gradeNiveau' => $niveauActuel
+                    ? $niveauActuel?->getNiveau()?->getGrade()
+                    : null,
+                'niveau' => $niveauActuel
+                    ? $niveauActuel?->getNiveau()?->getNom()
+                    : null,
+                'mention' => $niveauActuel
+                    ? $niveauActuel->getMention()->getNom()
+                    : null,
+                'statusEtudiant' => $niveauActuel?->getStatusEtudiant()?->getName(),
+                'matricule' => $niveauActuel
+                    ? $niveauActuel->getMatricule()
+                    : null,
+                'estBoursier' => $niveauActuel
+                    ? $niveauActuel->getIsBoursier() :null
+            ];
+
+        return [
+            'identite' => $identite,
+            'formation' => $formation,
+        ];
+    }
+    public function getInformationJsonId(int $id): array{
+        $etudiant = $this->etudiantsRepository->find($id);
+        if (!$etudiant) {
+            throw new Exception('Etudiant non trouve pour id ='.$id.'');
+        }
+        return $this->getInformationJson($etudiant);
     }
 
 }

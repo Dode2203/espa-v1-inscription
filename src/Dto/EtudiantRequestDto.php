@@ -72,6 +72,9 @@ class EtudiantRequestDto
     // #[Assert\NotBlank]
     public ?string $nomMere = null;
 
+    #[Assert\Type(type: "bool", message: "La valeur de isEtudiantMvr doit être un booléen.")]
+    public ?bool $isEtudiantMvr = null;
+
     // Getters et Setters
     public function getId(): ?int
     {
@@ -299,6 +302,15 @@ class EtudiantRequestDto
     public function setNomMere(?string $nomMere): self
     {
         $this->nomMere = $nomMere;
+        return $this;
+    }
+    public function getIsEtudiantMvr(): ?bool
+    {
+        return $this->isEtudiantMvr;
+    }
+    public function setIsEtudiantMvr(?bool $isEtudiantMvr): self
+    {
+        $this->isEtudiantMvr = $isEtudiantMvr;
         return $this;
     }
 

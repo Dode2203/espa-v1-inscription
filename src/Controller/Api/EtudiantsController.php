@@ -161,61 +161,13 @@ class EtudiantsController extends AbstractController
 
                 }
             }
-
-
-            $etudiant = $this->etudiantsService->getEtudiantById($idEtudiant);
-
-            if (!$etudiant) {
-                return new JsonResponse([
-                    'status' => 'error',
-                    'message' => 'Étudiant non trouvé'
-                ], 404);
-            }
-
-            $formationEtudiant = $this->formationEtudiantsService
-                ->getDernierFormationParEtudiant($etudiant);
-
-            $niveauActuel = $this->niveauEtudiantsService
-                ->getDernierNiveauParEtudiant($etudiant);
-
-
-            $identite = $this->etudiantsService->toArray($etudiant);
-            $formation = [
-                'idFormation' => $formationEtudiant
-                    ? $formationEtudiant->getFormation()->getId()
-                    : null,
-                'formation' => $formationEtudiant
-                    ? $formationEtudiant->getFormation()->getNom()
-                    : null,
-                'formationType' => $formationEtudiant
-                    ? $formationEtudiant->getFormation()
-                        ->getTypeFormation()->getNom()
-                    : null,
-                'idNiveau' => $niveauActuel
-                    ? $niveauActuel?->getNiveau()?->getId()
-                    : null,
-                'typeNiveau' => $niveauActuel
-                    ? $niveauActuel?->getNiveau()?->getType()
-                    : null,
-                'gradeNiveau' => $niveauActuel
-                    ? $niveauActuel?->getNiveau()?->getGrade()
-                    : null,
-                'niveau' => $niveauActuel
-                    ? $niveauActuel?->getNiveau()?->getNom()
-                    : null,
-                'mention' => $niveauActuel
-                    ? $niveauActuel->getMention()->getNom()
-                    : null,
-                'statusEtudiant' => $niveauActuel?->getStatusEtudiant()?->getName(),
-            ];
-
+            $data = $this->etudiantsService->getInformationJsonId($idEtudiant);
             return new JsonResponse([
                 'status' => 'success',
-                'data' => [
-                    'identite' => $identite,
-                    'formation' => $formation,
-                ]
+                'data' => $data
             ], 200);
+
+
 
         } catch (\Exception $e) {
 
@@ -313,20 +265,13 @@ class EtudiantsController extends AbstractController
             $isBoursier = $data['estBoursier'] ?? null;
 
             $inscription = $this->inscriptionService->inscrireEtudiantId($idEtudiant, $idUser, $pedagogique, $administratif, $payementEcolage, $idNiveau, $idFormation, $isBoursier);
-
+            $details = $this->inscriptionService->getDetailsEtudiantParAnneeId(
+                (int) $idEtudiant,
+                $annee
+            );
             return new JsonResponse([
                 'status' => 'success',
-                'data' => [
-
-                    'id' => $inscription->getId(),
-                    'matricule' => $inscription->getMatricule(),
-                    'dateInscription' => $inscription->getDateInscription()->format('Y-m-d'),
-                    'description' => $inscription->getDescription(),
-                    // 'nom' => $etudiant->getNom(),
-                    // 'prenom' => $etudiant->getPrenom()
-
-                    // 'ecolages' => $ecolages
-                ]
+                'data' => $details
             ], 200);
 
 
@@ -707,7 +652,6 @@ class EtudiantsController extends AbstractController
             }
 
             $this->etudiantsService->updateProposParents((int) $idEtudiant, $nomPere, $nomMere);
-            $this->em->flush();
 
             return new JsonResponse([
                 'status' => 'success',
