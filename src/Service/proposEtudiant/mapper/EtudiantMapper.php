@@ -35,8 +35,12 @@ class EtudiantMapper
     public function mapDtoToEntity(EtudiantRequestDto $dto, Etudiants $etudiant): void
     {
         // 1. Identité de base
-        $etudiant->setNom(strtoupper(trim($dto->getNom())));
-        $etudiant->setPrenom(trim($dto->getPrenom()));
+        $nom = trim($dto->getNom());
+        $nomMajuscule = mb_strtoupper($nom, 'UTF-8');
+        $prenom = trim($dto->getPrenom());
+        $prenom = mb_convert_case($prenom, MB_CASE_TITLE, "UTF-8");
+        $etudiant->setNom($nomMajuscule);
+        $etudiant->setPrenom($prenom);
         $etudiant->setDateNaissance($dto->getDateNaissance());
         $etudiant->setLieuNaissance($dto->getLieuNaissance());
         

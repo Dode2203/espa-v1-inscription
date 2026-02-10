@@ -130,11 +130,16 @@ class EtudiantsService
         $nomMajuscule = mb_strtoupper($nom, 'UTF-8');
         $prenom = mb_convert_case($prenom, MB_CASE_TITLE, "UTF-8");
 
+        // throw new Exception($prenom);
         return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nomMajuscule, $prenom);
     }
 
     public function insertEtudiant(Etudiants $etudiant): Etudiants
     {
+        $nomMajuscule = mb_strtoupper($etudiant->getNom(), 'UTF-8');
+        $prenom = mb_convert_case($etudiant->getPrenom(), MB_CASE_TITLE, "UTF-8");
+        $etudiant->setNom($nomMajuscule);
+        $etudiant->setPrenom($prenom);
         $this->em->persist($etudiant);
         $this->em->flush();
         return $etudiant;
@@ -354,7 +359,7 @@ class EtudiantsService
             proposTelephone: $propos ? $propos->getTelephone() : null,
             nomPere: $propos ? $propos->getNomPere() : null,
             nomMere: $propos ? $propos->getNomMere() : null,
-            nationaliteId: $nationalite ? $nationalite->getId() : null,
+            nationaliteId: $nationalite ? $nationalite->getId() : null
         );
     }
 
