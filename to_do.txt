@@ -55,9 +55,10 @@ rechercheEtudiant
      
 - Expiration Session (Apres modif) --ok
 - Capital ho azy ny recherche eo @ Nom --ok
-- Modification (Cin an'ilay olona apres modification)
+- Modification (Cin an'ilay olona apres modification) --ok
     - Raha misu valeur hafa de ampina fotsiny
-- Par defaut : montant ecolage (pour éviter l'erreur de saisie)
+--Insertion Mvr
+- Par defaut : montant ecolage (pour éviter l'erreur de saisie) 
     - 50 000 Ar droits pédagogique ohatra (par défaut)
     - Voir exonérer condition :
     

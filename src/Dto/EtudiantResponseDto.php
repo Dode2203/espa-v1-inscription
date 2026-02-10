@@ -32,6 +32,8 @@ class EtudiantResponseDto
     public ?string $nomPere = null;
     public ?string $nomMere = null;
 
+    public ?int $nationaliteId = null;
+
     public function __construct(
         ?int $id = null,
         ?string $nom = null,
@@ -51,6 +53,7 @@ class EtudiantResponseDto
         ?string $proposTelephone = null,
         ?string $nomPere = null,
         ?string $nomMere = null,
+        ?int $nationaliteId = null,
     ) {
         $this->id = $id;
         $this->nom = $nom;
@@ -70,5 +73,6 @@ class EtudiantResponseDto
         $this->proposTelephone = $proposTelephone;
         $this->nomPere = $nomPere;
         $this->nomMere = $nomMere;
+        $this->nationaliteId = $nationaliteId;
     }
 }

@@ -332,6 +332,7 @@ class EtudiantsService
     {
         $cin = $etudiant->getCin();
         $bacc = $etudiant->getBacc();
+        $nationalite = $etudiant->getNationalite();
         $propos = $this->proposService->getDernierProposByEtudiant($etudiant);
 
         return new EtudiantResponseDto(
@@ -353,6 +354,7 @@ class EtudiantsService
             proposTelephone: $propos ? $propos->getTelephone() : null,
             nomPere: $propos ? $propos->getNomPere() : null,
             nomMere: $propos ? $propos->getNomMere() : null,
+            nationaliteId: $nationalite ? $nationalite->getId() : null,
         );
     }
 
