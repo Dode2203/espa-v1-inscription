@@ -26,7 +26,7 @@ class PaymentService
     }
     public function insertPayment(UtilisateurEntity $utilisateur, Etudiants $etudiant, Niveaux $niveau, Payments $payment, $typeDroit): Payments
     {
-        if ($payment->getMontant()==0) {
+        if ($payment->getMontant() == 0) {
             return $payment;
         }
         if ($payment->getMontant() < 0) {
@@ -83,12 +83,19 @@ class PaymentService
             3 // Type 3 = Ecolage
         );
     }
-    public function getPaymentParAnnee(Etudiants $etudiant, int $annee): array
+    public function getPaymentParAnnee(Etudiants $etudiant, int $annee, ?int $typeId = 3): array
     {
-        $payments = $this->paymentsRepository->findBy([
+        $criteria = [
             'etudiant' => $etudiant,
             'annee' => $annee,
-        ], ['datePayment' => 'ASC']);
+            'deletedAt' => null
+        ];
+
+        if ($typeId !== null) {
+            $criteria['type'] = $typeId;
+        }
+
+        $payments = $this->paymentsRepository->findBy($criteria, ['datePayment' => 'ASC']);
 
         return array_map(function ($paiement) {
             return [
@@ -114,6 +121,42 @@ class PaymentService
     ): float {
         $valiny = $this->paymentsRepository->getSommeMontantByEtudiantTypeAnnee($etudiant, $type, $annee);
         return $valiny;
+    }
+
+    public function annulerPaiement(int $id): void
+    {
+        $payment = $this->paymentsRepository->find($id);
+        if (!$payment) {
+            throw new Exception("Paiement non trouvé");
+        }
+
+        $payment->setDeletedAt(new \DateTime());
+        $this->em->flush();
+    }
+
+    /**
+     * Insère un nouveau paiement de type 'Ecolage' lié au niveau actuel de l'étudiant.
+     */
+    public function addEcolage(Etudiants $etudiant, float $montant, string $reference, \DateTimeInterface $date, UtilisateurEntity $agent): Payments
+    {
+        $dernierNiveauEtudiant = $this->niveauEtudiantsRepository->getDernierNiveauParEtudiant($etudiant);
+        if (!$dernierNiveauEtudiant) {
+            throw new Exception("Aucun niveau trouvé pour cet étudiant");
+        }
+
+        $payment = new Payments();
+        $payment->setMontant($montant);
+        $payment->setDatePayment($date);
+        $payment->setReference($reference);
+        $payment->setAnnee($dernierNiveauEtudiant->getAnnee());
+
+        return $this->insertPayment(
+            $agent,
+            $etudiant,
+            $dernierNiveauEtudiant->getNiveau(),
+            $payment,
+            3 // Type 3 = Ecolage
+        );
     }
 
 
