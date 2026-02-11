@@ -44,6 +44,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('ne')
             ->andWhere('ne.etudiant = :etudiant')
+            ->andWhere('ne.deletedAt IS NULL')
             ->setParameter('etudiant', $etudiant)
             ->orderBy('ne.dateInsertion', 'DESC')
             ->setMaxResults(1)
@@ -55,6 +56,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('i')
             ->andWhere('i.annee  = :annee ')
+            ->andWhere('i.deletedAt IS NULL')
             ->andWhere('i.niveau IS NOT NULL')
             ->setParameter('annee', $annee)
             ->orderBy('i.dateInsertion', 'DESC')
@@ -69,6 +71,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('f')
             ->andWhere('f.etudiant = :val')
+            ->andWhere('f.deletedAt IS NULL')
             ->setParameter('val', $etudiant)
             ->orderBy('f.annee', 'ASC')
             ->getQuery()
@@ -81,6 +84,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
             ->innerJoin('ne.niveau', 'n')
             ->where('n.nom = :nom')
             ->andWhere('ne.etudiant = :etudiant')
+            ->andWhere('ne.deletedAt IS NULL')
             ->setParameter('nom', $nomNiveau)
             ->setParameter('etudiant', $etudiant)
             ->setMaxResults(1)
@@ -92,6 +96,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('ne')
             ->andWhere('ne.etudiant = :etudiant')
             ->andWhere('ne.annee = :annee')
+            ->andWhere('ne.deletedAt IS NULL')
             ->setParameter('annee', $anneeScolaire)
             ->setParameter('etudiant', $etudiant)
             ->orderBy('ne.dateInsertion', 'DESC')

@@ -42,6 +42,9 @@ class NiveauEtudiants
     #[ORM\Column(nullable: true)]
     private ?int $isBoursier = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deleteAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -139,6 +142,18 @@ class NiveauEtudiants
     public function setIsBoursier(?int $isBoursier): static
     {
         $this->isBoursier = $isBoursier;
+
+        return $this;
+    }
+
+    public function getDeleteAt(): ?\DateTimeImmutable
+    {
+        return $this->deleteAt;
+    }
+
+    public function setDeleteAt(?\DateTimeImmutable $deleteAt): static
+    {
+        $this->deleteAt = $deleteAt;
 
         return $this;
     }

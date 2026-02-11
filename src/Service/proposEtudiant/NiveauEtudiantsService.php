@@ -50,10 +50,7 @@ class NiveauEtudiantsService
         
     public function getNiveauxParEtudiant(Etudiants $etudiant): array
     {
-        return $this->niveauEtudiantsRepository->findBy(
-            ['etudiant' => $etudiant],
-            ['annee' => 'ASC'] // Tri par année croissante
-        );
+        return $this->niveauEtudiantsRepository->getAllNiveauParEtudiant($etudiant);
     }
     public function getNiveauxById($id): ?Niveaux
     {
