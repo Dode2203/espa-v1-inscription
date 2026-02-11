@@ -85,9 +85,9 @@ class PaymentService
     }
     public function getPaymentParAnnee(Etudiants $etudiant, int $annee): array
     {
-        
 
-        $payments = $this->paymentsRepository->getAllPaymentParAnnee($etudiant,$annee);
+
+        $payments = $this->paymentsRepository->getAllPaymentParAnnee($etudiant, $annee);
 
         return array_map(function ($paiement) {
             return [
@@ -150,6 +150,72 @@ class PaymentService
             $payment,
             3 // Type 3 = Ecolage
         );
+    }
+
+    public function modifierPaiementTransactionnel(array $data, UtilisateurEntity $utilisateur): Payments
+    {
+        $id = $data['id'] ?? null;
+        $idEtudiant = $data['idEtudiant'] ?? null;
+        $idNiveau = $data['idNiveau'] ?? null;
+        $montant = $data['montant'] ?? null;
+        $datePaiementString = $data['datePaiement'] ?? null;
+        $typeDroit = $data['typeDroit'] ?? null;
+        $reference = $data['reference'] ?? null;
+
+        if (!$id || !$idEtudiant || !$idNiveau || $montant === null || !$datePaiementString || !$typeDroit) {
+            throw new Exception("Données incomplètes pour la modification");
+        }
+
+        // 0. Résoudre le TypeDroit s'il est passé sous forme de libellé
+        $typeDroit = $this->typeDroitsService->getIdByLabel($typeDroit);
+        
+        $this->em->beginTransaction();
+        try {
+            // 1. Récupérer l'étudiant
+            $etudiant = $this->etudiantsRepository->find($idEtudiant);
+            if (!$etudiant) {
+                throw new Exception("Étudiant $idEtudiant non trouvé");
+            }
+
+            // 2. Récupérer l'ancien paiement
+            $oldPayment = $this->paymentsRepository->find($id);
+            if (!$oldPayment) {
+                throw new Exception("Paiement $id non trouvé");
+            }
+
+            // 3. Récupérer le nouveau Niveau via l'ID passé dans l'API
+            $niveau = $this->em->getRepository(Niveaux::class)->find($idNiveau);
+            if (!$niveau) {
+                throw new Exception("Niveau $idNiveau non trouvé");
+            }
+
+            // Préserver l'année du paiement original
+            $annee = $oldPayment->getAnnee();
+
+            // 4. Annuler l'ancien paiement (Soft Delete)
+            $this->annulerPaiement($id);
+
+            // 5. Créer le nouveau paiement
+            $newPayment = new Payments();
+            $newPayment->setMontant((float) $montant);
+            $newPayment->setDatePayment(new \DateTime($datePaiementString));
+            $newPayment->setReference($reference);
+            $newPayment->setAnnee($annee);
+
+            $this->insertPayment(
+                $utilisateur,
+                $etudiant,
+                $niveau,
+                $newPayment,
+                $typeDroit
+            );
+
+            $this->em->commit();
+            return $newPayment;
+        } catch (Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
     }
 
 

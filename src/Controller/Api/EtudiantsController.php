@@ -13,6 +13,8 @@ use App\Service\proposEtudiant\NiveauEtudiantsService;
 use App\Service\proposEtudiant\MentionsService;
 use App\Annotation\TokenRequired;
 use App\Dto\EtudiantRequestDto;
+use App\Repository\UtilisateurRepository;
+use App\Service\payment\PaymentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -34,6 +36,8 @@ class EtudiantsController extends AbstractController
     private FormationEtudiantsService $formationEtudiantsService;
     private InscriptionService $inscriptionService;
     private MentionsService $mentionsService;
+    private PaymentService $paymentService;
+    private UtilisateurRepository $utilisateurRepository;
     private SerializerInterface $serializer;
     private ValidatorInterface $validator;
 
@@ -46,6 +50,8 @@ class EtudiantsController extends AbstractController
         FormationEtudiantsService $formationEtudiantsService,
         InscriptionService $inscriptionService,
         MentionsService $mentionsService,
+        PaymentService $paymentService,
+        UtilisateurRepository $utilisateurRepository,
         SerializerInterface $serializer,
         ValidatorInterface $validator
     ) {
@@ -57,6 +63,8 @@ class EtudiantsController extends AbstractController
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->inscriptionService = $inscriptionService;
         $this->mentionsService = $mentionsService;
+        $this->paymentService = $paymentService;
+        $this->utilisateurRepository = $utilisateurRepository;
         $this->serializer = $serializer;
         $this->validator = $validator;
     }
@@ -666,5 +674,4 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
-
 }
