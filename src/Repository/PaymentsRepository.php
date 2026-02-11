@@ -74,6 +74,7 @@ class PaymentsRepository extends ServiceEntityRepository
 
         return (float) $result;
     }
+    
 
     public function findByEtudiantJoined(int $idEtudiant): array
     {
@@ -89,5 +90,19 @@ class PaymentsRepository extends ServiceEntityRepository
             ->orderBy('p.datePayment', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+    public function getAllPaymentParAnnee(Etudiants $etudiant, int $annee): array
+    {
+        return $this->createQueryBuilder('p')
+               ->andWhere('p.etudiant = :etudiant')
+               ->setParameter('etudiant', $etudiant)
+               ->andWhere('p.annee = :annee')
+               ->andWhere('p.deletedAt IS NULL')
+               ->setParameter('annee', $annee)
+               ->orderBy('p.datePayment', 'DESC')
+               
+               ->getQuery()
+               ->getResult()
+           ;
     }
 }

@@ -83,19 +83,11 @@ class PaymentService
             3 // Type 3 = Ecolage
         );
     }
-    public function getPaymentParAnnee(Etudiants $etudiant, int $annee, ?int $typeId = 3): array
+    public function getPaymentParAnnee(Etudiants $etudiant, int $annee): array
     {
-        $criteria = [
-            'etudiant' => $etudiant,
-            'annee' => $annee,
-            'deletedAt' => null
-        ];
+        
 
-        if ($typeId !== null) {
-            $criteria['type'] = $typeId;
-        }
-
-        $payments = $this->paymentsRepository->findBy($criteria, ['datePayment' => 'ASC']);
+        $payments = $this->paymentsRepository->getAllPaymentParAnnee($etudiant,$annee);
 
         return array_map(function ($paiement) {
             return [
