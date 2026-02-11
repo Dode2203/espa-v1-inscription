@@ -99,8 +99,7 @@ class PaymentsRepository extends ServiceEntityRepository
                ->andWhere('p.annee = :annee')
                ->andWhere('p.deletedAt IS NULL')
                ->setParameter('annee', $annee)
-               ->orderBy('p.datePayment', 'DESC')
-               
+               ->orderBy('p.datePayment', 'DESC')            
                ->getQuery()
                ->getResult()
            ;

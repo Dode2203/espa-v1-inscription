@@ -91,6 +91,7 @@ class PaymentService
 
         return array_map(function ($paiement) {
             return [
+                'id' => $paiement->getId(),
                 'montant' => $paiement->getMontant(),
                 'datePaiement' => $paiement->getDatePayment()
                     ? $paiement->getDatePayment()->format('Y-m-d')
