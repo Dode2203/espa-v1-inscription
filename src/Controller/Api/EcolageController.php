@@ -119,5 +119,47 @@ class EcolageController extends AbstractController
             ], 400);
         }
     }
-    
+
+    #[Route('/modifier-paiement', name: 'ecolage_modifier_paiement', methods: ['POST'])]
+    #[TokenRequired(['Admin', 'Utilisateur', 'Ecolage'])]
+    public function modifierPaiement(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            // 1. Récupérer l'utilisateur connecté via le JWT
+            $token = $this->jwtTokenManager->extractTokenFromRequest($request);
+            $arrayToken = $this->jwtTokenManager->extractClaimsFromToken($token);
+            $idUser = $arrayToken['id'];
+            $utilisateur = $this->utilisateurRepository->find($idUser);
+
+            if (!$utilisateur) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Utilisateur non trouvé'
+                ], 401);
+            }
+
+            // 2. Appeler la méthode unique dans le service
+            $newPayment = $this->paymentService->modifierPaiementTransactionnel($data, $utilisateur);
+
+            return new JsonResponse([
+                'status' => 'success',
+                'message' => 'Paiement modifié avec succès (Annulé et Remplacé)',
+                'data' => [
+                    'id' => $newPayment->getId(),
+                    'montant' => $newPayment->getMontant(),
+                    'reference' => $newPayment->getReference(),
+                    'datePaiement' => $newPayment->getDatePayment()->format('Y-m-d'),
+                    'typeDroit' => $newPayment->getType() ? $newPayment->getType()->getNom() : null
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Erreur lors de la modification du paiement : ' . $e->getMessage()
+            ], 400);
+        }
+    }
 }
