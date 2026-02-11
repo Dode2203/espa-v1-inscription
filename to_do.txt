@@ -79,5 +79,6 @@ MAMIARISOA NASAINA Tendrin'Ny Avo Elia (cas fiche d'inscription mbola tsy azo)
     --niveaux MP2 miditra
 
 --formulaire pour modifier l'administratif / pedagogique et ecolage
---modifier table niveau_etudiant avec delete_at
---modifier table formation_etudiant avec delete_at 
+--modifier table niveau_etudiant avec delete_at --ok
+--modifier table formation_etudiant avec delete_at --ok
+

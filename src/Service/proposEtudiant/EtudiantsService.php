@@ -52,6 +52,7 @@ class EtudiantsService
 
     private InscriptionMapper $inscriptionMapper;
     private ProposService $proposService;
+    private MentionsService $mentionsService;
 
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
@@ -69,7 +70,8 @@ class EtudiantsService
         EtudiantMapper $etudiantMapper,
         ValidatorInterface $validator,
         InscriptionMapper $inscriptionMapper,
-        ProposService $proposService
+        ProposService $proposService,
+        MentionsService $mentionsService
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->formationEtudiantRepository = $formationEtudiantRepository;
@@ -87,6 +89,7 @@ class EtudiantsService
         $this->validator = $validator;
         $this->inscriptionMapper = $inscriptionMapper;
         $this->proposService = $proposService;
+        $this->mentionsService = $mentionsService;
     }
 
     public function toArray(?Etudiants $etudiant = null): array
@@ -439,6 +442,18 @@ class EtudiantsService
             throw new Exception('Etudiant non trouve pour id ='.$id.'');
         }
         return $this->getInformationJson($etudiant);
+    }
+    public function changerMentionId(int $idEtudiant,int $mentionId)
+    {
+        $etudiant = $this->etudiantsRepository->find($idEtudiant);
+        if (!$etudiant) {
+            throw new Exception('Etudiant non trouve pour id ='.$idEtudiant.'');
+        }
+        $mention = $this->mentionsService->getById($mentionId);
+        if (!$mention) {
+            throw new Exception('Mention non trouve pour id ='.$mentionId.'');
+        }
+        $this->niveauEtudiantsService->changerMention($etudiant,$mention);
     }
 
 }

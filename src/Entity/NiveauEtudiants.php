@@ -42,8 +42,8 @@ class NiveauEtudiants
     #[ORM\Column(nullable: true)]
     private ?int $isBoursier = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $deleteAt = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deletedAt = null;
 
     public function getId(): ?int
     {
@@ -146,14 +146,14 @@ class NiveauEtudiants
         return $this;
     }
 
-    public function getDeleteAt(): ?\DateTimeImmutable
+    public function getDeletedAt(): ?\DateTimeInterface
     {
-        return $this->deleteAt;
+        return $this->deletedAt;
     }
 
-    public function setDeleteAt(?\DateTimeImmutable $deleteAt): static
+    public function setDeletedAt(?\DateTimeInterface $deletedAt): static
     {
-        $this->deleteAt = $deleteAt;
+        $this->deletedAt = $deletedAt;
 
         return $this;
     }

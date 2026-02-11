@@ -119,4 +119,5 @@ class EcolageController extends AbstractController
             ], 400);
         }
     }
+    
 }

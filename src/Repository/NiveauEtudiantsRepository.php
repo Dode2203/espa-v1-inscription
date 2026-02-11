@@ -64,6 +64,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+    
     /**
      * @return NiveauEtudiants[] Returns an array of NiveauEtudiants objects
      */

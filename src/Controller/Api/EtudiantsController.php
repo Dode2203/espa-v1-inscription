@@ -666,5 +666,46 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
+    #[Route('/changerMention', name: 'api_changer_mention', methods: ['POST'])]
+    public function changerMention(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $requiredFields = ['idEtudiant', 'idMention'];
+
+            
+            $missingFields = [];
+
+            foreach ($requiredFields as $field) {
+                if (!isset($data[$field])) {
+                    $missingFields[] = $field;
+                }
+            }
+            if (!empty($missingFields)) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Champs requis manquants ' . implode(', ', $missingFields),
+                    'missingFields' => $missingFields
+                ], 400);
+            }
+            $idEtudiant = $data['idEtudiant'];
+            $idMention = $data['idMention'];
+
+            $this->etudiantsService->changerMentionId($idEtudiant, $idMention);
+
+
+            return new JsonResponse([
+                'status' => 'success',
+                'message' => 'Mention mise a jour avec succès'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+    
 
 }
