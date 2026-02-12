@@ -86,7 +86,7 @@ class EcolageController extends AbstractController
             }
 
             $data = json_decode($request->getContent(), true);
-            $requiredFields = ['idPayment', 'montant','reference','datePayment'];
+            $requiredFields = ['etudiant_id', 'annee_scolaire', 'montant','ref_bordereau','date_paiement'];
 
             
             $missingFields = [];
@@ -210,7 +210,7 @@ class EcolageController extends AbstractController
         } catch (Exception $e) {
             return new JsonResponse([
                 'status' => 'error',
-                'message' =>  $e->getMessage()
+                'message' => $e->getMessage()
             ], 400);
         }
     }

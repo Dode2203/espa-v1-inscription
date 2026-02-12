@@ -74,6 +74,7 @@ MAMIARISOA NASAINA Tendrin'Ny Avo Elia (cas fiche d'inscription mbola tsy azo)
 
 
 
+
 -droit MP2 cas EIE
     --droit hafa
     --niveaux MP2 miditra
@@ -81,4 +82,6 @@ MAMIARISOA NASAINA Tendrin'Ny Avo Elia (cas fiche d'inscription mbola tsy azo)
 --formulaire pour modifier l'administratif / pedagogique et ecolage --ok
 --modifier table niveau_etudiant avec delete_at --ok
 --modifier table formation_etudiant avec delete_at --ok
+
+--valeur par defaut des payments 
 

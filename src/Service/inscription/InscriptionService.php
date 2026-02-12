@@ -107,9 +107,22 @@ class InscriptionService
             $pedagogique->setDatePayment($dateInsertion);
             $administratif->setDatePayment($dateInsertion);
             $payementsEcolages->setDatePayment($dateInsertion);
-            // 1 = pédagogique, 2 = administratif
+
+            $niveauEtudiantActuel = $this->niveauEtudiantsService
+                ->getDernierNiveauParEtudiant($etudiant);
+            $mentionActuelle = $niveauEtudiantActuel->getMention();
+            // $id_passant = $niveauEtudiantActuel->getStatusEtudiant()->getId();
+            // $passant = ($id_passant === 1); // 1 = passant
+
+            // 1 = pédagogique, 2 = administratif // 8
+            $typeAdmin= 1;
+            $mentionActuelle = $niveauEtudiantActuel->getMention();
+            if ($mentionActuelle->getId()==25) {
+                $typeAdmin= 8;
+            }
+            // throw new Exception("typeAdmin = " . $typeAdmin . " etudiant = " . $mentionActuelle->getId());
             $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $pedagogique, 1);
-            $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $administratif, 2);
+            $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $administratif, $typeAdmin);
 
 
             // Paiement écolage
@@ -118,16 +131,15 @@ class InscriptionService
             }
 
             // Niveau étudiant
-            $niveauEtudiantActuel = $this->niveauEtudiantsService
-                ->getDernierNiveauParEtudiant($etudiant);
-            // $id_passant = $niveauEtudiantActuel->getStatusEtudiant()->getId();
-            // $passant = ($id_passant === 1); // 1 = passant
 
             $niveauActuel = $niveauEtudiantActuel->getNiveau();
             $this->niveauEtudiantsService->isValideNiveauVaovao(
                 $niveau,
                 $niveauActuel
             );
+
+
+            
             // $niveauEtudiantActuel->setNiveau($niveau);
             $annee = (int) $dateInsertion->format('Y');
 

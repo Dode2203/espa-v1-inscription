@@ -52,7 +52,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
-    public function getAllNiveauEtudiantAnnee(int $annee): array
+    public function getAllNiveauEtudiantAnnee(int $annee, int $limit = 50): array
     {
         return $this->createQueryBuilder('i')
             ->andWhere('i.annee  = :annee ')
@@ -60,7 +60,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
             ->andWhere('i.niveau IS NOT NULL')
             ->setParameter('annee', $annee)
             ->orderBy('i.dateInsertion', 'DESC')
-            ->setMaxResults(100)
+            ->setMaxResults($limit) // LIMIT
             ->getQuery()
             ->getResult()
         ;

@@ -91,6 +91,7 @@ VALUES
 (3, 'PROFESSIONNELLE LUBAN', 2), 
 (4, 'MASTER RECHERCHE', 2),
 (5, 'INSCRIPTION ANNULEE', 1);
+(6, 'PROFESSIONNELLE EIE', 2),
 
 
 INSERT INTO ecolages (formations_id, montant, date_ecolage)
@@ -150,6 +151,7 @@ INSERT INTO niveaux (id, nom, type, grade) VALUES
 (15, 'MRS',  5, 1);
 
 
+
 -- INSERT INTO niveaux (nom, type, grade) VALUES
 -- ('Licence 1', 1, 1),
 -- ('Licence 2', 1, 2),
@@ -190,7 +192,8 @@ INSERT INTO public.mentions (id, nom, abr) VALUES
     (23, 'TCO', 'TCO'),
     (24, 'UAGC', 'UAGC');
 
-
+INSERT INTO public.mentions (id, nom, abr) VALUES
+    (25, 'EIE', 'EIE');
 
  INSERT INTO niveau_etudiants (
      niveau_id,
