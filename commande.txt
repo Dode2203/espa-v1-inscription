@@ -1,4 +1,4 @@
-# pour creer une nouvelle base de donne
+﻿# pour creer une nouvelle base de donne
 composer install
 php bin/console doctrine:database:create
 \c espa;
@@ -31,7 +31,7 @@ php bin/console cache:clear --env=dev
 
 pour lancer le serveur
 
-php -S 172.23.64.1:8000 -t public
+php -S 192.168.1.251:8000 -t public
 
 php -S 10.225.228.30:8000 -t public
 

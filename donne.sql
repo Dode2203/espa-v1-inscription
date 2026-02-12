@@ -192,21 +192,21 @@ INSERT INTO public.mentions (id, nom, abr) VALUES
 
 
 
--- INSERT INTO niveau_etudiants (
---     niveau_id,
---     mention_id,
---     etudiant_id,
---     annee,
---     date_insertion,
---     status_etudiant_id
--- ) VALUES (
---     1,
---     1,
---     1,
---     2024,
---     NOW(),
---     1
--- );
+ INSERT INTO niveau_etudiants (
+     niveau_id,
+     mention_id,
+     etudiant_id,
+     annee,
+     date_insertion,
+     status_etudiant_id
+ ) VALUES (
+     4,
+     2,
+     4206,
+     2025,
+     NOW(),
+     1
+ );
 
 INSERT INTO type_droits (id, nom) VALUES 
 (1, 'Pédagogique'),
@@ -243,3 +243,18 @@ INSERT INTO nationalites (id, nom, type) VALUES
 (12, 'SENEGALAISE', 2),
 (13, 'TCHADIENNE', 2);
 
+
+
+select*from payments where etudiant_id=6262;
+update payments set montant=61875 where id=65398;
+update niveau_etudiants set mention_id =5 where etudiant_id=10271;
+
+select*from etudiants where id=10259;
+select*from payments where etudiant_id=5062;
+update payments set montant=61900 where id=65694;
+update niveau_etudiants set mention_id=5 where etudiant_id=10270;
+update payments set reference='AIQM363/AU' where id=65569;
+DELETE FROM formation_etudiants
+WHERE etudiant_id = 114;
+DELETE FROM etudiants
+WHERE id = 114;
