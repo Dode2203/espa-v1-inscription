@@ -85,11 +85,9 @@ class NiveauEtudiantsService
         $gradeAcien = $niveauxPrecedent?->getGrade() ?? 0;
         $gradeVaovao = $niveauxSuivant?->getGrade() ?? 0;
 
-        // type mvr if ($niveauxSuivant->getNom()=="MVR") {
-        if ($niveauxSuivant->getId()==14) {
+        if ($niveauxSuivant->getId()==14||$niveauxSuivant->getId()==16) {
             $gradeAcien = 4;
         }
-
         $elanelana = $gradeVaovao - $gradeAcien;
 
         if ($elanelana < 0) {
