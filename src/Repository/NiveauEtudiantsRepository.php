@@ -60,6 +60,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
             ->andWhere('i.niveau IS NOT NULL')
             ->setParameter('annee', $annee)
             ->orderBy('i.dateInsertion', 'DESC')
+            ->setMaxResults(100)
             ->getQuery()
             ->getResult()
         ;
