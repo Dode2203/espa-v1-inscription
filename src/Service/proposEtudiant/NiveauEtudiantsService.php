@@ -5,6 +5,7 @@ use App\Repository\NiveauEtudiantsRepository;
 use App\Entity\NiveauEtudiants;
 use App\Entity\Etudiants;
 use App\Entity\Niveaux;
+use App\Entity\Mentions;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
@@ -50,10 +51,7 @@ class NiveauEtudiantsService
         
     public function getNiveauxParEtudiant(Etudiants $etudiant): array
     {
-        return $this->niveauEtudiantsRepository->findBy(
-            ['etudiant' => $etudiant],
-            ['annee' => 'ASC'] // Tri par année croissante
-        );
+        return $this->niveauEtudiantsRepository->getAllNiveauParEtudiant($etudiant);
     }
     public function getNiveauxById($id): ?Niveaux
     {
@@ -63,7 +61,7 @@ class NiveauEtudiantsService
         Etudiants $etudiant,
         Niveaux $niveau,
         ?\DateTimeInterface $dateInsertion = null,
-        int $isBoursier
+        ?int $isBoursier = null
     ): NiveauEtudiants
     {
         $niveauEtudiant = new NiveauEtudiants();
@@ -116,5 +114,42 @@ class NiveauEtudiantsService
         $valiny = $this->niveauEtudiantsRepository->getAllNiveauParEtudiant($etudiant);
         return $valiny;
     }
-    
+    public function deleteNiveauEtudiant(NiveauEtudiants $niveauEtudiant, ?\DateTimeInterface $deleteAt = null): void {
+        if ($deleteAt === null) {
+            $deleteAt = new \DateTime();
+        }
+        $niveauEtudiant->setDeletedAt($deleteAt);
+        $this->em->persist($niveauEtudiant);
+        $this->em->flush();
+    }
+    public function changerMention(Etudiants $etudiant,Mentions $mention,?\DateTimeInterface $deleteAt = null): void {
+ 
+        $this->em->beginTransaction();
+
+        try {
+            $dernierNiveauEtudiant = $this->getDernierNiveauParEtudiant($etudiant);
+            if (!$dernierNiveauEtudiant) {
+                throw new Exception("Aucun niveau trouvé pour cet étudiant");
+            }
+            $this->deleteNiveauEtudiant($dernierNiveauEtudiant,$deleteAt);
+            $nouvelleNiveauEtudiant = $this->affecterNouveauNiveauEtudiant($etudiant,$dernierNiveauEtudiant->getNiveau(),$deleteAt, $dernierNiveauEtudiant->getIsBoursier());
+            $annee = $dernierNiveauEtudiant->getAnnee();
+            $nouvelleNiveauEtudiant->setAnnee($annee);
+            $nouvelleNiveauEtudiant->setMention($mention);
+            $nouvelleNiveauEtudiant->setStatusEtudiant($dernierNiveauEtudiant->getStatusEtudiant());
+            $mentionAbbr = $mention->getAbr();
+            $numeroInscription = "" . $etudiant->getId() . "/" . $annee . "/" . $mentionAbbr;
+            $nouvelleNiveauEtudiant->setMatricule($numeroInscription);
+            $this->insertNiveauEtudiant($nouvelleNiveauEtudiant);
+
+            $this->em->flush();
+            $this->em->commit();
+        } catch (\Throwable $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+        
+    }
 }
+
+

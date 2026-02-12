@@ -57,13 +57,7 @@ class InscriptionMapper
 
             // Création formation étudiant
             $formationEtudiant = $this->createFormationEtudiant($etudiant, $formation);
-            $this->em->persist($formationEtudiant);
-
-            // Création niveau étudiant
-            $niveau = null;
-            $isEtudiantMvr = $dto->getIsEtudiantMvr();
-            $dateInsertion = new \DateTime();
-            
+            $this->em->persist($formationEtudiant);            
 
             $niveauEtudiant = $this->createNiveauEtudiant($etudiant, $mention);
             $this->em->persist($niveauEtudiant);

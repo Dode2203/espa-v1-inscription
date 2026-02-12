@@ -26,6 +26,9 @@ class FormationEtudiants
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateFormation = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deletedAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -63,6 +66,18 @@ class FormationEtudiants
     public function setDateFormation(\DateTimeInterface $dateFormation): static
     {
         $this->dateFormation = $dateFormation;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
 
         return $this;
     }

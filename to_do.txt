@@ -73,3 +73,12 @@ Fonction mamadika ny 50k lasa 4999k Ar @ droits
 MAMIARISOA NASAINA Tendrin'Ny Avo Elia (cas fiche d'inscription mbola tsy azo) 
 
 
+
+-droit MP2 cas EIE
+    --droit hafa
+    --niveaux MP2 miditra
+
+--formulaire pour modifier l'administratif / pedagogique et ecolage --ok
+--modifier table niveau_etudiant avec delete_at --ok
+--modifier table formation_etudiant avec delete_at --ok
+

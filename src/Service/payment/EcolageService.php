@@ -83,7 +83,7 @@ class EcolageService
     {
         $default = ['total' => 0.0, 'paye' => 0.0, 'reste' => 0.0];
 
-        $ne = $this->niveauEtudiantsRepository->findOneBy(['etudiant' => $etudiant, 'annee' => $annee]);
+        $ne = $this->niveauEtudiantsRepository->findByAnneeAndEtudiant($annee, $etudiant);
         if (!$ne) {
             return $default;
         }

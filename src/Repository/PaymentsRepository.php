@@ -47,6 +47,8 @@ class PaymentsRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('d')
             ->select('COALESCE(SUM(d.montant), 0) as total')
             ->where('d.annee = :annee')
+            ->andWhere('d.type = 3')
+            ->andWhere('d.deletedAt IS NULL')
             ->setParameter('annee', $annee)
             ->getQuery()
             ->getSingleScalarResult();
@@ -63,6 +65,7 @@ class PaymentsRepository extends ServiceEntityRepository
             ->where('p.etudiant = :etudiant')
             ->andWhere('p.type = :type')
             ->andWhere('p.annee = :annee')
+            ->andWhere('p.deletedAt IS NULL')
             ->setParameter('etudiant', $etudiant)
             ->setParameter('type', $type)
             ->setParameter('annee', $annee)
@@ -71,6 +74,7 @@ class PaymentsRepository extends ServiceEntityRepository
 
         return (float) $result;
     }
+    
 
     public function findByEtudiantJoined(int $idEtudiant): array
     {
@@ -81,9 +85,23 @@ class PaymentsRepository extends ServiceEntityRepository
             ->leftJoin('p.niveau', 'n')
             ->where('e.id = :idEtudiant')
             ->andWhere('p.type = 3')
+            ->andWhere('p.deletedAt IS NULL')
             ->setParameter('idEtudiant', $idEtudiant)
             ->orderBy('p.datePayment', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+    public function getAllPaymentParAnnee(Etudiants $etudiant, int $annee): array
+    {
+        return $this->createQueryBuilder('p')
+               ->andWhere('p.etudiant = :etudiant')
+               ->setParameter('etudiant', $etudiant)
+               ->andWhere('p.annee = :annee')
+               ->andWhere('p.deletedAt IS NULL')
+               ->setParameter('annee', $annee)
+               ->orderBy('p.datePayment', 'DESC')            
+               ->getQuery()
+               ->getResult()
+           ;
     }
 }

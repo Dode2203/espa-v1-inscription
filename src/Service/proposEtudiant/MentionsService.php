@@ -28,5 +28,9 @@ class MentionsService
             'nom'   => $mention->getNom(),
         ];
     }
+    public function getById(int $id): ?Mentions
+    {
+        return $this->mentionRepository->find($id);
+}
     
 }

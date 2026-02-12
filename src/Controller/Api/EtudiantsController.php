@@ -13,6 +13,8 @@ use App\Service\proposEtudiant\NiveauEtudiantsService;
 use App\Service\proposEtudiant\MentionsService;
 use App\Annotation\TokenRequired;
 use App\Dto\EtudiantRequestDto;
+use App\Repository\UtilisateurRepository;
+use App\Service\payment\PaymentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -34,6 +36,8 @@ class EtudiantsController extends AbstractController
     private FormationEtudiantsService $formationEtudiantsService;
     private InscriptionService $inscriptionService;
     private MentionsService $mentionsService;
+    private PaymentService $paymentService;
+    private UtilisateurRepository $utilisateurRepository;
     private SerializerInterface $serializer;
     private ValidatorInterface $validator;
 
@@ -46,6 +50,8 @@ class EtudiantsController extends AbstractController
         FormationEtudiantsService $formationEtudiantsService,
         InscriptionService $inscriptionService,
         MentionsService $mentionsService,
+        PaymentService $paymentService,
+        UtilisateurRepository $utilisateurRepository,
         SerializerInterface $serializer,
         ValidatorInterface $validator
     ) {
@@ -57,6 +63,8 @@ class EtudiantsController extends AbstractController
         $this->formationEtudiantsService = $formationEtudiantsService;
         $this->inscriptionService = $inscriptionService;
         $this->mentionsService = $mentionsService;
+        $this->paymentService = $paymentService;
+        $this->utilisateurRepository = $utilisateurRepository;
         $this->serializer = $serializer;
         $this->validator = $validator;
     }
@@ -666,5 +674,45 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
+    #[Route('/changerMention', name: 'api_changer_mention', methods: ['POST'])]
+    public function changerMention(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $requiredFields = ['idEtudiant', 'idMention'];
 
+            
+            $missingFields = [];
+
+            foreach ($requiredFields as $field) {
+                if (!isset($data[$field])) {
+                    $missingFields[] = $field;
+                }
+            }
+            if (!empty($missingFields)) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Champs requis manquants ' . implode(', ', $missingFields),
+                    'missingFields' => $missingFields
+                ], 400);
+            }
+            $idEtudiant = $data['idEtudiant'];
+            $idMention = $data['idMention'];
+
+            $this->etudiantsService->changerMentionId($idEtudiant, $idMention);
+
+
+            return new JsonResponse([
+                'status' => 'success',
+                'message' => 'Mention mise a jour avec succès'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+    
 }
