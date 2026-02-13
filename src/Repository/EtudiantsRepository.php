@@ -56,5 +56,17 @@ class EtudiantsRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+    
+   public function getEtudiantsByNomAndPrenomExacte(string $nom,string $prenom): ?Etudiants
+   {
+       return $this->createQueryBuilder('e')
+           ->andWhere('e.nom = :nom')
+           ->andWhere('e.prenom = :prenom')
+           ->setParameter('nom', $nom)
+           ->setParameter('prenom' , $prenom)
+           ->getQuery()
+           ->getOneOrNullResult()
+       ;
+   }
 
 }

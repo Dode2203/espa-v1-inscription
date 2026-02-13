@@ -120,7 +120,7 @@ class NiveauEtudiantsService
         $this->em->persist($niveauEtudiant);
         $this->em->flush();
     }
-    public function changerMention(Etudiants $etudiant,Mentions $mention,?\DateTimeInterface $deleteAt = null): void {
+    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?\DateTimeInterface $deleteAt = null): void {
  
         $this->em->beginTransaction();
 
@@ -138,6 +138,9 @@ class NiveauEtudiantsService
             $mentionAbbr = $mention->getAbr();
             $numeroInscription = "" . $etudiant->getId() . "/" . $annee . "/" . $mentionAbbr;
             $nouvelleNiveauEtudiant->setMatricule($numeroInscription);
+            if ($niveau) {
+                $nouvelleNiveauEtudiant->setNiveau($niveau);
+            }
             $this->insertNiveauEtudiant($nouvelleNiveauEtudiant);
 
             $this->em->flush();

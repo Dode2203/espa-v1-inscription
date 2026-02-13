@@ -249,3 +249,4 @@ INSERT INTO nationalites (id, nom, type) VALUES
 (12, 'SENEGALAISE', 2),
 (13, 'TCHADIENNE', 2);
 
+andriamboavonjy ianjatiana rico
