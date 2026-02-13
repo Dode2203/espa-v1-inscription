@@ -92,6 +92,8 @@ VALUES
 (4, 'MASTER RECHERCHE', 2),
 (5, 'INSCRIPTION ANNULEE', 1);
 
+INSERT INTO formations (id, nom, type_formation_id) VALUES (6, 'PROFESSIONNELLE EIE', 2);
+
 
 INSERT INTO ecolages (formations_id, montant, date_ecolage)
 VALUES
@@ -149,6 +151,9 @@ INSERT INTO niveaux (id, nom, type, grade) VALUES
 (14, 'MVR',  4, 4),
 (15, 'MRS',  5, 1);
 
+INSERT INTO niveaux (id, nom, type, grade) VALUES
+(16, 'MP2IEE', 6, 4);
+
 
 -- INSERT INTO niveaux (nom, type, grade) VALUES
 -- ('Licence 1', 1, 1),
@@ -190,7 +195,8 @@ INSERT INTO public.mentions (id, nom, abr) VALUES
     (23, 'TCO', 'TCO'),
     (24, 'UAGC', 'UAGC');
 
-
+INSERT INTO public.mentions (id, nom, abr) VALUES
+    (25, 'EIE', 'EIE');
 
 -- INSERT INTO niveau_etudiants (
 --     niveau_id,
@@ -243,3 +249,4 @@ INSERT INTO nationalites (id, nom, type) VALUES
 (12, 'SENEGALAISE', 2),
 (13, 'TCHADIENNE', 2);
 
+andriamboavonjy ianjatiana rico

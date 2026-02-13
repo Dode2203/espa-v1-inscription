@@ -54,6 +54,8 @@ class EtudiantsService
     private ProposService $proposService;
     private MentionsService $mentionsService;
 
+    private StatusEtudiantService $statusEtudiantService;
+
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
         FormationEtudiantsRepository $formationEtudiantRepository,
@@ -71,7 +73,8 @@ class EtudiantsService
         ValidatorInterface $validator,
         InscriptionMapper $inscriptionMapper,
         ProposService $proposService,
-        MentionsService $mentionsService
+        MentionsService $mentionsService,
+        StatusEtudiantService $statusEtudiantService
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->formationEtudiantRepository = $formationEtudiantRepository;
@@ -90,6 +93,7 @@ class EtudiantsService
         $this->inscriptionMapper = $inscriptionMapper;
         $this->proposService = $proposService;
         $this->mentionsService = $mentionsService;
+        $this->statusEtudiantService = $statusEtudiantService;
     }
 
     public function toArray(?Etudiants $etudiant = null): array
@@ -135,6 +139,15 @@ class EtudiantsService
 
         // throw new Exception($prenom);
         return $this->etudiantsRepository->getEtudiantsByNomAndPrenom($nomMajuscule, $prenom);
+    }
+
+    public function rechercheEtudiantExacte($nom, $prenom): ?Etudiants
+    {
+        $nomMajuscule = mb_strtoupper($nom, 'UTF-8');
+        $prenom = mb_convert_case($prenom, MB_CASE_TITLE, "UTF-8");
+
+        // throw new Exception($prenom);
+        return $this->etudiantsRepository->getEtudiantsByNomAndPrenomExacte($nomMajuscule, $prenom);
     }
 
     public function insertEtudiant(Etudiants $etudiant): Etudiants
@@ -290,7 +303,12 @@ class EtudiantsService
             $isNewEtudiant = !$dto->getId();
 
             $this->etudiantMapper->mapDtoToEntity($dto, $etudiant);
-
+            $nom=$etudiant->getNom();
+            $prenom=$etudiant->getPrenom();
+            $etudiantTaloha = $this->rechercheEtudiantExacte($nom,$prenom);
+            if ($etudiantTaloha) {
+                throw new Exception("Etudiant existe deja ".$nom." ".$prenom);
+            }
             $this->em->persist($etudiant);
 
             $propos = $this->proposService->getOrCreateEntity($dto);
@@ -317,9 +335,7 @@ class EtudiantsService
             }
 
             // Relancer l'exception avec les détails techniques
-            throw new Exception("Détail technique : " . $e->getMessage() .
-                " dans " . $e->getFile() .
-                " à la ligne " . $e->getLine());
+            throw $e;
         }
     }
 
@@ -443,7 +459,7 @@ class EtudiantsService
         }
         return $this->getInformationJson($etudiant);
     }
-    public function changerMentionId(int $idEtudiant,int $mentionId)
+    public function changerMentionId(int $idEtudiant,int $mentionId,int $niveauId = null,int $statusEtudiantId,?\DateTimeInterface $deleteAt = null)
     {
         $etudiant = $this->etudiantsRepository->find($idEtudiant);
         if (!$etudiant) {
@@ -453,7 +469,25 @@ class EtudiantsService
         if (!$mention) {
             throw new Exception('Mention non trouve pour id ='.$mentionId.'');
         }
-        $this->niveauEtudiantsService->changerMention($etudiant,$mention);
+        
+        $niveauEtudiant = null;
+        if ($niveauId) {
+            $niveauEtudiant = $this->niveauEtudiantsService->getNiveauxById($niveauId);
+            if (!$niveauEtudiant) {
+                throw new Exception('Niveau etudiant non trouve pour id ='.$niveauId.'');
+            }
+        }
+        $statusEtudiant = null;
+        if($statusEtudiantId)
+        {
+            $statusEtudiant = $this->statusEtudiantService->getById($statusEtudiantId);
+            if (!$statusEtudiant) {
+                throw new Exception('Status etudiant non trouve pour id ='.$statusEtudiantId.'');
+            }
+            
+        }
+
+        $this->niveauEtudiantsService->changerMention($etudiant,$mention,$niveauEtudiant,$statusEtudiant,$deleteAt);
     }
 
 }

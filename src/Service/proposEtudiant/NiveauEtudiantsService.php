@@ -8,6 +8,8 @@ use App\Entity\Niveaux;
 use App\Entity\Mentions;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Proxies\__CG__\App\Entity\Status;
+use Proxies\__CG__\App\Entity\StatusEtudiants;
 
 class NiveauEtudiantsService
 {   private $niveauEtudiantsRepository;
@@ -85,11 +87,9 @@ class NiveauEtudiantsService
         $gradeAcien = $niveauxPrecedent?->getGrade() ?? 0;
         $gradeVaovao = $niveauxSuivant?->getGrade() ?? 0;
 
-        // type mvr if ($niveauxSuivant->getNom()=="MVR") {
-        if ($niveauxSuivant->getId()==14) {
+        if ($niveauxSuivant->getId()==14||$niveauxSuivant->getId()==16) {
             $gradeAcien = 4;
         }
-
         $elanelana = $gradeVaovao - $gradeAcien;
 
         if ($elanelana < 0) {
@@ -122,7 +122,7 @@ class NiveauEtudiantsService
         $this->em->persist($niveauEtudiant);
         $this->em->flush();
     }
-    public function changerMention(Etudiants $etudiant,Mentions $mention,?\DateTimeInterface $deleteAt = null): void {
+    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?StatusEtudiants $statusEtudiant,?\DateTimeInterface $deleteAt = null): void {
  
         $this->em->beginTransaction();
 
@@ -140,6 +140,12 @@ class NiveauEtudiantsService
             $mentionAbbr = $mention->getAbr();
             $numeroInscription = "" . $etudiant->getId() . "/" . $annee . "/" . $mentionAbbr;
             $nouvelleNiveauEtudiant->setMatricule($numeroInscription);
+            if ($niveau) {
+                $nouvelleNiveauEtudiant->setNiveau($niveau);
+            }
+            if ($statusEtudiant) {
+                $nouvelleNiveauEtudiant->setStatusEtudiant($statusEtudiant);
+            }
             $this->insertNiveauEtudiant($nouvelleNiveauEtudiant);
 
             $this->em->flush();

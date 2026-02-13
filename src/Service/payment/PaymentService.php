@@ -1,10 +1,14 @@
 <?php
 
 namespace App\Service\payment;
+use App\Dto\PaymentRequestDto;
 use App\Entity\Payments;
 use App\Entity\Niveaux;
+use App\Entity\Utilisateur;
 use App\Repository\PaymentsRepository;
 use App\Entity\Etudiants;
+use App\Repository\UtilisateurRepository;
+use App\Service\utilisateur\UtilisateurService;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\droit\TypeDroitService as AppTypeDroitService;
 use App\Entity\Utilisateur as UtilisateurEntity;
@@ -21,7 +25,8 @@ class PaymentService
         private AppTypeDroitService $typeDroitsService,
         private EntityManagerInterface $em,
         private EtudiantsRepository $etudiantsRepository,
-        private NiveauEtudiantsRepository $niveauEtudiantsRepository
+        private NiveauEtudiantsRepository $niveauEtudiantsRepository,
+        private UtilisateurService $utilisateurService,
     ) {
     }
     public function insertPayment(UtilisateurEntity $utilisateur, Etudiants $etudiant, Niveaux $niveau, Payments $payment, $typeDroit): Payments
@@ -151,72 +156,64 @@ class PaymentService
             3 // Type 3 = Ecolage
         );
     }
-
-    public function modifierPaiementTransactionnel(array $data, UtilisateurEntity $utilisateur): Payments
-    {
-        $id = $data['id'] ?? null;
-        $idEtudiant = $data['idEtudiant'] ?? null;
-        $idNiveau = $data['idNiveau'] ?? null;
-        $montant = $data['montant'] ?? null;
-        $datePaiementString = $data['datePaiement'] ?? null;
-        $typeDroit = $data['typeDroit'] ?? null;
-        $reference = $data['reference'] ?? null;
-
-        if (!$id || !$idEtudiant || !$idNiveau || $montant === null || !$datePaiementString || !$typeDroit) {
-            throw new Exception("Données incomplètes pour la modification");
+    public function deletePayments(Payments $payment, ?\DateTimeInterface $deleteAt = null): void {
+        if ($deleteAt === null) {
+            $deleteAt = new \DateTime();
         }
+        $payment->setDeletedAt($deleteAt);
+        $this->em->persist($payment);
+        $this->em->flush();
+    }
+    
 
-        // 0. Résoudre le TypeDroit s'il est passé sous forme de libellé
-        $typeDroit = $this->typeDroitsService->getIdByLabel($typeDroit);
-        
+    function modifierPaiementTransactionnel(Payments $nouveauPayment , Payments $ancienPayment,?\DateTimeInterface $deleteAt = null): Payments
+    {
+        $utilisateurNouveau = $nouveauPayment->getUtilisateur();
+        $utilisateurPrecedent = $ancienPayment->getUtilisateur();
         $this->em->beginTransaction();
         try {
-            // 1. Récupérer l'étudiant
-            $etudiant = $this->etudiantsRepository->find($idEtudiant);
-            if (!$etudiant) {
-                throw new Exception("Étudiant $idEtudiant non trouvé");
-            }
+            $this->utilisateurService->isValidModificationPayment( $utilisateurNouveau, $utilisateurPrecedent);
+            $this->deletePayments($ancienPayment, $deleteAt);
+            $nouveauPayment->setType($ancienPayment->getType());
+            $nouveauPayment->setEtudiant($ancienPayment->getEtudiant());
+            $nouveauPayment->setNiveau($ancienPayment->getNiveau());
+            $nouveauPayment->setAnnee($ancienPayment->getAnnee());
+            $this->em->persist($nouveauPayment);
+            $this->em->flush();
 
-            // 2. Récupérer l'ancien paiement
-            $oldPayment = $this->paymentsRepository->find($id);
-            if (!$oldPayment) {
-                throw new Exception("Paiement $id non trouvé");
-            }
-
-            // 3. Récupérer le nouveau Niveau via l'ID passé dans l'API
-            $niveau = $this->em->getRepository(Niveaux::class)->find($idNiveau);
-            if (!$niveau) {
-                throw new Exception("Niveau $idNiveau non trouvé");
-            }
-
-            // Préserver l'année du paiement original
-            $annee = $oldPayment->getAnnee();
-
-            // 4. Annuler l'ancien paiement (Soft Delete)
-            $this->annulerPaiement($id);
-
-            // 5. Créer le nouveau paiement
-            $newPayment = new Payments();
-            $newPayment->setMontant((float) $montant);
-            $newPayment->setDatePayment(new \DateTime($datePaiementString));
-            $newPayment->setReference($reference);
-            $newPayment->setAnnee($annee);
-
-            $this->insertPayment(
-                $utilisateur,
-                $etudiant,
-                $niveau,
-                $newPayment,
-                $typeDroit
-            );
 
             $this->em->commit();
-            return $newPayment;
+            return $nouveauPayment;
         } catch (Exception $e) {
             $this->em->rollback();
             throw $e;
         }
     }
+    function modifierPaiementTransactionnelId(Payments $nouveauPayment , int $ancienPaymentId,?\DateTimeInterface $deleteAt = null): Payments
+    {
+        $ancienPayment = $this->paymentsRepository->find($ancienPaymentId);
+        if (!$ancienPayment) {
+            throw new Exception("Paiement non trouvé avec l'ID: " . $ancienPaymentId);
+        }
+        return $this->modifierPaiementTransactionnel($nouveauPayment, $ancienPayment, $deleteAt);
+    }
+    public function modifierPayment(Utilisateur $utilisateur, PaymentRequestDto $paymentDto, ?\DateTimeInterface $deleteAt = null): Payments
+    {
+        $payment = new Payments();
+        $payment->setReference($paymentDto->getReference());
+        $payment->setMontant($paymentDto->getMontant());
+        $payment->setDatePayment($paymentDto->getDatePayment());
+        $payment->setUtilisateur($utilisateur);
+
+        $ancienneIdPayment = $paymentDto->getId();
+        if ($ancienneIdPayment) {
+            
+                $this->modifierPaiementTransactionnelId($payment, $ancienneIdPayment, $deleteAt);
+            
+        }
+        return $payment;
+    }
+
 
 
 }

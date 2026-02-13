@@ -13,6 +13,10 @@ use App\Service\payment\PaymentService;
 use App\Entity\Utilisateur as UtilisateurEntity;
 use App\Repository\UtilisateurRepository;
 use App\Annotation\TokenRequired;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\HttpFoundation\Response;
+use App\Dto\PaymentRequestDto;
 
 #[Route('/ecolage')]
 class EcolageController extends AbstractController
@@ -21,11 +25,14 @@ class EcolageController extends AbstractController
         private EcolageService $ecolageService,
         private PaymentService $paymentService,
         private UtilisateurRepository $utilisateurRepository,
-        private JwtTokenManager $jwtTokenManager
+        private JwtTokenManager $jwtTokenManager,
+        private SerializerInterface $serializer,
+        private ValidatorInterface $validator
     ) {
     }
 
     #[Route('/etudiant/{id}/details', name: 'api_ecolage_etudiant_details', methods: ['GET'])]
+    #[TokenRequired(['Admin', 'Ecolage'])]
     public function getEtudiantDetails(int $id): JsonResponse
     {
         try {
@@ -45,6 +52,7 @@ class EcolageController extends AbstractController
     }
 
     #[Route('/etudiant/{id}/history', name: 'api_ecolage_etudiant_history', methods: ['GET'])]
+    #[TokenRequired(['Admin', 'Ecolage'])]
     public function getEtudiantHistory(int $id): JsonResponse
     {
         try {
@@ -79,8 +87,26 @@ class EcolageController extends AbstractController
                 return new JsonResponse(['status' => 'error', 'message' => 'Agent non identifié ou introuvable'], 401);
             }
 
-            // 4. Délégation au Service de paiement
             $data = json_decode($request->getContent(), true);
+            $requiredFields = ['etudiant_id', 'annee_scolaire', 'montant','ref_bordereau','date_paiement'];
+
+            
+            $missingFields = [];
+
+            foreach ($requiredFields as $field) {
+                if (!isset($data[$field])) {
+                    $missingFields[] = $field;
+                }
+            }
+            if (!empty($missingFields)) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Champs requis manquants ' . implode(', ', $missingFields),
+                    'missingFields' => $missingFields
+                ], 400);
+            }
+
+
             $payment = $this->paymentService->processEcolagePayment($data, $agent);
 
             return new JsonResponse([
@@ -125,9 +151,6 @@ class EcolageController extends AbstractController
     public function modifierPaiement(Request $request): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent(), true);
-
-            // 1. Récupérer l'utilisateur connecté via le JWT
             $token = $this->jwtTokenManager->extractTokenFromRequest($request);
             $arrayToken = $this->jwtTokenManager->extractClaimsFromToken($token);
             $idUser = $arrayToken['id'];
@@ -136,12 +159,43 @@ class EcolageController extends AbstractController
             if (!$utilisateur) {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => 'Utilisateur non trouvé'
+                    'message' => 'Utilisateur non trouvé pour l\'ID: ' . $idUser
                 ], 401);
             }
+            $dto = $this->serializer->deserialize(
+                $request->getContent(),
+                PaymentRequestDto::class,
+                'json'
+            );
 
-            // 2. Appeler la méthode unique dans le service
-            $newPayment = $this->paymentService->modifierPaiementTransactionnel($data, $utilisateur);
+            // Valider le DTO
+            $errors = $this->validator->validate($dto);
+
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                $messages = [];
+
+                foreach ($errors as $error) {
+                    $property = $error->getPropertyPath();
+                    $message = $error->getMessage();
+
+                    // erreurs par champ
+                    $errorMessages[$property][] = $message;
+
+                    // message global
+                    $messages[] = sprintf('%s : %s', $property, $message);
+                }
+
+                return $this->json([
+                    'status' => 'error',
+                    'message' => 'Erreur de validation : ' . implode(' | ', $messages),
+                    'errors' => $errorMessages
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            
+
+            $newPayment = $this->paymentService->modifierPayment($utilisateur, $dto);
 
             return new JsonResponse([
                 'status' => 'success',
@@ -155,11 +209,34 @@ class EcolageController extends AbstractController
                 ]
             ], 200);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return new JsonResponse([
                 'status' => 'error',
-                'message' => 'Erreur lors de la modification du paiement : ' . $e->getMessage()
+                'message' => $e->getMessage()
             ], 400);
         }
     }
+    #[Route('/etudiant/{id}/all-detail', name: 'api_ecolage_etudiant_all_detail', methods: ['GET'])]
+    #[TokenRequired(['Admin', 'Ecolage'])]
+    public function getAllDetailEcolage(int $id): JsonResponse
+    {
+        try {
+            
+            $data = $this->ecolageService->getPaymentsHistory($id);
+            $details = $this->ecolageService->getStudentEcolageDetails($id);
+            $valiny = $data->toArray();
+            $valiny['details'] = $details;
+            return new JsonResponse([
+                'status' => 'success',
+                'data' => $valiny,
+            ], 200);
+
+        } catch (Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
 }
