@@ -83,5 +83,4 @@ MAMIARISOA NASAINA Tendrin'Ny Avo Elia (cas fiche d'inscription mbola tsy azo)
 --modifier table niveau_etudiant avec delete_at --ok
 --modifier table formation_etudiant avec delete_at --ok
 
---valeur par defaut des payments 
-
+--valeur par defaut des payments

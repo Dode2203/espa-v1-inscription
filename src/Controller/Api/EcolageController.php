@@ -32,6 +32,7 @@ class EcolageController extends AbstractController
     }
 
     #[Route('/etudiant/{id}/details', name: 'api_ecolage_etudiant_details', methods: ['GET'])]
+    #[TokenRequired(['Admin', 'Ecolage'])]
     public function getEtudiantDetails(int $id): JsonResponse
     {
         try {
@@ -51,6 +52,7 @@ class EcolageController extends AbstractController
     }
 
     #[Route('/etudiant/{id}/history', name: 'api_ecolage_etudiant_history', methods: ['GET'])]
+    #[TokenRequired(['Admin', 'Ecolage'])]
     public function getEtudiantHistory(int $id): JsonResponse
     {
         try {
@@ -214,4 +216,27 @@ class EcolageController extends AbstractController
             ], 400);
         }
     }
+    #[Route('/etudiant/{id}/all-detail', name: 'api_ecolage_etudiant_all_detail', methods: ['GET'])]
+    #[TokenRequired(['Admin', 'Ecolage'])]
+    public function getAllDetailEcolage(int $id): JsonResponse
+    {
+        try {
+            
+            $data = $this->ecolageService->getPaymentsHistory($id);
+            $details = $this->ecolageService->getStudentEcolageDetails($id);
+            $valiny = $data->toArray();
+            $valiny['details'] = $details;
+            return new JsonResponse([
+                'status' => 'success',
+                'data' => $valiny,
+            ], 200);
+
+        } catch (Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
 }
