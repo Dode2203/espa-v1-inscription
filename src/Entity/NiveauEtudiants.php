@@ -42,6 +42,9 @@ class NiveauEtudiants
     #[ORM\Column(nullable: true)]
     private ?int $isBoursier = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deletedAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -139,6 +142,18 @@ class NiveauEtudiants
     public function setIsBoursier(?int $isBoursier): static
     {
         $this->isBoursier = $isBoursier;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
 
         return $this;
     }

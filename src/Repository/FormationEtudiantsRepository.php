@@ -45,6 +45,7 @@ class FormationEtudiantsRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('fe')
             ->andWhere('fe.etudiant = :etudiant')
+            ->andWhere('fe.deletedAt IS NULL')
             ->setParameter('etudiant', $etudiant)
             ->orderBy('fe.dateFormation', 'DESC')
             ->setMaxResults(1)
@@ -59,6 +60,7 @@ class FormationEtudiantsRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('f')
             ->andWhere('f.etudiant = :val')
+            ->andWhere('f.deletedAt IS NULL')
             ->setParameter('val', $etudiant)
             ->orderBy('f.dateFormation', 'ASC')
             ->getQuery()
@@ -70,6 +72,7 @@ class FormationEtudiantsRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('fe')
             ->where('fe.etudiant = :etudiant')
+            ->andWhere('fe.deletedAt IS NULL')
             ->andWhere('fe.dateFormation <= :date')
             ->setParameter('etudiant', $etudiant)
             ->setParameter('date', $date)
