@@ -8,6 +8,8 @@ use App\Entity\Niveaux;
 use App\Entity\Mentions;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Proxies\__CG__\App\Entity\Status;
+use Proxies\__CG__\App\Entity\StatusEtudiants;
 
 class NiveauEtudiantsService
 {   private $niveauEtudiantsRepository;
@@ -120,7 +122,7 @@ class NiveauEtudiantsService
         $this->em->persist($niveauEtudiant);
         $this->em->flush();
     }
-    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?\DateTimeInterface $deleteAt = null): void {
+    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?StatusEtudiants $statusEtudiant,?\DateTimeInterface $deleteAt = null): void {
  
         $this->em->beginTransaction();
 
@@ -140,6 +142,9 @@ class NiveauEtudiantsService
             $nouvelleNiveauEtudiant->setMatricule($numeroInscription);
             if ($niveau) {
                 $nouvelleNiveauEtudiant->setNiveau($niveau);
+            }
+            if ($statusEtudiant) {
+                $nouvelleNiveauEtudiant->setStatusEtudiant($statusEtudiant);
             }
             $this->insertNiveauEtudiant($nouvelleNiveauEtudiant);
 

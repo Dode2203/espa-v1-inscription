@@ -54,6 +54,8 @@ class EtudiantsService
     private ProposService $proposService;
     private MentionsService $mentionsService;
 
+    private StatusEtudiantService $statusEtudiantService;
+
     public function __construct(
         EtudiantsRepository $etudiantsRepository,
         FormationEtudiantsRepository $formationEtudiantRepository,
@@ -71,7 +73,8 @@ class EtudiantsService
         ValidatorInterface $validator,
         InscriptionMapper $inscriptionMapper,
         ProposService $proposService,
-        MentionsService $mentionsService
+        MentionsService $mentionsService,
+        StatusEtudiantService $statusEtudiantService
     ) {
         $this->etudiantsRepository = $etudiantsRepository;
         $this->formationEtudiantRepository = $formationEtudiantRepository;
@@ -90,6 +93,7 @@ class EtudiantsService
         $this->inscriptionMapper = $inscriptionMapper;
         $this->proposService = $proposService;
         $this->mentionsService = $mentionsService;
+        $this->statusEtudiantService = $statusEtudiantService;
     }
 
     public function toArray(?Etudiants $etudiant = null): array
@@ -455,7 +459,7 @@ class EtudiantsService
         }
         return $this->getInformationJson($etudiant);
     }
-    public function changerMentionId(int $idEtudiant,int $mentionId,int $niveauId = null)
+    public function changerMentionId(int $idEtudiant,int $mentionId,int $niveauId = null,int $statusEtudiantId,?\DateTimeInterface $deleteAt = null)
     {
         $etudiant = $this->etudiantsRepository->find($idEtudiant);
         if (!$etudiant) {
@@ -465,7 +469,25 @@ class EtudiantsService
         if (!$mention) {
             throw new Exception('Mention non trouve pour id ='.$mentionId.'');
         }
-        $this->niveauEtudiantsService->changerMention($etudiant,$mention);
+        
+        $niveauEtudiant = null;
+        if ($niveauId) {
+            $niveauEtudiant = $this->niveauEtudiantsService->getNiveauxById($niveauId);
+            if (!$niveauEtudiant) {
+                throw new Exception('Niveau etudiant non trouve pour id ='.$niveauId.'');
+            }
+        }
+        $statusEtudiant = null;
+        if($statusEtudiantId)
+        {
+            $statusEtudiant = $this->statusEtudiantService->getById($statusEtudiantId);
+            if (!$statusEtudiant) {
+                throw new Exception('Status etudiant non trouve pour id ='.$statusEtudiantId.'');
+            }
+            
+        }
+
+        $this->niveauEtudiantsService->changerMention($etudiant,$mention,$niveauEtudiant,$statusEtudiant,$deleteAt);
     }
 
 }
