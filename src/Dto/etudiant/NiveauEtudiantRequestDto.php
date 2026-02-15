@@ -4,7 +4,7 @@ namespace App\Dto\etudiant;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class NiveauRequestEtudiantDto
+class NiveauEtudiantRequestDto
 {
     #[Assert\NotBlank(message: "idEtudiant est obligatoire")]
     #[Assert\Type(type: "integer", message: "idEtudiant doit être un entier")]

@@ -26,7 +26,6 @@ use App\Entity\Ecolages;
 use App\Entity\FormationEtudiants;
 use App\Service\proposEtudiant\mapper\EtudiantMapper;
 use App\Entity\NiveauEtudiants;
-use Proxies\__CG__\App\Entity\Formations;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\proposEtudiant\mapper\InscriptionMapper;
 use App\Service\proposEtudiant\ProposService;
