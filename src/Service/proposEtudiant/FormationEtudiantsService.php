@@ -99,5 +99,9 @@ class FormationEtudiantsService
         $this->em->persist($formationEtudiant);
         $this->em->flush();
     }
+    public function findAllFormationExceptIds(array $excludedIds) : array
+    {
+        return $this->formationRepository->findAllExceptIds(array_unique($excludedIds));
+    }
     
 }

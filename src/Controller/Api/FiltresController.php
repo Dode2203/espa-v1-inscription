@@ -33,22 +33,8 @@ class FiltresController extends AbstractController
             $idNiveau = $request->query->get('idNiveau');
 
             // 2. Récupération de tous les étudiants de l'année
-            $niveauEtudiants = $this->niveauEtudiantsService->getAllNiveauEtudiantAnnee($annee);
+            $niveauEtudiants = $this->niveauEtudiantsService->getAllNiveauEtudiantAnnee($annee,$idMention,$idNiveau);
 
-            // 3. Filtrage manuel du tableau selon les critères reçus
-            if ($idMention) {
-                $niveauEtudiants = array_filter($niveauEtudiants, function ($e) use ($idMention) {
-                    return $e->getMention()->getId() == $idMention;
-                });
-            }
-
-            if ($idNiveau) {
-                $niveauEtudiants = array_filter($niveauEtudiants, function ($e) use ($idNiveau) {
-                    return $e->getNiveau()->getId() == $idNiveau;
-                });
-            }
-
-            // 4. Formatage de la réponse (on utilise array_values pour réindexer après le filter)
             $data = array_map(function ($e) {
                 $etudiant = $e->getEtudiant();
                 $mention = $e->getMention();

@@ -28,6 +28,11 @@ class MentionsService
             'nom'   => $mention->getNom(),
         ];
     }
+    public function getAllMentionsExcept(array $excludedIds = []): array
+    {
+        return $this->mentionRepository->findAllExceptIds($excludedIds);
+    }
+
     public function getById(int $id): ?Mentions
     {
         return $this->mentionRepository->find($id);

@@ -195,6 +195,47 @@ class EtudiantsController extends AbstractController
             ], 400);
         }
     }
+    #[Route('/all', name: 'etudiant_show_sans_inscrit', methods: ['GET'])]
+    #[TokenRequired]
+    public function getEtudiantParIdAll(Request $request): JsonResponse
+    {
+        try {
+            $idEtudiant = $request->query->get('idEtudiant');
+
+            if (!$idEtudiant) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Paramètre idEtudiant requis'
+
+                ], 400);
+            }
+            $idEtudiant = (int) $idEtudiant;
+           
+            $data = $this->etudiantsService->getInformationJsonId($idEtudiant);
+            return new JsonResponse([
+                'status' => 'success',
+                'data' => $data
+            ], 200);
+
+
+
+        } catch (\Exception $e) {
+
+            if ($e->getMessage() === 'Inactif') {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant inactif'
+                ], 401);
+            }
+
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 400);
+        }
+    }
 
     #[Route('/{id}/ecolages', name: 'etudiant_ecolages', methods: ['GET'])]
     public function getEcolages(Etudiants $etudiant): JsonResponse
@@ -344,7 +385,8 @@ class EtudiantsController extends AbstractController
     public function getFormation(Request $request): JsonResponse
     {
         try {
-            $formationClass = $this->formationEtudiantsService->getAllFormations();
+            // $formationClass = $this->formationEtudiantsService->getAllFormations();
+            $formationClass = $this->formationEtudiantsService->findAllFormationExceptIds([5]);
             $resultats = [];
             foreach ($formationClass as $formation) {
                 $resultats[] = [
@@ -381,7 +423,8 @@ class EtudiantsController extends AbstractController
     public function getAllMentions(Request $request): JsonResponse
     {
         try {
-            $mentionClass = $this->mentionsService->getAllMentions();
+            // $mentionClass = $this->mentionsService->getAllMentions();
+            $mentionClass = $this->mentionsService->getAllMentionsExcept([15, 19,22]);
             $resultats = [];
             foreach ($mentionClass as $mention) {
                 $resultats[] = [
@@ -709,7 +752,7 @@ class EtudiantsController extends AbstractController
                     'errors' => $errorMessages
                 ], Response::HTTP_BAD_REQUEST);
             }
-
+            
             $this->etudiantsService->changerNiveauEtudiantDto($dto);
 
 

@@ -83,4 +83,17 @@ class FormationEtudiantsRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+    public function findAllExceptIds(array $excludedIds): array
+    {
+        $qb = $this->createQueryBuilder('m');
+
+        if (!empty($excludedIds)) {
+            $qb->andWhere($qb->expr()->notIn('m.id', ':ids'))
+            ->setParameter('ids', $excludedIds);
+        }
+
+        return $qb->orderBy('m.nom', 'ASC')
+                ->getQuery()
+                ->getResult();
+    }
 }

@@ -52,19 +52,37 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
-    public function getAllNiveauEtudiantAnnee(int $annee, int $limit = 50): array
-    {
-        return $this->createQueryBuilder('i')
-            ->andWhere('i.annee  = :annee ')
+    public function getAllNiveauEtudiantAnnee(
+        int $annee,
+        ?int $idMention = null,
+        ?int $idNiveau = null,
+        int $limit = 50
+    ): array {
+        $qb = $this->createQueryBuilder('i')
+            ->andWhere('i.annee = :annee')
             ->andWhere('i.deletedAt IS NULL')
             ->andWhere('i.niveau IS NOT NULL')
-            ->setParameter('annee', $annee)
+            ->setParameter('annee', $annee);
+
+        // ✅ Filtre mention si fourni
+        if ($idMention !== null) {
+            $qb->andWhere('i.mention = :idMention')
+            ->setParameter('idMention', $idMention);
+        }
+
+        // ✅ Filtre niveau si fourni
+        if ($idNiveau !== null) {
+            $qb->andWhere('i.niveau = :idNiveau')
+            ->setParameter('idNiveau', $idNiveau);
+        }
+
+        return $qb
             ->orderBy('i.dateInsertion', 'DESC')
-            ->setMaxResults($limit) // LIMIT
+            ->setMaxResults($limit)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
+
     
     /**
      * @return NiveauEtudiants[] Returns an array of NiveauEtudiants objects
