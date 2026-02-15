@@ -767,6 +767,5 @@ class EtudiantsController extends AbstractController
                 'message' => $e->getMessage()
             ], 400);
         }
-    }
-    
+    } 
 }
