@@ -719,6 +719,7 @@ class EtudiantsController extends AbstractController
         }
     }
     #[Route('/changerNiveauEtudiant', name: 'api_changer_niveau', methods: ['POST'])]
+    #[TokenRequired(['Admin'])]
     public function changerNiveaux(Request $request): JsonResponse
     {
         try {

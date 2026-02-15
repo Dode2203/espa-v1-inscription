@@ -12,6 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Exception;
+use App\Annotation\TokenRequired;
 
 #[Route('/pre-inscription')]
 class PreinscriptionController extends AbstractController
@@ -35,6 +36,7 @@ class PreinscriptionController extends AbstractController
      * Sauvegarde une nouvelle préinscription
      */
     #[Route('/save', name: 'preinscription_save', methods: ['POST'])]
+    #[TokenRequired(['Admin'])]
     public function save(Request $request): JsonResponse
     {
         try {
@@ -81,6 +83,7 @@ class PreinscriptionController extends AbstractController
      * Retourne toutes les préinscriptions actives (non converties)
      */
     #[Route('/search', name: 'preinscription_search', methods: ['POST'])]
+    #[TokenRequired(['Utilisateur', 'Admin'])]
     public function search(): JsonResponse
     {
         try {
@@ -112,6 +115,7 @@ class PreinscriptionController extends AbstractController
      * }
      */
     #[Route('/convertir', name: 'preinscription_convertir', methods: ['POST'])]
+    #[TokenRequired(['Utilisateur', 'Admin'])]
     public function convertir(Request $request): JsonResponse
     {
         try {
