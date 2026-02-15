@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use App\Dto\etudiant\NiveauRequestEtudiantDto;
+use App\Dto\etudiant\NiveauEtudiantRequestDto;
 
 #[Route('/etudiants')]
 class EtudiantsController extends AbstractController
@@ -725,7 +725,7 @@ class EtudiantsController extends AbstractController
         try {
             $dto = $this->serializer->deserialize(
                 $request->getContent(),
-                NiveauRequestEtudiantDto::class,
+                NiveauEtudiantRequestDto::class,
                 'json'
             );
 

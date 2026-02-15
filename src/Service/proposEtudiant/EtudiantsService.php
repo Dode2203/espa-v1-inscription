@@ -29,7 +29,7 @@ use App\Entity\NiveauEtudiants;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\proposEtudiant\mapper\InscriptionMapper;
 use App\Service\proposEtudiant\ProposService;
-use App\Dto\etudiant\NiveauRequestEtudiantDto;
+use App\Dto\etudiant\NiveauEtudiantRequestDto;
 
 class EtudiantsService
 {
@@ -506,7 +506,7 @@ class EtudiantsService
 
         $this->niveauEtudiantsService->changerMention($etudiant,$mention,$niveauEtudiant,$statusEtudiant,$nouvelleNiveau,$formation,$deleteAt);
     }
-    public function changerNiveauEtudiantDto(NiveauRequestEtudiantDto $dto)
+    public function changerNiveauEtudiantDto(NiveauEtudiantRequestDto $dto)
     {
         // throw new Exception($dto->getIdMention());
         $this->changerNiveauEtudiantId($dto->getIdEtudiant(),$dto->getIdMention(),$dto->getIdNiveau(),$dto->getIdStatus(),$dto->getNouvelleNiveau(),$dto->getIdFormation());
