@@ -71,6 +71,9 @@ class ProposService
         $propos->setNomPere($dto->getNomPere());
         $propos->setNomMere($dto->getNomMere());
     }
+    public function findActiveFormationAtDate(Etudiants $etudiant, int $annee): ?FormationEtudiants{
+        return $this->proposRepository->findActiveFormationAtDate($etudiant, $annee);
+    }
 
     
 }

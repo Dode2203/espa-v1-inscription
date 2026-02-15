@@ -24,7 +24,7 @@ class StatusEtudiantService
         return $statusEtudiant;
     }
    
-    public function getById($id): ?Niveaux
+    public function getById($id): ?StatusEtudiants
     {
         return $this->statusEtudiantRepository->find($id);
     }

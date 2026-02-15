@@ -68,14 +68,16 @@ class FormationEtudiantsRepository extends ServiceEntityRepository
         ;
     }
 
-    public function findActiveFormationAtDate(Etudiants $etudiant, \DateTimeInterface $date): ?FormationEtudiants
+    public function findActiveFormationAtDate(Etudiants $etudiant, int $annee): ?FormationEtudiants
     {
+
+        $dernierJour = new \DateTime("$annee-12-31 23:59:59");
         return $this->createQueryBuilder('fe')
             ->where('fe.etudiant = :etudiant')
             ->andWhere('fe.deletedAt IS NULL')
             ->andWhere('fe.dateFormation <= :date')
             ->setParameter('etudiant', $etudiant)
-            ->setParameter('date', $date)
+            ->setParameter('date', $dernierJour)
             ->orderBy('fe.dateFormation', 'DESC')
             ->setMaxResults(1)
             ->getQuery()

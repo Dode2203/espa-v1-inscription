@@ -16,6 +16,7 @@ use App\Service\payment\PaymentService;
 use App\Service\proposEtudiant\FormationEtudiantsService;
 use App\Service\proposEtudiant\NiveauEtudiantsService;
 use Exception;
+use Proxies\__CG__\App\Entity\Mentions;
 
 class InscriptionService
 {
@@ -68,6 +69,31 @@ class InscriptionService
         $this->em->flush();
         return $inscription;
 
+    }
+    function getListeSansValidationMention():array{
+        $mentions = [
+            ['id' => 24,  'code' => 'UAGC',  'nom' => 'UAGC'],
+            ['id' => 2,  'code' => 'EN',   'nom' => 'EN'],
+            ['id' => 4,  'code' => 'GE',   'nom' => 'GE'],
+            ['id' => 25,  'code' => 'EIE',  'nom' => 'EIE'],
+            ['id' => 17,  'code' => 'ISA', 'nom' => 'ISA'],
+            ['id' => 20,  'code' => 'SIM',  'nom' => 'SIM'],         
+        ];
+        return $mentions;
+    }
+    function sansValidation(Mentions $mention, ?Niveaux $niveau):bool{
+        $valiny = false;
+        if (!$niveau) {
+            $mentions = $this->getListeSansValidationMention() ;
+            foreach ($mentions as $item) {
+                if ($item['id'] == $mention->getId()) {
+                    $valiny = true;
+                    break;
+                }
+            }
+        }
+
+        return $valiny;
     }
     public function inscrireEtudiant(
         Etudiants $etudiant,
@@ -133,10 +159,13 @@ class InscriptionService
             // Niveau étudiant
 
             $niveauActuel = $niveauEtudiantActuel->getNiveau();
-            $this->niveauEtudiantsService->isValideNiveauVaovao(
-                $niveau,
-                $niveauActuel
-            );
+            $sansValidation = $this->sansValidation($mentionActuelle, $niveauActuel);
+            if (!$sansValidation) {
+                $this->niveauEtudiantsService->isValideNiveauVaovao(
+                    $niveau,
+                    $niveauActuel
+                );
+            }
 
 
             

@@ -8,20 +8,21 @@ use App\Entity\Niveaux;
 use App\Entity\Mentions;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Proxies\__CG__\App\Entity\Status;
-use Proxies\__CG__\App\Entity\StatusEtudiants;
+use App\Entity\StatusEtudiants;
+use App\Entity\Formations;
 
 class NiveauEtudiantsService
 {   private $niveauEtudiantsRepository;
     private $niveauService;
     private EntityManagerInterface $em;
+    private FormationEtudiantsService $formationEtudiantsService ;
 
-    public function __construct(NiveauEtudiantsRepository $niveauEtudiantsRepository,NiveauService $niveauService, EntityManagerInterface $em)
+    public function __construct(NiveauEtudiantsRepository $niveauEtudiantsRepository,NiveauService $niveauService, EntityManagerInterface $em, FormationEtudiantsService $formationEtudiantsService)
     {
         $this->niveauEtudiantsRepository = $niveauEtudiantsRepository;
         $this->niveauService = $niveauService;
         $this->em = $em;
-
+        $this->formationEtudiantsService = $formationEtudiantsService;
     }
     
     public function toArrayNiveau(?Niveaux $niveau) : array
@@ -61,7 +62,7 @@ class NiveauEtudiantsService
     }
     public function affecterNouveauNiveauEtudiant(
         Etudiants $etudiant,
-        Niveaux $niveau,
+        ?Niveaux $niveau,
         ?\DateTimeInterface $dateInsertion = null,
         ?int $isBoursier = null
     ): NiveauEtudiants
@@ -86,10 +87,6 @@ class NiveauEtudiantsService
     {
         $gradeAcien = $niveauxPrecedent?->getGrade() ?? 0;
         $gradeVaovao = $niveauxSuivant?->getGrade() ?? 0;
-
-        if ($niveauxSuivant->getId()==14||$niveauxSuivant->getId()==16) {
-            $gradeAcien = 4;
-        }
         $elanelana = $gradeVaovao - $gradeAcien;
 
         if ($elanelana < 0) {
@@ -122,16 +119,28 @@ class NiveauEtudiantsService
         $this->em->persist($niveauEtudiant);
         $this->em->flush();
     }
-    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?StatusEtudiants $statusEtudiant,?\DateTimeInterface $deleteAt = null): void {
+    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?StatusEtudiants $statusEtudiant,?bool $nouvelleNiveau = false,?Formations $formation = null,?\DateTimeInterface $deleteAt = null): void {
  
         $this->em->beginTransaction();
 
         try {
             $dernierNiveauEtudiant = $this->getDernierNiveauParEtudiant($etudiant);
+            $dernierFormationEtudiant = $this->formationEtudiantsService->getDernierFormationParEtudiant($etudiant);
             if (!$dernierNiveauEtudiant) {
                 throw new Exception("Aucun niveau trouvé pour cet étudiant");
             }
-            $this->deleteNiveauEtudiant($dernierNiveauEtudiant,$deleteAt);
+            if (!$dernierFormationEtudiant) {
+                throw new Exception("Dernier formation etudiant non trouvé");
+            }
+            
+            if (!$nouvelleNiveau) {
+                $this->deleteNiveauEtudiant($dernierNiveauEtudiant,$deleteAt);
+                $this->formationEtudiantsService->deleteFormationEtudiant($dernierFormationEtudiant,$deleteAt);
+            }
+            if (!$formation) {
+                $formation = $dernierFormationEtudiant->getFormation();
+            }
+            $nouvelleFormationEtudiant = $this->formationEtudiantsService->affecterNouvelleFormationEtudiant($etudiant,$formation,$deleteAt);
             $nouvelleNiveauEtudiant = $this->affecterNouveauNiveauEtudiant($etudiant,$dernierNiveauEtudiant->getNiveau(),$deleteAt, $dernierNiveauEtudiant->getIsBoursier());
             $annee = $dernierNiveauEtudiant->getAnnee();
             $nouvelleNiveauEtudiant->setAnnee($annee);
@@ -140,14 +149,12 @@ class NiveauEtudiantsService
             $mentionAbbr = $mention->getAbr();
             $numeroInscription = "" . $etudiant->getId() . "/" . $annee . "/" . $mentionAbbr;
             $nouvelleNiveauEtudiant->setMatricule($numeroInscription);
-            if ($niveau) {
-                $nouvelleNiveauEtudiant->setNiveau($niveau);
-            }
-            if ($statusEtudiant) {
-                $nouvelleNiveauEtudiant->setStatusEtudiant($statusEtudiant);
-            }
+            $nouvelleNiveauEtudiant->setNiveau($niveau);
+            
+            $nouvelleNiveauEtudiant->setStatusEtudiant($statusEtudiant);
+            
             $this->insertNiveauEtudiant($nouvelleNiveauEtudiant);
-
+            $this->formationEtudiantsService->insertFormationEtudiant($nouvelleFormationEtudiant);
             $this->em->flush();
             $this->em->commit();
         } catch (\Throwable $e) {

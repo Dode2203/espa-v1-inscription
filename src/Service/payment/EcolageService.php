@@ -88,8 +88,8 @@ class EcolageService
             return $default;
         }
 
-        // $fe = $this->formationEtudiantsRepository->findActiveFormationAtDate($etudiant, $ne->getDateInsertion());
-        $fe = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
+        $fe = $this->formationEtudiantsRepository->findActiveFormationAtDate($etudiant, $annee);
+        // $fe = $this->formationEtudiantsRepository->getDernierFormationEtudiant($etudiant);
         
         if (!$fe) {
             return $default;
