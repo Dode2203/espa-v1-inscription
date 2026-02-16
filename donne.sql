@@ -164,10 +164,10 @@ INSERT INTO niveaux (id, nom, type, grade) VALUES
 (16, 'MP2IEE', 6, 5);
 
 INSERT INTO niveaux (id, nom, type, grade) VALUES
-(17, 'MP2IEE1', 6, 5);
+(17, 'MP2IEE1', 7, 5);
 
 INSERT INTO niveaux (id, nom, type, grade) VALUES
-(18, 'MP2IEE2', 6, 5);
+(18, 'MP2IEE2', 8, 5);
 
 
 -- INSERT INTO niveaux (nom, type, grade) VALUES

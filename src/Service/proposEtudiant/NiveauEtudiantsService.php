@@ -10,19 +10,22 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use App\Entity\StatusEtudiants;
 use App\Entity\Formations;
+use App\Service\payment\PaymentService;
 
 class NiveauEtudiantsService
 {   private $niveauEtudiantsRepository;
     private $niveauService;
     private EntityManagerInterface $em;
     private FormationEtudiantsService $formationEtudiantsService ;
+    private PaymentService $paymentService;
 
-    public function __construct(NiveauEtudiantsRepository $niveauEtudiantsRepository,NiveauService $niveauService, EntityManagerInterface $em, FormationEtudiantsService $formationEtudiantsService)
+    public function __construct(NiveauEtudiantsRepository $niveauEtudiantsRepository,NiveauService $niveauService, EntityManagerInterface $em, FormationEtudiantsService $formationEtudiantsService, PaymentService $paymentService)
     {
         $this->niveauEtudiantsRepository = $niveauEtudiantsRepository;
         $this->niveauService = $niveauService;
         $this->em = $em;
         $this->formationEtudiantsService = $formationEtudiantsService;
+        $this->paymentService = $paymentService;
     }
     
     public function toArrayNiveau(?Niveaux $niveau) : array
@@ -139,6 +142,11 @@ class NiveauEtudiantsService
             }
             if (!$formation) {
                 $formation = $dernierFormationEtudiant->getFormation();
+            }
+            $listePayments= $this->paymentService->getAllPaymentParAnnee($etudiant, $dernierNiveauEtudiant->getAnnee());
+            foreach( $listePayments as $payment ) {
+                $payment->setNiveau($niveau);
+                $this->em->persist($payment);
             }
             $nouvelleFormationEtudiant = $this->formationEtudiantsService->affecterNouvelleFormationEtudiant($etudiant,$formation,$deleteAt);
             $nouvelleNiveauEtudiant = $this->affecterNouveauNiveauEtudiant($etudiant,$dernierNiveauEtudiant->getNiveau(),$deleteAt, $dernierNiveauEtudiant->getIsBoursier());
