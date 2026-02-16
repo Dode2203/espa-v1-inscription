@@ -121,7 +121,7 @@ class InscriptionService
                 $typeAdmin= 8;
             }
             // throw new Exception("typeAdmin = " . $typeAdmin . " etudiant = " . $mentionActuelle->getId());
-            $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $pedagogique, 1);
+            $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $pedagogique, 2);
             $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $administratif, $typeAdmin);
 
 
