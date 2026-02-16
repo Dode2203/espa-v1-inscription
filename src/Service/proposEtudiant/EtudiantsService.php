@@ -308,7 +308,8 @@ class EtudiantsService
             $nom=$etudiant->getNom();
             $prenom=$etudiant->getPrenom();
             $etudiantTaloha = $this->rechercheEtudiantExacte($nom,$prenom);
-            if ($etudiantTaloha) {
+            $idEtudiantTaloha = $dto->getId();
+            if ($etudiantTaloha&&!$idEtudiantTaloha) {
                 throw new Exception("Etudiant existe deja ".$nom." ".$prenom);
             }
             $this->em->persist($etudiant);
