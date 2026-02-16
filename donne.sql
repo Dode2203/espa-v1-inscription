@@ -93,6 +93,8 @@ VALUES
 (5, 'INSCRIPTION ANNULEE', 1);
 
 INSERT INTO formations (id, nom, type_formation_id) VALUES (6, 'PROFESSIONNELLE EIE', 2);
+INSERT INTO formations (id, nom, type_formation_id) VALUES (7, 'PROFESSIONNELLE EIE1', 2);
+INSERT INTO formations (id, nom, type_formation_id) VALUES (8, 'PROFESSIONNELLE EIE2', 2);
 
 
 INSERT INTO ecolages (formations_id, montant, date_ecolage)
@@ -102,6 +104,13 @@ VALUES
 
 -- Professionnelle Luban
 (3, 1200000, NOW());
+
+INSERT INTO ecolages (formations_id, montant, date_ecolage)
+VALUES (7, 1500000, NOW()),
+
+-- Professionnelle Luban
+(8, 1200000, NOW());
+
 
 -- Insertion des données avec id manuel
 -- INSERT INTO formation_etudiants (id, etudiant_id, formation_id, date_formation)
@@ -148,11 +157,17 @@ INSERT INTO niveaux (id, nom, type, grade) VALUES
 (11, 'LP1L', 3, 1),
 (12, 'LP2L', 3, 2),
 (13, 'LP3L', 3, 3),
-(14, 'MVR',  4, 4),
+(14, 'MVR',  4, 5),
 (15, 'MRS',  5, 1);
 
 INSERT INTO niveaux (id, nom, type, grade) VALUES
-(16, 'MP2IEE', 6, 4);
+(16, 'MP2IEE', 6, 5);
+
+INSERT INTO niveaux (id, nom, type, grade) VALUES
+(17, 'MP2IEE1', 7, 5);
+
+INSERT INTO niveaux (id, nom, type, grade) VALUES
+(18, 'MP2IEE2', 8, 5);
 
 
 -- INSERT INTO niveaux (nom, type, grade) VALUES
@@ -250,17 +265,10 @@ INSERT INTO nationalites (id, nom, type) VALUES
 (13, 'TCHADIENNE', 2);
 
 
+INSERT INTO status_etudiants (id, name) VALUES
+(1, 'PASSANT'),
+(2, 'REDOUBLANT'),
+(3, 'SUSPENDU'),
+(4, 'INSCRIPTION ANNULEE');
 
-select*from payments where etudiant_id=6262;
-update payments set montant=61875 where id=65398;
-update niveau_etudiants set mention_id =5 where etudiant_id=10271;
-
-select*from etudiants where id=10259;
-select*from payments where etudiant_id=5062;
-update payments set montant=61900 where id=65694;
-update niveau_etudiants set mention_id=5 where etudiant_id=10270;
-update payments set reference='AIQM363/AU' where id=65569;
-DELETE FROM formation_etudiants
-WHERE etudiant_id = 114;
-DELETE FROM etudiants
-WHERE id = 114;
+andriamboavonjy ianjatiana rico

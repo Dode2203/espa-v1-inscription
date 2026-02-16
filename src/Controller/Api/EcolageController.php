@@ -141,7 +141,7 @@ class EcolageController extends AbstractController
         } catch (Exception $e) {
             return new JsonResponse([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage()   
             ], 400);
         }
     }

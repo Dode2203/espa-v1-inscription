@@ -88,5 +88,20 @@ class FormationEtudiantsService
     {
         return $this->formationEtudiantsRepository->getAllFormationParEtudiant($etudiant);
     }
+    public function findActiveFormationAtDate(Etudiants $etudiant, int $annee): ?FormationEtudiants{
+        return $this->formationEtudiantsRepository->findActiveFormationAtDate($etudiant, $annee);
+    }
+    public function deleteFormationEtudiant(FormationEtudiants $formationEtudiant, ?\DateTimeInterface $deleteAt = null): void {
+        if ($deleteAt === null) {
+            $deleteAt = new \DateTime();
+        }
+        $formationEtudiant->setDeletedAt($deleteAt);
+        $this->em->persist($formationEtudiant);
+        $this->em->flush();
+    }
+    public function findAllFormationExceptIds(array $excludedIds) : array
+    {
+        return $this->formationRepository->findAllExceptIds(array_unique($excludedIds));
+    }
     
 }

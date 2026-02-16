@@ -29,6 +29,7 @@ use App\Entity\NiveauEtudiants;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\proposEtudiant\mapper\InscriptionMapper;
 use App\Service\proposEtudiant\ProposService;
+use App\Dto\etudiant\NiveauEtudiantRequestDto;
 
 class EtudiantsService
 {
@@ -250,22 +251,23 @@ class EtudiantsService
     }
     public function isValideEcolage(Etudiants $etudiant): void
     {
-        $formationEtudiantActuelle = $this->formationEtudiantsService->getDernierFormationParEtudiant($etudiant);
-        $idTypeFormationActuelle = $formationEtudiantActuelle
-            ->getFormation()?->getTypeFormation()?->getId() ?? 1;
-
-        if ($idTypeFormationActuelle == 1) {
-            return;
-        }
-
-        $niveauEtudiants = $this->niveauEtudiantsService->getAllNiveauxParEtudiant($etudiant);
+        
         $listeErreur = [];
-        $ecolage = $this->ecolageService->getEcolageParFormation($formationEtudiantActuelle->getFormation());
+        $niveauEtudiants = $this->niveauEtudiantsService->getAllNiveauxParEtudiant($etudiant);
+        
 
         foreach ($niveauEtudiants as $niveauEtudiant) {
             if (!$niveauEtudiant->getNiveau()) {
                 continue;
             }
+            $formationEtudiant = $this->formationEtudiantsService->findActiveFormationAtDate($etudiant, $niveauEtudiant->getAnnee());
+            $idTypeFormationActuelle = $formationEtudiant
+                ->getFormation()?->getTypeFormation()?->getId() ?? 1;
+
+            if ($idTypeFormationActuelle == 1) {
+                continue;
+            }
+            $ecolage = $this->ecolageService->getEcolageParFormation($formationEtudiant->getFormation());
 
             $montantReste = $this->getMontantResteParAnnee($etudiant, $ecolage, $niveauEtudiant->getAnnee());
 
@@ -306,7 +308,7 @@ class EtudiantsService
             $nom=$etudiant->getNom();
             $prenom=$etudiant->getPrenom();
             $etudiantTaloha = $this->rechercheEtudiantExacte($nom,$prenom);
-            $idEtudiantTaloha= $dto->getId();
+            $idEtudiantTaloha = $dto->getId();
             if ($etudiantTaloha&&!$idEtudiantTaloha) {
                 throw new Exception("Etudiant existe deja ".$nom." ".$prenom);
             }
@@ -414,39 +416,46 @@ class EtudiantsService
 
 
             $identite = $this->toArray($etudiant);
+            // 1. Initialisation des variables
+            $formation = null;
+            $typeFormation = null;
+            $niveau = null;
+            $mention = null;
+            $statusEtudiant = null;
+
+            // 2. Récupération des objets si existants
+            if ($formationEtudiant) {
+                $formation = $formationEtudiant->getFormation();
+                $typeFormation = $formation?->getTypeFormation();
+            }
+
+            if ($niveauActuel) {
+                $niveau = $niveauActuel->getNiveau();
+                $mention = $niveauActuel->getMention();
+                $statusEtudiant = $niveauActuel->getStatusEtudiant();
+            }
+
+            // 3. Construction du tableau
             $formation = [
-                'idFormation' => $formationEtudiant
-                    ? $formationEtudiant->getFormation()->getId()
-                    : null,
-                'formation' => $formationEtudiant
-                    ? $formationEtudiant->getFormation()->getNom()
-                    : null,
-                'formationType' => $formationEtudiant
-                    ? $formationEtudiant->getFormation()
-                        ->getTypeFormation()->getNom()
-                    : null,
-                'idNiveau' => $niveauActuel
-                    ? $niveauActuel?->getNiveau()?->getId()
-                    : null,
-                'typeNiveau' => $niveauActuel
-                    ? $niveauActuel?->getNiveau()?->getType()
-                    : null,
-                'gradeNiveau' => $niveauActuel
-                    ? $niveauActuel?->getNiveau()?->getGrade()
-                    : null,
-                'niveau' => $niveauActuel
-                    ? $niveauActuel?->getNiveau()?->getNom()
-                    : null,
-                'mention' => $niveauActuel
-                    ? $niveauActuel->getMention()->getNom()
-                    : null,
-                'statusEtudiant' => $niveauActuel?->getStatusEtudiant()?->getName(),
-                'matricule' => $niveauActuel
-                    ? $niveauActuel->getMatricule()
-                    : null,
-                'estBoursier' => $niveauActuel
-                    ? $niveauActuel->getIsBoursier() :null
+                'idFormation' => $formation?->getId(),
+                'formation' => $formation?->getNom(),
+                'formationType' => $typeFormation?->getNom(),
+
+                'idNiveau' => $niveau?->getId(),
+                'typeNiveau' => $niveau?->getType(),
+                'gradeNiveau' => $niveau?->getGrade(),
+                'niveau' => $niveau?->getNom(),
+
+                'idMention' => $mention?->getId(),
+                'mention' => $mention?->getNom(),
+
+                'idStatusEtudiant' => $statusEtudiant?->getId(),
+                'statusEtudiant' => $statusEtudiant?->getName(),
+
+                'matricule' => $niveauActuel?->getMatricule(),
+                'estBoursier' => $niveauActuel?->getIsBoursier()
             ];
+
 
         return [
             'identite' => $identite,
@@ -460,8 +469,9 @@ class EtudiantsService
         }
         return $this->getInformationJson($etudiant);
     }
-    public function changerMentionId(int $idEtudiant,int $mentionId,int $niveauId = null,int $statusEtudiantId,?\DateTimeInterface $deleteAt = null)
+    public function changerNiveauEtudiantId(int $idEtudiant,?int $mentionId = null,?int $niveauId = null,?int $statusEtudiantId,?bool $nouvelleNiveau = false,?int $formationId = null,?\DateTimeInterface $deleteAt = null)
     {
+        
         $etudiant = $this->etudiantsRepository->find($idEtudiant);
         if (!$etudiant) {
             throw new Exception('Etudiant non trouve pour id ='.$idEtudiant.'');
@@ -487,8 +497,20 @@ class EtudiantsService
             }
             
         }
+        $formation = null;
+        if ($formationId) {
+            $formation = $this->formationEtudiantsService->getFormationById($formationId);
+            if (!$formation) {
+                throw new Exception('Formation non trouve pour id ='.$formationId.'');
+            }
+        }
 
-        $this->niveauEtudiantsService->changerMention($etudiant,$mention,$niveauEtudiant,$statusEtudiant,$deleteAt);
+        $this->niveauEtudiantsService->changerMention($etudiant,$mention,$niveauEtudiant,$statusEtudiant,$nouvelleNiveau,$formation,$deleteAt);
+    }
+    public function changerNiveauEtudiantDto(NiveauEtudiantRequestDto $dto)
+    {
+        // throw new Exception($dto->getIdMention());
+        $this->changerNiveauEtudiantId($dto->getIdEtudiant(),$dto->getIdMention(),$dto->getIdNiveau(),$dto->getIdStatus(),$dto->getNouvelleNiveau(),$dto->getIdFormation());
     }
 
 }

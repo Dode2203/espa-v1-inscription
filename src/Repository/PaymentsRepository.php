@@ -47,7 +47,7 @@ class PaymentsRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('d')
             ->select('COALESCE(SUM(d.montant), 0) as total')
             ->where('d.annee = :annee')
-            ->andWhere('d.type = 3')
+            // ->andWhere('d.type = 3')
             ->andWhere('d.deletedAt IS NULL')
             ->setParameter('annee', $annee)
             ->getQuery()

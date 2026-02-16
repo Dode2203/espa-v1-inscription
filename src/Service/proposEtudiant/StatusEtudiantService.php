@@ -2,6 +2,7 @@
 
 namespace App\Service\proposEtudiant;
 use App\Entity\StatusEtudiants;
+
 use App\Repository\StatusEtudiantsRepository;
 use App\Entity\Niveaux;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,7 +25,7 @@ class StatusEtudiantService
         return $statusEtudiant;
     }
    
-    public function getById($id): ?Niveaux
+    public function getById($id): ?StatusEtudiants
     {
         return $this->statusEtudiantRepository->find($id);
     }

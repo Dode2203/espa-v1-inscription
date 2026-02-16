@@ -1,0 +1,68 @@
+select*from etudiants where id=5926;
+
+select*from payments where etudiant_id=5926;
+
+update payments set montant=61900 where id=65694;
+
+update niveau_etudiants set mention_id=5 where etudiant_id=10277;
+
+update payments set reference='AINW518/DYB' where id=65845;
+
+DELETE FROM formation_etudiants
+WHERE etudiant_id = 10651;
+
+DELETE FROM etudiants
+WHERE id = 10651;
+
+DELETE FROM niveau_etudiants
+WHERE etudiant_id = 10651;
+
+DELETE FROM propos
+WHERE etudiant_id = 10651;
+
+-- insertion niveau etudiant 
+INSERT INTO niveau_etudiants (
+     niveau_id,
+     mention_id,
+     etudiant_id,
+     annee,
+     date_insertion,
+     status_etudiant_id
+ ) VALUES (
+     4,
+     13,
+     137838,
+     2025,
+     NOW(),
+     1
+ );
+
+insert into formation_etudiants (
+	etudiant_id, 
+	formation_id,
+	date_formation
+) values (
+	137838,
+	1,
+	NOW()
+);
+
+update formation_etudiants fe set deleted_at = now() where id = 30763 ; 
+
+update niveau_etudiants set deleted_at = now() where id = 30776 ;
+
+update payments p set deleted_at = now() where id = 66697;
+
+-- FORMATION ETUDIANT
+delete from formation_etudiants where etudiant_id = 30763;
+-- NIVEAU ETUDIANT 
+delete from niveau_etudiants where etudiant_id = 10727;
+-- Propos Etudiant 
+delete from propos where etudiant_id = 10727;
+
+-- ETUDIANT
+delete from etudiants where id = 10124;
+
+
+
+rollback ;

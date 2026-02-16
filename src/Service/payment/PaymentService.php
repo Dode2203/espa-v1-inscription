@@ -213,6 +213,9 @@ class PaymentService
         }
         return $payment;
     }
+    public function getAllPaymentParAnnee(Etudiants $etudiant,int $annee): array{
+        return $this->paymentsRepository->getAllPaymentParAnnee($etudiant, $annee);
+    }
 
 
 

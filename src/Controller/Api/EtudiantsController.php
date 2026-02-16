@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Dto\etudiant\NiveauEtudiantRequestDto;
 
 #[Route('/etudiants')]
 class EtudiantsController extends AbstractController
@@ -169,6 +170,47 @@ class EtudiantsController extends AbstractController
 
                 }
             }
+            $data = $this->etudiantsService->getInformationJsonId($idEtudiant);
+            return new JsonResponse([
+                'status' => 'success',
+                'data' => $data
+            ], 200);
+
+
+
+        } catch (\Exception $e) {
+
+            if ($e->getMessage() === 'Inactif') {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Étudiant inactif'
+                ], 401);
+            }
+
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 400);
+        }
+    }
+    #[Route('/all', name: 'etudiant_show_sans_inscrit', methods: ['GET'])]
+    #[TokenRequired]
+    public function getEtudiantParIdAll(Request $request): JsonResponse
+    {
+        try {
+            $idEtudiant = $request->query->get('idEtudiant');
+
+            if (!$idEtudiant) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Paramètre idEtudiant requis'
+
+                ], 400);
+            }
+            $idEtudiant = (int) $idEtudiant;
+           
             $data = $this->etudiantsService->getInformationJsonId($idEtudiant);
             return new JsonResponse([
                 'status' => 'success',
@@ -343,7 +385,8 @@ class EtudiantsController extends AbstractController
     public function getFormation(Request $request): JsonResponse
     {
         try {
-            $formationClass = $this->formationEtudiantsService->getAllFormations();
+            // $formationClass = $this->formationEtudiantsService->getAllFormations();
+            $formationClass = $this->formationEtudiantsService->findAllFormationExceptIds([5]);
             $resultats = [];
             foreach ($formationClass as $formation) {
                 $resultats[] = [
@@ -380,7 +423,8 @@ class EtudiantsController extends AbstractController
     public function getAllMentions(Request $request): JsonResponse
     {
         try {
-            $mentionClass = $this->mentionsService->getAllMentions();
+            // $mentionClass = $this->mentionsService->getAllMentions();
+            $mentionClass = $this->mentionsService->getAllMentionsExcept([15, 19,22]);
             $resultats = [];
             foreach ($mentionClass as $mention) {
                 $resultats[] = [
@@ -674,32 +718,43 @@ class EtudiantsController extends AbstractController
             ], 500);
         }
     }
-    #[Route('/changerMention', name: 'api_changer_mention', methods: ['POST'])]
-    public function changerMention(Request $request): JsonResponse
+    #[Route('/changerNiveauEtudiant', name: 'api_changer_niveau', methods: ['POST'])]
+    #[TokenRequired(['Admin'])]
+    public function changerNiveaux(Request $request): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent(), true);
-            $requiredFields = ['idEtudiant', 'idMention'];
+            $dto = $this->serializer->deserialize(
+                $request->getContent(),
+                NiveauEtudiantRequestDto::class,
+                'json'
+            );
 
-            
-            $missingFields = [];
+            // Valider le DTO
+            $errors = $this->validator->validate($dto);
 
-            foreach ($requiredFields as $field) {
-                if (!isset($data[$field])) {
-                    $missingFields[] = $field;
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                $messages = [];
+
+                foreach ($errors as $error) {
+                    $property = $error->getPropertyPath();
+                    $message = $error->getMessage();
+
+                    // erreurs par champ
+                    $errorMessages[$property][] = $message;
+
+                    // message global
+                    $messages[] = sprintf('%s : %s', $property, $message);
                 }
-            }
-            if (!empty($missingFields)) {
-                return new JsonResponse([
-                    'status' => 'error',
-                    'message' => 'Champs requis manquants ' . implode(', ', $missingFields),
-                    'missingFields' => $missingFields
-                ], 400);
-            }
-            $idEtudiant = $data['idEtudiant'];
-            $idMention = $data['idMention'];
 
-            $this->etudiantsService->changerMentionId($idEtudiant, $idMention);
+                return $this->json([
+                    'status' => 'error',
+                    'message' => 'Erreur de validation : ' . implode(' | ', $messages),
+                    'errors' => $errorMessages
+                ], Response::HTTP_BAD_REQUEST);
+            }
+            
+            $this->etudiantsService->changerNiveauEtudiantDto($dto);
 
 
             return new JsonResponse([
@@ -713,6 +768,5 @@ class EtudiantsController extends AbstractController
                 'message' => $e->getMessage()
             ], 400);
         }
-    }
-    
+    } 
 }
