@@ -155,7 +155,9 @@ class NiveauEtudiantsService
             $nouvelleNiveauEtudiant->setMention($mention);
             $nouvelleNiveauEtudiant->setStatusEtudiant($dernierNiveauEtudiant->getStatusEtudiant());
             $mentionAbbr = $mention->getAbr();
-            $numeroInscription = "" . $etudiant->getId() . "/" . $annee . "/" . $mentionAbbr;
+            #recuperer le dernier niveau etudiant et changer par ca si c'est pas null
+            $remarque = $dernierNiveauEtudiant->getRemarque() ?? "";
+            $numeroInscription = "" . $etudiant->getId() .$remarque . "/" . $annee . "/" . $mentionAbbr;
             $nouvelleNiveauEtudiant->setMatricule($numeroInscription);
             $nouvelleNiveauEtudiant->setNiveau($niveau);
             

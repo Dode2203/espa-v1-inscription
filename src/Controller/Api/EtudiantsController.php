@@ -551,10 +551,11 @@ class EtudiantsController extends AbstractController
     }
     #[TokenRequired(['Admin', 'Utilisateur'])]
     #[Route('/statistiques', name: 'etudiant_statistiques', methods: ['GET'])]
-    public function getStatistiquesInscriptions(): JsonResponse
+    public function getStatistiquesInscriptions(Request $request): JsonResponse
     {
         try {
-            $statistiques = $this->inscriptionService->getStatistiquesInscriptions();
+            $nbJours = $request->query->get('nbJours', 7);
+            $statistiques = $this->inscriptionService->getStatistiquesInscriptions($nbJours);
 
             return new JsonResponse([
                 'status' => 'success',

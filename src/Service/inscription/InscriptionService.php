@@ -147,7 +147,7 @@ class InscriptionService
                 $typeAdmin= 8;
             }
             // throw new Exception("typeAdmin = " . $typeAdmin . " etudiant = " . $mentionActuelle->getId());
-            $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $pedagogique, 1);
+            $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $pedagogique, 2);
             $this->paymentService->insertPayment($utilisateur, $etudiant, $niveau, $administratif, $typeAdmin);
 
 
@@ -180,6 +180,14 @@ class InscriptionService
                 $isBoursier
             );
 
+            $differenceNiveux= $niveau->getGrade() - $niveauActuel->getGrade();
+            $remarque = "";
+            # si difference niveau = 0 on met une remarque R
+            if ($differenceNiveux == 0) {
+                $remarque = "R";
+                $nouvelleNiveauEtudiant->setRemarque($remarque);
+            }
+
             // throw new Exception("isBoursier = " . $nouvelleNiveauEtudiant->getIsBoursier());
 
             $nouvelleNiveauEtudiant->setMention($niveauEtudiantActuel->getMention());
@@ -191,7 +199,7 @@ class InscriptionService
                 $etudiant->getNom() . " " . $etudiant->getPrenom();
             $mention = $niveauEtudiantActuel->getMention()->getAbr();
             //Nouvelle inscription
-            $numeroInscription = "" . $etudiant->getId() . "/" . $annee . "/" . $mention;
+            $numeroInscription = "" . $etudiant->getId() . $remarque . "/" . $annee . "/" . $mention;
             $nouvelleNiveauEtudiant->setMatricule($numeroInscription);
             $this->em->persist($nouvelleNiveauEtudiant);
 
