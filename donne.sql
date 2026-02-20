@@ -105,6 +105,7 @@ VALUES
 -- Professionnelle Luban
 (3, 1200000, NOW());
 
+INSERT INTO ecolages (formations_id, montant, date_ecolage) (6, 1200000, NOW());
 INSERT INTO ecolages (formations_id, montant, date_ecolage)
 VALUES (7, 1500000, NOW()),
 
