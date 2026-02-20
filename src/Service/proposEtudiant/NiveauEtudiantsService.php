@@ -160,7 +160,7 @@ class NiveauEtudiantsService
             $numeroInscription = "" . $etudiant->getId() .$remarque . "/" . $annee . "/" . $mentionAbbr;
             $nouvelleNiveauEtudiant->setMatricule($numeroInscription);
             $nouvelleNiveauEtudiant->setNiveau($niveau);
-            
+            $nouvelleNiveauEtudiant->setRemarque($dernierNiveauEtudiant->getRemarque());
             $nouvelleNiveauEtudiant->setStatusEtudiant($statusEtudiant);
             
             $this->insertNiveauEtudiant($nouvelleNiveauEtudiant);
