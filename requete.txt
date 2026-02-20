@@ -1,0 +1,13 @@
+select*from etudiants where id=5926;
+select*from payments where etudiant_id=5926;
+update payments set montant=61900 where id=65694;
+update niveau_etudiants set mention_id=5 where etudiant_id=10275;
+update payments set reference='AINW518/DYB' where id=65845;
+DELETE FROM formation_etudiants
+WHERE etudiant_id = 10651;
+DELETE FROM etudiants
+WHERE id = 10651;
+DELETE FROM niveau_etudiants
+WHERE etudiant_id = 10651;
+DELETE FROM propos
+WHERE etudiant_id = 10651;

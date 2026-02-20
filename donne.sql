@@ -105,6 +105,7 @@ VALUES
 -- Professionnelle Luban
 (3, 1200000, NOW());
 
+INSERT INTO ecolages (formations_id, montant, date_ecolage) (6, 1200000, NOW());
 INSERT INTO ecolages (formations_id, montant, date_ecolage)
 VALUES (7, 1500000, NOW()),
 
@@ -213,21 +214,21 @@ INSERT INTO public.mentions (id, nom, abr) VALUES
 INSERT INTO public.mentions (id, nom, abr) VALUES
     (25, 'EIE', 'EIE');
 
--- INSERT INTO niveau_etudiants (
---     niveau_id,
---     mention_id,
---     etudiant_id,
---     annee,
---     date_insertion,
---     status_etudiant_id
--- ) VALUES (
---     1,
---     1,
---     1,
---     2024,
---     NOW(),
---     1
--- );
+ INSERT INTO niveau_etudiants (
+     niveau_id,
+     mention_id,
+     etudiant_id,
+     annee,
+     date_insertion,
+     status_etudiant_id
+ ) VALUES (
+     4,
+     2,
+     4206,
+     2025,
+     NOW(),
+     1
+ );
 
 INSERT INTO type_droits (id, nom) VALUES 
 (1, 'Pédagogique'),
