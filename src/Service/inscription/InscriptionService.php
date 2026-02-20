@@ -180,7 +180,8 @@ class InscriptionService
                 $isBoursier
             );
 
-            $differenceNiveux= $niveau->getGrade() - $niveauActuel->getGrade();
+            $niveauActuelGrade = $niveauActuel ? $niveauActuel->getGrade() : 0;
+            $differenceNiveux = $niveau->getGrade() - $niveauActuelGrade;
             $remarque = "";
             # si difference niveau = 0 on met une remarque R
             if ($differenceNiveux == 0) {
