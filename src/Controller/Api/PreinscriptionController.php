@@ -105,6 +105,45 @@ class PreinscriptionController extends AbstractController
     }
 
     /**
+     * POST /api/pre-inscription/search-filter
+     * Recherche filtrée par nom et/ou prénom
+     * Body attendu : { "nom": "...", "prenom": "..." }
+     */
+    #[Route('/search-filter', name: 'preinscription_search_filter', methods: ['POST'])]
+    #[TokenRequired(['Utilisateur', 'Admin'])]
+    public function rechercheParNomPrenom(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $nom = isset($data['nom']) ? trim((string) $data['nom']) : '';
+            $prenom = isset($data['prenom']) ? trim((string) $data['prenom']) : '';
+
+            // Si les deux champs sont vides, on renvoie tout
+            if ($nom === '' && $prenom === '') {
+                $preinscriptions = $this->preinscriptionService->getActivePreinscriptions();
+            } else {
+                $preinscriptions = $this->preinscriptionService->searchByCriteria(
+                    $nom !== '' ? $nom : null,
+                    $prenom !== '' ? $prenom : null
+                );
+            }
+
+            $result = array_map(fn($p) => $p->toArray(), $preinscriptions);
+
+            return $this->json([
+                'status' => 'success',
+                'data' => $result
+            ]);
+
+        } catch (Exception $e) {
+            return $this->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * POST /api/pre-inscription/convertir
      * Convertit une préinscription en inscription complète
      * 

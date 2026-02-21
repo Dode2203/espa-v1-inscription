@@ -30,9 +30,9 @@ class PreinscriptionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Vérifie si une préinscription existe déjà pour un nom/prénom donné
+     * Vérifie si une préinscription existe déjà pour un nom/prénom donné (exact match)
      */
-    public function findByNomPrenom(string $nom, ?string $prenom): ?Preinscription
+    public function findDuplicate(string $nom, ?string $prenom): ?Preinscription
     {
         $qb = $this->createQueryBuilder('p')
             ->where('p.nom = :nom')
@@ -45,5 +45,32 @@ class PreinscriptionRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * Cherche des préinscriptions par nom et/ou prénom (recherche partielle, insensible à la casse)
+     * Si un paramètre est null ou vide, sa condition n'est pas ajoutée.
+     * Si les deux sont null/vides, retourne toutes les pré-inscriptions actives.
+     *
+     * @return Preinscription[]
+     */
+    public function searchByCriteria(?string $nom, ?string $prenom): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->where('p.convertedAt IS NULL')
+            ->orderBy('p.nom', 'ASC')
+            ->addOrderBy('p.prenom', 'ASC');
+
+        if (!empty(trim((string) $nom))) {
+            $qb->andWhere('LOWER(p.nom) LIKE :nom')
+                ->setParameter('nom', '%' . mb_strtolower(trim($nom), 'UTF-8') . '%');
+        }
+
+        if (!empty(trim((string) $prenom))) {
+            $qb->andWhere('LOWER(p.prenom) LIKE :prenom')
+                ->setParameter('prenom', '%' . mb_strtolower(trim($prenom), 'UTF-8') . '%');
+        }
+
+        return $qb->getQuery()->getResult();
     }
 }
