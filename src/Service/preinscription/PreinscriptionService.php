@@ -50,7 +50,7 @@ class PreinscriptionService
         $prenom = $dto->getPrenom() ? mb_convert_case($dto->getPrenom(), MB_CASE_TITLE, "UTF-8") : null;
 
         // Vérifier si une préinscription existe déjà
-        $existing = $this->preinscriptionRepository->findByNomPrenom($nom, $prenom);
+        $existing = $this->preinscriptionRepository->findDuplicate($nom, $prenom);
         if ($existing) {
             throw new Exception("Une préinscription existe déjà pour {$nom} {$prenom}");
         }
@@ -92,7 +92,26 @@ class PreinscriptionService
     public function getActivePreinscriptions(): array
     {
         $preinscriptions = $this->preinscriptionRepository->findActivePreinscriptions();
+        return $this->mapToDtos($preinscriptions);
+    }
 
+    /**
+     * Recherche des préinscriptions par nom et/ou prénom
+     * @return PreinscriptionResponseDto[]
+     */
+    public function searchByCriteria(?string $nom, ?string $prenom): array
+    {
+        $preinscriptions = $this->preinscriptionRepository->searchByCriteria($nom, $prenom);
+        return $this->mapToDtos($preinscriptions);
+    }
+
+    /**
+     * Map une liste d'entités vers une liste de DTOs
+     * @param Preinscription[] $entities
+     * @return PreinscriptionResponseDto[]
+     */
+    private function mapToDtos(array $entities): array
+    {
         return array_map(function (Preinscription $p) {
             return new PreinscriptionResponseDto(
                 id: $p->getId(),
@@ -106,7 +125,7 @@ class PreinscriptionService
                 niveauNom: $p->getNiveau()->getNom(),
                 convertedAt: $p->getConvertedAt()
             );
-        }, $preinscriptions);
+        }, $entities);
     }
 
     /**
