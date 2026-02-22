@@ -25,6 +25,7 @@ class InscritsRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('i')
             ->andWhere('i.etudiant = :etudiant')
             ->andWhere('i.dateInscription BETWEEN :debut AND :fin')
+            ->andWhere('i.deletedAt IS NULL')
             ->setParameter('etudiant', $etudiant)
             ->setParameter('debut', $dateDebut)
             ->setParameter('fin', $dateFin)
@@ -43,6 +44,7 @@ class InscritsRepository extends ServiceEntityRepository
             ->select('COUNT(i.id)')
             ->where('i.dateInscription >= :dateDebut')
             ->andWhere('i.dateInscription <= :dateFin')
+            ->andWhere('i.deletedAt IS NULL')
             ->setParameter('dateDebut', $dateDebut)
             ->setParameter('dateFin', $dateFin)
             ->getQuery()
@@ -62,6 +64,7 @@ class InscritsRepository extends ServiceEntityRepository
         $dateFin   = $dateFin ?? new \DateTime("$annee-12-31 23:59:59");
         return $this->createQueryBuilder('i')
             ->andWhere('i.dateInscription BETWEEN :debut AND :fin')
+            ->andWhere('i.deletedAt IS NULL')
             ->setParameter('debut', $dateDebut)
             ->setParameter('fin', $dateFin)
             ->orderBy('i.dateInscription', 'DESC')

@@ -40,7 +40,7 @@ class NiveauEtudiantsRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
-    public function getDernierNiveauParEtudiant($etudiant): ?NiveauEtudiants
+    public function getDernierNiveauParEtudiant(Etudiants $etudiant): ?NiveauEtudiants
     {
         return $this->createQueryBuilder('ne')
             ->andWhere('ne.etudiant = :etudiant')

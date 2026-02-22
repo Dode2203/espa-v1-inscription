@@ -53,6 +53,7 @@ class EtudiantsRepository extends ServiceEntityRepository
             $qb->andWhere('e.prenom LIKE :prenom')
             ->setParameter('prenom', '%' . $prenom . '%');
         }
+        $qb->andWhere('e.deletedAt IS NULL');
 
         return $qb->getQuery()->getResult();
     }
@@ -62,6 +63,7 @@ class EtudiantsRepository extends ServiceEntityRepository
        return $this->createQueryBuilder('e')
            ->andWhere('e.nom = :nom')
            ->andWhere('e.prenom = :prenom')
+           ->andWhere('e.deletedAt IS NULL')
            ->setParameter('nom', $nom)
            ->setParameter('prenom' , $prenom)
            ->getQuery()

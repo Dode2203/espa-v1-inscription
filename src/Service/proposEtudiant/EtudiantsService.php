@@ -36,7 +36,7 @@ class EtudiantsService
     private EtudiantsRepository $etudiantsRepository;
     private EntityManagerInterface $em;
     private FormationEtudiantsRepository $formationEtudiantRepository;
-    private $niveauEtudiantsRepository;
+    private NiveauEtudiantsRepository $niveauEtudiantsRepository;
     private FormationEtudiantsService $formationEtudiantsService;
     private NiveauEtudiantsService $niveauEtudiantsService;
     private PaymentService $paymentService;
@@ -185,10 +185,7 @@ class EtudiantsService
         }
 
         // 3. Récupérer le niveau actuel de l'étudiant
-        $niveauEtudiant = $this->niveauEtudiantsRepository->findOneBy(
-            ['etudiant' => $etudiant],
-            ['annee' => 'DESC']
-        );
+        $niveauEtudiant = $this->niveauEtudiantsRepository->getDernierNiveauParEtudiant($etudiant);
 
         if (!$niveauEtudiant || !$niveauEtudiant->getNiveau()) {
             return [
@@ -453,7 +450,8 @@ class EtudiantsService
                 'statusEtudiant' => $statusEtudiant?->getName(),
 
                 'matricule' => $niveauActuel?->getMatricule(),
-                'estBoursier' => $niveauActuel?->getIsBoursier()
+                'estBoursier' => $niveauActuel?->getIsBoursier(),
+                'remarque' => $niveauActuel?->getRemarque()
             ];
 
 
@@ -469,7 +467,7 @@ class EtudiantsService
         }
         return $this->getInformationJson($etudiant);
     }
-    public function changerNiveauEtudiantId(int $idEtudiant,?int $mentionId = null,?int $niveauId = null,?int $statusEtudiantId,?bool $nouvelleNiveau = false,?int $formationId = null,?\DateTimeInterface $deleteAt = null)
+    public function changerNiveauEtudiantId(int $idEtudiant,?int $mentionId = null,?int $niveauId = null,?int $statusEtudiantId,?bool $nouvelleNiveau = false,?int $formationId = null,?string $remarque = null,?\DateTimeInterface $deleteAt = null)
     {
         
         $etudiant = $this->etudiantsRepository->find($idEtudiant);
@@ -505,12 +503,12 @@ class EtudiantsService
             }
         }
 
-        $this->niveauEtudiantsService->changerMention($etudiant,$mention,$niveauEtudiant,$statusEtudiant,$nouvelleNiveau,$formation,$deleteAt);
+        $this->niveauEtudiantsService->changerMention($etudiant,$mention,$niveauEtudiant,$statusEtudiant,$nouvelleNiveau,$formation,$remarque,$deleteAt);
     }
     public function changerNiveauEtudiantDto(NiveauEtudiantRequestDto $dto)
     {
         // throw new Exception($dto->getIdMention());
-        $this->changerNiveauEtudiantId($dto->getIdEtudiant(),$dto->getIdMention(),$dto->getIdNiveau(),$dto->getIdStatus(),$dto->getNouvelleNiveau(),$dto->getIdFormation());
+        $this->changerNiveauEtudiantId($dto->getIdEtudiant(),$dto->getIdMention(),$dto->getIdNiveau(),$dto->getIdStatus(),$dto->getNouvelleNiveau(),$dto->getIdFormation(),$dto->getRemarque());
     }
 
 }

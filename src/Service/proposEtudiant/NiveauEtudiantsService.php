@@ -122,10 +122,10 @@ class NiveauEtudiantsService
         $this->em->persist($niveauEtudiant);
         $this->em->flush();
     }
-    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?StatusEtudiants $statusEtudiant,?bool $nouvelleNiveau = false,?Formations $formation = null,?\DateTimeInterface $deleteAt = null): void {
+    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?StatusEtudiants $statusEtudiant,?bool $nouvelleNiveau = false,?Formations $formation = null,?string $remarque = null,?\DateTimeInterface $deleteAt = null): void {
  
         $this->em->beginTransaction();
-
+  
         try {
             $dernierNiveauEtudiant = $this->getDernierNiveauParEtudiant($etudiant);
             $dernierFormationEtudiant = $this->formationEtudiantsService->getDernierFormationParEtudiant($etudiant);
@@ -156,14 +156,17 @@ class NiveauEtudiantsService
             $nouvelleNiveauEtudiant->setStatusEtudiant($dernierNiveauEtudiant->getStatusEtudiant());
             $mentionAbbr = $mention->getAbr();
             #recuperer le dernier niveau etudiant et changer par ca si c'est pas null
-            $remarque = $dernierNiveauEtudiant->getRemarque() ?? "";
             $numeroInscription = "" . $etudiant->getId() .$remarque . "/" . $annee . "/" . $mentionAbbr;
             $nouvelleNiveauEtudiant->setMatricule($numeroInscription);
             $nouvelleNiveauEtudiant->setNiveau($niveau);
-            $nouvelleNiveauEtudiant->setRemarque($dernierNiveauEtudiant->getRemarque());
-            $nouvelleNiveauEtudiant->setStatusEtudiant($statusEtudiant);
+
             
+            $nouvelleNiveauEtudiant->setRemarque($remarque);
+           
+            // $nouvelleNiveauEtudiant->setRemarque($dernierNiveauEtudiant->getRemarque());
+            $nouvelleNiveauEtudiant->setStatusEtudiant($statusEtudiant);
             $this->insertNiveauEtudiant($nouvelleNiveauEtudiant);
+            
             $this->formationEtudiantsService->insertFormationEtudiant($nouvelleFormationEtudiant);
             $this->em->flush();
             $this->em->commit();

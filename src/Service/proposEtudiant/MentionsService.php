@@ -36,6 +36,6 @@ class MentionsService
     public function getById(int $id): ?Mentions
     {
         return $this->mentionRepository->find($id);
-}
+    }
     
 }

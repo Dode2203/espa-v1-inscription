@@ -28,6 +28,13 @@ class NiveauEtudiantRequestDto
     #[Assert\Type(type: "integer", message: "idFormation doit être un entier")]
     private ?int $idFormation = null;
 
+    #[Assert\Type(type: "string", message: "remarque doit être une chaîne de caractères")]
+    #[Assert\Choice(
+        choices: ["R", "M"],
+        message: "remarque doit être soit 'R' soit 'M'"
+    )]
+    private ?string $remarque = null;
+
     public function getIdEtudiant(): ?int
     {
         return $this->idEtudiant;
@@ -90,5 +97,14 @@ class NiveauEtudiantRequestDto
     public function getIdFormation(): ?int
     {
         return $this->idFormation;
+    }
+    public function setRemarque(?string $remarque): self
+    {
+        $this->remarque = $remarque;
+        return $this;
+    }
+    public function getRemarque(): ?string
+    {
+        return $this->remarque;
     }
 }
