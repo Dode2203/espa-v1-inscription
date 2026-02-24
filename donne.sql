@@ -95,6 +95,7 @@ VALUES
 INSERT INTO formations (id, nom, type_formation_id) VALUES (6, 'PROFESSIONNELLE EIE', 2);
 INSERT INTO formations (id, nom, type_formation_id) VALUES (7, 'PROFESSIONNELLE EIE1', 2);
 INSERT INTO formations (id, nom, type_formation_id) VALUES (8, 'PROFESSIONNELLE EIE2', 2);
+INSERT INTO formations (id, nom, type_formation_id) VALUES (9, 'PROFESSIONNELLE FOAD', 2);
 
 
 INSERT INTO ecolages (formations_id, montant, date_ecolage)
@@ -169,6 +170,9 @@ INSERT INTO niveaux (id, nom, type, grade) VALUES
 
 INSERT INTO niveaux (id, nom, type, grade) VALUES
 (18, 'MP2IEE2', 8, 5);
+
+INSERT INTO niveaux (id, nom, type, grade) VALUES
+(18, 'MP2FOAD', 9, 5);
 
 
 -- INSERT INTO niveaux (nom, type, grade) VALUES
