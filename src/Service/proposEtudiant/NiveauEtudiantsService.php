@@ -122,8 +122,8 @@ class NiveauEtudiantsService
         $this->em->persist($niveauEtudiant);
         $this->em->flush();
     }
-    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?StatusEtudiants $statusEtudiant,?bool $nouvelleNiveau = false,?Formations $formation = null,?string $remarque = null,?\DateTimeInterface $deleteAt = null): void {
- 
+    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?StatusEtudiants $statusEtudiant,?bool $nouvelleNiveau = false,?Formations $formation = null,?string $remarque = null,?int $annee = null,?\DateTimeInterface $deleteAt = null): void {
+        $annee = $annee ?? (int) (new \DateTime())->format('Y');
         $this->em->beginTransaction();
   
         try {
@@ -136,10 +136,20 @@ class NiveauEtudiantsService
                 throw new Exception("Dernier formation etudiant non trouvé");
             }
             
+            
             if (!$nouvelleNiveau) {
+                $annee = $dernierNiveauEtudiant->getAnnee();
                 $this->deleteNiveauEtudiant($dernierNiveauEtudiant,$deleteAt);
                 $this->formationEtudiantsService->deleteFormationEtudiant($dernierFormationEtudiant,$deleteAt);
+                
             }
+            $deleteAt = new \DateTime();
+
+            $deleteAt->setDate(
+                $annee,
+                (int) $deleteAt->format('m'),
+                (int) $deleteAt->format('d')
+            );
             if (!$formation) {
                 $formation = $dernierFormationEtudiant->getFormation();
             }
@@ -148,9 +158,8 @@ class NiveauEtudiantsService
                 $payment->setNiveau($niveau);
                 $this->em->persist($payment);
             }
-            $annee = $dernierNiveauEtudiant->getAnnee();
-            $premierJour = new \DateTime("$annee-01-01 00:00:00");
-            $nouvelleFormationEtudiant = $this->formationEtudiantsService->affecterNouvelleFormationEtudiant($etudiant,$formation,$premierJour);
+            
+            $nouvelleFormationEtudiant = $this->formationEtudiantsService->affecterNouvelleFormationEtudiant($etudiant,$formation,$deleteAt);
             $nouvelleNiveauEtudiant = $this->affecterNouveauNiveauEtudiant($etudiant,$dernierNiveauEtudiant->getNiveau(),$deleteAt, $dernierNiveauEtudiant->getIsBoursier());
             $nouvelleNiveauEtudiant->setAnnee($annee);
             $nouvelleNiveauEtudiant->setMention($mention);

@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
 class FormationEtudiantsService
-{   private $formationEtudiantsRepository;
+{   private FormationEtudiantsRepository $formationEtudiantsRepository;
     private $em;
     private $formationRepository;
 

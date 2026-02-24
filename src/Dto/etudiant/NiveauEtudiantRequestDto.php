@@ -3,6 +3,7 @@
 namespace App\Dto\etudiant;
 
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\When;
 
 class NiveauEtudiantRequestDto
 {
@@ -20,7 +21,6 @@ class NiveauEtudiantRequestDto
     #[Assert\Type(type: "integer", message: "idStatus doit être un entier")]
     private ?int $idStatus = null;
 
-    // ✅ Nouveau champ boolean obligatoire
     #[Assert\NotNull(message: "nouvelleNiveau est obligatoire")]
     #[Assert\Type(type: "bool", message: "nouvelleNiveau doit être un boolean")]
     private ?bool $nouvelleNiveau = null;
@@ -34,6 +34,15 @@ class NiveauEtudiantRequestDto
         message: "remarque doit être soit 'R' soit 'M'"
     )]
     private ?string $remarque = null;
+
+    #[Assert\Type(type: "integer", message: "L'annee doit être un entier")]
+    #[When(
+        expression: "this.getNouvelleNiveau() === true",
+        constraints: [
+            new Assert\NotNull(message: "L'annee est obligatoire lorsque c'est nouvelle niveau")
+        ]
+    )]
+    private ?int $annee = null;
 
     public function getIdEtudiant(): ?int
     {
@@ -58,6 +67,21 @@ class NiveauEtudiantRequestDto
     public function getNouvelleNiveau(): ?bool
     {
         return $this->nouvelleNiveau;
+    }
+
+    public function getIdFormation(): ?int
+    {
+        return $this->idFormation;
+    }
+
+    public function getRemarque(): ?string
+    {
+        return $this->remarque;
+    }
+
+    public function getAnnee(): ?int
+    {
+        return $this->annee;
     }
 
     public function setIdEtudiant(?int $idEtudiant): self
@@ -89,22 +113,22 @@ class NiveauEtudiantRequestDto
         $this->nouvelleNiveau = $nouvelleNiveau;
         return $this;
     }
+
     public function setIdFormation(?int $idFormation): self
     {
         $this->idFormation = $idFormation;
         return $this;
     }
-    public function getIdFormation(): ?int
-    {
-        return $this->idFormation;
-    }
+
     public function setRemarque(?string $remarque): self
     {
         $this->remarque = $remarque;
         return $this;
     }
-    public function getRemarque(): ?string
+
+    public function setAnnee(?int $annee): self
     {
-        return $this->remarque;
+        $this->annee = $annee;
+        return $this;
     }
 }

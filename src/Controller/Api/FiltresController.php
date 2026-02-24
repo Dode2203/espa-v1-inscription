@@ -49,6 +49,7 @@ class FiltresController extends AbstractController
                     'niveau' => $niveau->getNom(),
                     'idNiveau' => $niveau->getId(),
                     'matricule' => $e->getMatricule() ?? '',
+                    'dateInsertion' => $e->getDateInsertion()->format('Y-m-d H:i:s'),
                 ];
             }, array_values($niveauEtudiants));
 

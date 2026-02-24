@@ -52,3 +52,4 @@ composer require symfony/serializer
 ##Commit samedi 31/01/2025
 
 
+composer require symfony/expression-language
