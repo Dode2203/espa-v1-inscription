@@ -148,9 +148,10 @@ class NiveauEtudiantsService
                 $payment->setNiveau($niveau);
                 $this->em->persist($payment);
             }
-            $nouvelleFormationEtudiant = $this->formationEtudiantsService->affecterNouvelleFormationEtudiant($etudiant,$formation,$deleteAt);
-            $nouvelleNiveauEtudiant = $this->affecterNouveauNiveauEtudiant($etudiant,$dernierNiveauEtudiant->getNiveau(),$deleteAt, $dernierNiveauEtudiant->getIsBoursier());
             $annee = $dernierNiveauEtudiant->getAnnee();
+            $premierJour = new \DateTime("$annee-01-01 00:00:00");
+            $nouvelleFormationEtudiant = $this->formationEtudiantsService->affecterNouvelleFormationEtudiant($etudiant,$formation,$premierJour);
+            $nouvelleNiveauEtudiant = $this->affecterNouveauNiveauEtudiant($etudiant,$dernierNiveauEtudiant->getNiveau(),$deleteAt, $dernierNiveauEtudiant->getIsBoursier());
             $nouvelleNiveauEtudiant->setAnnee($annee);
             $nouvelleNiveauEtudiant->setMention($mention);
             $nouvelleNiveauEtudiant->setStatusEtudiant($dernierNiveauEtudiant->getStatusEtudiant());
