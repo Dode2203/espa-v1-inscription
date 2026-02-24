@@ -172,7 +172,7 @@ INSERT INTO niveaux (id, nom, type, grade) VALUES
 (18, 'MP2IEE2', 8, 5);
 
 INSERT INTO niveaux (id, nom, type, grade) VALUES
-(18, 'MP2FOAD', 9, 5);
+(19, 'MP2FOAD', 9, 5);
 
 
 -- INSERT INTO niveaux (nom, type, grade) VALUES
@@ -215,8 +215,11 @@ INSERT INTO public.mentions (id, nom, abr) VALUES
     (23, 'TCO', 'TCO'),
     (24, 'UAGC', 'UAGC');
 
+
 INSERT INTO public.mentions (id, nom, abr) VALUES
     (25, 'EIE', 'EIE');
+INSERT INTO public.mentions (id, nom, abr) VALUES
+    (26, 'GPCIFOAD', 'GPCIFOAD');
 
  INSERT INTO niveau_etudiants (
      niveau_id,

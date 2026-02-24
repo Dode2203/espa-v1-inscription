@@ -77,7 +77,10 @@ class InscriptionService
             ['id' => 4,  'code' => 'GE',   'nom' => 'GE'],
             ['id' => 25,  'code' => 'EIE',  'nom' => 'EIE'],
             ['id' => 17,  'code' => 'ISA', 'nom' => 'ISA'],
-            ['id' => 20,  'code' => 'SIM',  'nom' => 'SIM'],         
+            ['id' => 20,  'code' => 'SIM',  'nom' => 'SIM'],
+            ['id' => 26,  'code' => 'GPCIFOAD',  'nom' => 'GPCIFOAD'],
+                
+
         ];
         return $mentions;
     }
