@@ -68,7 +68,7 @@ class FiltresController extends AbstractController
         }
     }
     #[Route('/etudiant/export', name: 'filtre_etudiant_export', methods: ['GET'])]
-    // #[TokenRequired]
+    #[TokenRequired]
     public function getUtilisateurExport(Request $request): JsonResponse
     {
         try {
