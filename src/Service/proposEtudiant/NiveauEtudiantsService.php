@@ -188,10 +188,12 @@ class NiveauEtudiantsService
     }
     public function toArray(NiveauEtudiants $niveauEtudiant, array $exclude = []): array
     {
+        $mention = $niveauEtudiant->getMention();
         $data = [
             'id' => $niveauEtudiant->getId(),
             'matricule' => $niveauEtudiant->getMatricule(),
             'niveau' => $this->toArrayNiveau($niveauEtudiant->getNiveau()),
+            'mention' => $mention?->getNom(),
             'annee' => $niveauEtudiant->getAnnee(),
             'remarque' => $niveauEtudiant->getRemarque(),
             'isBoursier' => $niveauEtudiant->getIsBoursier(),

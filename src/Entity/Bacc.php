@@ -6,6 +6,7 @@ use App\Repository\BaccRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use PhpParser\Node\Expr\FuncCall;
 
 #[ORM\Entity(repositoryClass: BaccRepository::class)]
 class Bacc
@@ -79,5 +80,16 @@ class Bacc
     public function getEtudiants(): Collection
     {
         return $this->etudiants;
+    }
+    public function toArray(array $exclude = []): array{
+        $result = [];
+        $result['id']= $this->getId();
+        $result['annee'] = $this->getAnnee();
+        $result['numero'] = $this->getNumero();
+        $result['serie'] = $this->getSerie();
+        foreach ($exclude as $key) {
+            unset($result[$key]);
+        }
+        return $result;
     }
 }
