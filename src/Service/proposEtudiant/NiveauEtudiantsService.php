@@ -13,8 +13,8 @@ use App\Entity\Formations;
 use App\Service\payment\PaymentService;
 
 class NiveauEtudiantsService
-{   private $niveauEtudiantsRepository;
-    private $niveauService;
+{   private NiveauEtudiantsRepository $niveauEtudiantsRepository;
+    private NiveauService $niveauService;
     private EntityManagerInterface $em;
     private FormationEtudiantsService $formationEtudiantsService ;
     private PaymentService $paymentService;
@@ -185,6 +185,25 @@ class NiveauEtudiantsService
             throw $e;
         }
         
+    }
+    public function toArray(NiveauEtudiants $niveauEtudiant, array $exclude = []): array
+    {
+        $data = [
+            'id' => $niveauEtudiant->getId(),
+            'matricule' => $niveauEtudiant->getMatricule(),
+            'niveau' => $this->toArrayNiveau($niveauEtudiant->getNiveau()),
+            'annee' => $niveauEtudiant->getAnnee(),
+            'remarque' => $niveauEtudiant->getRemarque(),
+            'isBoursier' => $niveauEtudiant->getIsBoursier(),
+            
+        ];
+
+        // Supprimer les clés à exclure
+        foreach ($exclude as $key) {
+            unset($data[$key]);
+        }
+
+        return $data;
     }
 }
 

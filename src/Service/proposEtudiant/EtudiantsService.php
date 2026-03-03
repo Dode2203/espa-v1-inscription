@@ -511,5 +511,21 @@ class EtudiantsService
         // throw new Exception($dto->getIdMention());
         $this->changerNiveauEtudiantId($dto->getIdEtudiant(),$dto->getIdMention(),$dto->getIdNiveau(),$dto->getIdStatus(),$dto->getNouvelleNiveau(),$dto->getIdFormation(),$dto->getRemarque(),$dto->getAnnee());
     }
+    public function toArrayListeNiveauEtudiants(array $listeNiveauEtudiants): array
+    {
+        $result = [];
+
+        foreach ($listeNiveauEtudiants as $niveauEtudiant) {
+
+            $etudiant = $niveauEtudiant->getEtudiant();
+
+            $result[] = [
+                'identite' => $this->toArray($etudiant),
+                'formation' => $this->niveauEtudiantsService->toArray($niveauEtudiant),
+            ];
+        }
+
+        return $result;
+    }
 
 }
