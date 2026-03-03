@@ -30,8 +30,8 @@ class NiveauEtudiantRequestDto
 
     #[Assert\Type(type: "string", message: "remarque doit être une chaîne de caractères")]
     #[Assert\Choice(
-        choices: ["R", "M"],
-        message: "remarque doit être soit 'R' soit 'M'"
+        choices: ["R", "M" , "T"],
+        message: "remarque doit être soit 'R' soit 'M' soit 'T'"
     )]
     private ?string $remarque = null;
 
