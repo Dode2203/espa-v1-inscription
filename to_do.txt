@@ -94,3 +94,12 @@ MAMIARISOA NASAINA Tendrin'Ny Avo Elia (cas fiche d'inscription mbola tsy azo)
 --insertion inscription miampy condition ra modifier
 
 --erreur 500 insertion reinscription
+
+
+--03/03/2025
+    --changer boursier -- a faire 30mn
+        --ajouter champs numero de fiche de bourse
+        --getDernierNiveau
+        --modifier dernier niveau_etudiant
+        --api pour le modification bourse
+    --api pour avoir tous les donnees ficher de bourse --a faire 30mn
