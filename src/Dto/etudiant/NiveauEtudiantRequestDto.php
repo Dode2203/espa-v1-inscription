@@ -44,6 +44,9 @@ class NiveauEtudiantRequestDto
     )]
     private ?int $annee = null;
 
+    #[Assert\Type(type: "bool", message: "isBoursier doit être un boolean")]
+    private ?bool $isBoursier = null;
+
     public function getIdEtudiant(): ?int
     {
         return $this->idEtudiant;
@@ -129,6 +132,17 @@ class NiveauEtudiantRequestDto
     public function setAnnee(?int $annee): self
     {
         $this->annee = $annee;
+        return $this;
+    }
+
+    public function getIsBoursier(): ?bool
+    {
+        return $this->isBoursier;
+    }
+
+    public function setIsBoursier(?bool $isBoursier): self
+    {
+        $this->isBoursier = $isBoursier;
         return $this;
     }
 }
