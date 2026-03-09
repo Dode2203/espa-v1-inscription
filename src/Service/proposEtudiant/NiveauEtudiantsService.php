@@ -122,7 +122,7 @@ class NiveauEtudiantsService
         $this->em->persist($niveauEtudiant);
         $this->em->flush();
     }
-    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?StatusEtudiants $statusEtudiant,?bool $nouvelleNiveau = false,?Formations $formation = null,?string $remarque = null,?int $annee = null,?\DateTimeInterface $deleteAt = null): void {
+    public function changerMention(Etudiants $etudiant,Mentions $mention,?Niveaux $niveau,?StatusEtudiants $statusEtudiant,?bool $nouvelleNiveau = false,?Formations $formation = null,?string $remarque = null,?int $annee = null,?bool $isBoursier = null,?\DateTimeInterface $deleteAt = null): void {
         $annee = $annee ?? (int) (new \DateTime())->format('Y');
         $this->em->beginTransaction();
   
@@ -172,6 +172,9 @@ class NiveauEtudiantsService
 
             
             $nouvelleNiveauEtudiant->setRemarque($remarque);
+            if ($isBoursier !== null) {
+                $nouvelleNiveauEtudiant->setIsBoursier($isBoursier);
+            }
            
             // $nouvelleNiveauEtudiant->setRemarque($dernierNiveauEtudiant->getRemarque());
             $nouvelleNiveauEtudiant->setStatusEtudiant($statusEtudiant);

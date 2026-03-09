@@ -471,7 +471,7 @@ class EtudiantsService
         }
         return $this->getInformationJson($etudiant);
     }
-    public function changerNiveauEtudiantId(int $idEtudiant,?int $mentionId = null,?int $niveauId = null,?int $statusEtudiantId,?bool $nouvelleNiveau = false,?int $formationId = null,?string $remarque = null,?int $annee = null,?\DateTimeInterface $deleteAt = null)
+    public function changerNiveauEtudiantId(int $idEtudiant,?int $mentionId = null,?int $niveauId = null,?int $statusEtudiantId,?bool $nouvelleNiveau = false,?int $formationId = null,?string $remarque = null,?int $annee = null,?bool $isBoursier = null,?\DateTimeInterface $deleteAt = null)
     {
         
         $etudiant = $this->etudiantsRepository->find($idEtudiant);
@@ -507,12 +507,12 @@ class EtudiantsService
             }
         }
 
-        $this->niveauEtudiantsService->changerMention($etudiant,$mention,$niveauEtudiant,$statusEtudiant,$nouvelleNiveau,$formation,$remarque,$annee,$deleteAt);
+        $this->niveauEtudiantsService->changerMention($etudiant,$mention,$niveauEtudiant,$statusEtudiant,$nouvelleNiveau,$formation,$remarque,$annee,$isBoursier,$deleteAt);
     }
     public function changerNiveauEtudiantDto(NiveauEtudiantRequestDto $dto)
     {
         // throw new Exception($dto->getIdMention());
-        $this->changerNiveauEtudiantId($dto->getIdEtudiant(),$dto->getIdMention(),$dto->getIdNiveau(),$dto->getIdStatus(),$dto->getNouvelleNiveau(),$dto->getIdFormation(),$dto->getRemarque(),$dto->getAnnee());
+        $this->changerNiveauEtudiantId($dto->getIdEtudiant(),$dto->getIdMention(),$dto->getIdNiveau(),$dto->getIdStatus(),$dto->getNouvelleNiveau(),$dto->getIdFormation(),$dto->getRemarque(),$dto->getAnnee(),$dto->getIsBoursier());
     }
     public function toArrayListeNiveauEtudiants(array $listeNiveauEtudiants): array
     {
