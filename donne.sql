@@ -279,4 +279,3 @@ INSERT INTO status_etudiants (id, name) VALUES
 (3, 'SUSPENDU'),
 (4, 'INSCRIPTION ANNULEE');
 
-andriamboavonjy ianjatiana rico

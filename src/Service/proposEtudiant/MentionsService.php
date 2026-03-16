@@ -26,6 +26,7 @@ class MentionsService
         return [
             'id'    => $mention->getId(),
             'nom'   => $mention->getNom(),
+            'abr' => $mention->getAbr(),
         ];
     }
     public function getAllMentionsExcept(array $excludedIds = []): array
